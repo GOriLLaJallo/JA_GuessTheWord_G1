@@ -16,7 +16,7 @@ import javafx.stage.Stage;
  *
  * @author Pc
  */
-public class GuessTheWord_Server extends Application {
+public class ServerApp extends Application {
     
     @Override
     public void start(Stage primaryStage) {

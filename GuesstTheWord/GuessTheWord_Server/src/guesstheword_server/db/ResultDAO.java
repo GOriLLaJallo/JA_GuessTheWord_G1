@@ -1,13 +1,229 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package guesstheword_server.db;
 
+import guesstheword_server.model.Challenge;
+import guesstheword_server.model.GameResult;
+import guesstheword_server.model.User;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Types;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- *
- * @author Pc
+ * Data Access Object (DAO) per la gestione della persistenza dell'entità GameResult.
+ * Fornisce metodi per il salvataggio dei risultati delle partite nel database SQLite,
+ * il recupero dello storico completo delle partite giocate da un utente (con query JOIN)
+ * e il calcolo delle statistiche individuali (vittorie, partite giocate, tempo medio).
+ * 
+ * @author Carmine Muollo
  */
 public class ResultDAO {
-    
+
+    /** Formattatore standard per la serializzazione delle date in SQLite. */
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+
+    /**
+     * Salva un nuovo risultato di gioco nel database SQLite.
+     * Gestisce in modo sicuro i campi opzionali (risposta inviata e tempo di risposta)
+     * che possono essere nulli in caso di TIMEOUT.
+     * Imposta l'ID autoincrementante generato dal DB sull'oggetto GameResult passato.
+     *
+     * @param result il risultato da memorizzare
+     * @return true se il salvataggio è andato a buon fine, false altrimenti
+     */
+    public boolean save(GameResult result) {
+        String query = "INSERT INTO risultati (id_utente, id_sfida, esito, risposta_inviata, tempo_risposta) VALUES (?, ?, ?, ?, ?);";
+        DatabaseManager dbManager = DatabaseManager.getInstance();
+
+        try (Connection conn = dbManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
+
+            ps.setInt(1, result.getUtente().getId());
+            ps.setInt(2, result.getSfida().getId());
+            ps.setString(3, result.getEsito());
+
+            if (result.getRispostaInviata() != null) {
+                ps.setString(4, result.getRispostaInviata());
+            } else {
+                ps.setNull(4, Types.VARCHAR);
+            }
+
+            if (result.getTempoRisposta() != null) {
+                ps.setInt(5, result.getTempoRisposta());
+            } else {
+                ps.setNull(5, Types.INTEGER);
+            }
+
+            int affectedRows = ps.executeUpdate();
+            if (affectedRows == 0) {
+                return false;
+            }
+
+            try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    result.setId(generatedKeys.getInt(1));
+                }
+            }
+            return true;
+
+        } catch (SQLException e) {
+            System.err.println("[ResultDAO] Errore durante il salvataggio del risultato di gioco: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Recupera lo storico completo dei risultati di gioco per un determinato utente.
+     * Esegue una query JOIN per popolare completamente gli oggetti correlati User e Challenge.
+     *
+     * @param userId l'ID dell'utente di cui si vuole recuperare lo storico
+     * @return una List di oggetti GameResult associati all'utente
+     */
+    public List<GameResult> getHistoryByUserId(int userId) {
+        List<GameResult> history = new ArrayList<>();
+        String query = "SELECT r.id AS r_id, r.esito, r.risposta_inviata, r.tempo_risposta, "
+                + "u.id AS u_id, u.username, u.password, u.ruolo, u.data_iscrizione, "
+                + "s.id AS s_id, s.parola_nascosta, s.shift_cesare, s.data_sfida "
+                + "FROM risultati r "
+                + "JOIN utenti u ON r.id_utente = u.id "
+                + "JOIN sfide s ON r.id_sfida = s.id "
+                + "WHERE r.id_utente = ? "
+                + "ORDER BY s.data_sfida DESC;";
+        
+        DatabaseManager dbManager = DatabaseManager.getInstance();
+
+        try (Connection conn = dbManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setInt(1, userId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    // Costruzione dell'oggetto User
+                    User user = new User();
+                    user.setId(rs.getInt("u_id"));
+                    user.setUsername(rs.getString("username"));
+                    user.setPassword(rs.getString("password"));
+                    user.setRuolo(rs.getString("ruolo"));
+                    user.setDataIscrizione(LocalDateTime.parse(rs.getString("data_iscrizione"), DATE_FORMATTER));
+
+                    // Costruzione dell'oggetto Challenge
+                    Challenge challenge = new Challenge();
+                    challenge.setId(rs.getInt("s_id"));
+                    challenge.setParolaNascosta(rs.getString("parola_nascosta"));
+                    challenge.setShiftCesare(rs.getInt("shift_cesare"));
+                    challenge.setDataSfida(LocalDateTime.parse(rs.getString("data_sfida"), DATE_FORMATTER));
+
+                    // Costruzione dell'oggetto GameResult
+                    GameResult result = new GameResult();
+                    result.setId(rs.getInt("r_id"));
+                    result.setUtente(user);
+                    result.setSfida(challenge);
+                    result.setEsito(rs.getString("esito"));
+                    result.setRispostaInviata(rs.getString("risposta_inviata"));
+                    
+                    int tempo = rs.getInt("tempo_risposta");
+                    // rs.wasNull() restituisce true se l'ultima colonna letta era NULL nel DB
+                    if (rs.wasNull()) {
+                        result.setTempoRisposta(null);
+                    } else {
+                        result.setTempoRisposta(tempo);
+                    }
+
+                    history.add(result);
+                }
+            }
+
+        } catch (SQLException e) {
+            System.err.println("[ResultDAO] Errore durante il recupero dello storico partite: " + e.getMessage());
+        }
+        return history;
+    }
+
+    /**
+     * Calcola il numero totale di vittorie per un determinato utente.
+     *
+     * @param userId l'identificativo dell'utente
+     * @return il numero di vittorie ("WIN")
+     */
+    public int getVictoriesCount(int userId) {
+        String query = "SELECT COUNT(*) FROM risultati WHERE id_utente = ? AND esito = 'WIN';";
+        DatabaseManager dbManager = DatabaseManager.getInstance();
+
+        try (Connection conn = dbManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setInt(1, userId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+
+        } catch (SQLException e) {
+            System.err.println("[ResultDAO] Errore durante il conteggio delle vittorie: " + e.getMessage());
+        }
+        return 0;
+    }
+
+    /**
+     * Calcola il numero totale di partite (sfide) disputate da un determinato utente.
+     *
+     * @param userId l'identificativo dell'utente
+     * @return il numero totale di partite giocate
+     */
+    public int getGamesPlayedCount(int userId) {
+        String query = "SELECT COUNT(*) FROM risultati WHERE id_utente = ?;";
+        DatabaseManager dbManager = DatabaseManager.getInstance();
+
+        try (Connection conn = dbManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setInt(1, userId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+
+        } catch (SQLException e) {
+            System.err.println("[ResultDAO] Errore durante il conteggio delle partite giocate: " + e.getMessage());
+        }
+        return 0;
+    }
+
+    /**
+     * Calcola il tempo medio di risposta per le risposte andate a buon fine (o comunque fornite) 
+     * di un determinato utente. Esclude i timeout (dove il tempo di risposta è null).
+     *
+     * @param userId l'identificativo dell'utente
+     * @return il tempo medio di risposta in millisecondi, o 0.0 se non ci sono risposte valide
+     */
+    public double getAverageResponseTime(int userId) {
+        String query = "SELECT AVG(tempo_risposta) FROM risultati WHERE id_utente = ? AND tempo_risposta IS NOT NULL;";
+        DatabaseManager dbManager = DatabaseManager.getInstance();
+
+        try (Connection conn = dbManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setInt(1, userId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getDouble(1);
+                }
+            }
+
+        } catch (SQLException e) {
+            System.err.println("[ResultDAO] Errore durante il calcolo del tempo medio di risposta: " + e.getMessage());
+        }
+        return 0.0;
+    }
 }
