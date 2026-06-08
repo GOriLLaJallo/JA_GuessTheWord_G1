@@ -1,13 +1,178 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package guesstheword_server.model;
 
+import java.time.LocalDateTime;
+import java.util.Objects;
+
 /**
- *
- * @author Pc
+ * Rappresenta una sfida di gioco (partita) all'interno del sistema "GuessTheWord".
+ * Contiene informazioni sulla parola in chiaro che deve essere decifrata, il valore dello shift di
+ * Cesare utilizzato per cifrarla e la data in cui si è svolta la sfida.
+ * 
+ * @author Carmine Muollo
  */
 public class Challenge {
-    
+
+    /** Identificatore unico della sfida nel database. */
+    private int id;
+
+    /** La parola originale in chiaro che gli utenti devono indovinare. */
+    private String parolaNascosta;
+
+    /** Il valore dello spostamento (shift) utilizzato nel cifrario di Cesare. */
+    private int shiftCesare;
+
+    /** Data e ora di inizio della sfida. */
+    private LocalDateTime dataSfida;
+
+    /**
+     * Costruttore di default vuoto.
+     */
+    public Challenge() {
+    }
+
+    /**
+     * Costruttore completo per istanziare una sfida con tutti i suoi attributi.
+     * Utilizzato quando si recupera una sfida esistente dal database.
+     *
+     * @param id             Identificatore unico della sfida
+     * @param parolaNascosta La parola segreta in chiaro
+     * @param shiftCesare    Il valore dello shift di Cesare
+     * @param dataSfida      Data e ora della sfida
+     */
+    public Challenge(int id, String parolaNascosta, int shiftCesare, LocalDateTime dataSfida) {
+        this.id = id;
+        this.parolaNascosta = parolaNascosta;
+        this.shiftCesare = shiftCesare;
+        this.dataSfida = dataSfida;
+    }
+
+    /**
+     * Costruttore senza l'identificatore unico.
+     * Utilizzato per creare nuove sfide prima che vengano memorizzate nel database.
+     *
+     * @param parolaNascosta La parola segreta in chiaro
+     * @param shiftCesare    Il valore dello shift di Cesare
+     * @param dataSfida      Data e ora della sfida
+     */
+    public Challenge(String parolaNascosta, int shiftCesare, LocalDateTime dataSfida) {
+        this.parolaNascosta = parolaNascosta;
+        this.shiftCesare = shiftCesare;
+        this.dataSfida = dataSfida;
+    }
+
+    // --- Getter e Setter ---
+
+    /**
+     * Restituisce l'ID della sfida.
+     *
+     * @return id della sfida
+     */
+    public int getId() {
+        return id;
+    }
+
+    /**
+     * Imposta l'ID della sfida.
+     *
+     * @param id nuovo ID della sfida
+     */
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    /**
+     * Restituisce la parola nascosta in chiaro.
+     *
+     * @return parolaNascosta
+     */
+    public String getParolaNascosta() {
+        return parolaNascosta;
+    }
+
+    /**
+     * Imposta la parola nascosta in chiaro.
+     *
+     * @param parolaNascosta nuova parola nascosta
+     */
+    public void setParolaNascosta(String parolaNascosta) {
+        this.parolaNascosta = parolaNascosta;
+    }
+
+    /**
+     * Restituisce il valore dello shift di Cesare.
+     *
+     * @return shiftCesare
+     */
+    public int getShiftCesare() {
+        return shiftCesare;
+    }
+
+    /**
+     * Imposta il valore dello shift di Cesare.
+     *
+     * @param shiftCesare nuovo valore dello shift
+     */
+    public void setShiftCesare(int shiftCesare) {
+        this.shiftCesare = shiftCesare;
+    }
+
+    /**
+     * Restituisce la data della sfida.
+     *
+     * @return dataSfida
+     */
+    public LocalDateTime getDataSfida() {
+        return dataSfida;
+    }
+
+    /**
+     * Imposta la data della sfida.
+     *
+     * @param dataSfida nuova data della sfida
+     */
+    public void setDataSfida(LocalDateTime dataSfida) {
+        this.dataSfida = dataSfida;
+    }
+
+    // --- Overriding di toString, equals e hashCode ---
+
+    /**
+     * Restituisce una rappresentazione testuale dell'oggetto Challenge.
+     *
+     * @return stringa che rappresenta la sfida
+     */
+    @Override
+    public String toString() {
+        return "Challenge{" +
+                "id=" + id +
+                ", parolaNascosta='" + parolaNascosta + '\'' +
+                ", shiftCesare=" + shiftCesare +
+                ", dataSfida=" + dataSfida +
+                '}';
+    }
+
+    /**
+     * Confronta questa sfida con un altro oggetto.
+     * Due sfide sono considerate uguali se hanno lo stesso ID e la stessa parola nascosta.
+     *
+     * @param o l'oggetto da confrontare
+     * @return true se le sfide sono uguali, false altrimenti
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Challenge challenge = (Challenge) o;
+        return id == challenge.id && shiftCesare == challenge.shiftCesare && Objects.equals(parolaNascosta, challenge.parolaNascosta);
+    }
+
+    /**
+     * Restituisce il codice hash per la sfida.
+     *
+     * @return codice hash della sfida
+     */
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, parolaNascosta, shiftCesare);
+    }
 }
