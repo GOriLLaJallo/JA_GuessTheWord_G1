@@ -3,6 +3,7 @@ package guesstheword_server.db;
 import guesstheword_server.model.Challenge;
 import guesstheword_server.model.GameResult;
 import guesstheword_server.model.User;
+import guesstheword_server.model.LeaderboardEntry;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -225,5 +226,43 @@ public class ResultDAO {
             System.err.println("[ResultDAO] Errore durante il calcolo del tempo medio di risposta: " + e.getMessage());
         }
         return 0.0;
+    }
+
+    /**
+     * Recupera la classifica globale degli utenti (leaderboard).
+     * Seleziona tutti gli utenti che hanno almeno una partita vinta ('WIN'),
+     * ordinandoli per tempo medio di risposta in modo ascendente.
+     *
+     * @return una lista di oggetti LeaderboardEntry ordinati
+     */
+    public List<LeaderboardEntry> getLeaderboard() {
+        List<LeaderboardEntry> leaderboard = new ArrayList<>();
+        String query = "SELECT u.username, "
+                + "(SELECT COUNT(*) FROM risultati r2 WHERE r2.id_utente = u.id AND r2.esito = 'WIN') AS vittorie, "
+                + "AVG(r.tempo_risposta) AS tempo_medio "
+                + "FROM utenti u "
+                + "JOIN risultati r ON u.id = r.id_utente "
+                + "WHERE r.esito = 'WIN' "
+                + "GROUP BY u.id, u.username "
+                + "ORDER BY tempo_medio ASC;";
+        
+        DatabaseManager dbManager = DatabaseManager.getInstance();
+
+        try (Connection conn = dbManager.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
+
+            while (rs.next()) {
+                String username = rs.getString("username");
+                int vittorie = rs.getInt("vittorie");
+                double tempoMedio = rs.getDouble("tempo_medio");
+                
+                leaderboard.add(new LeaderboardEntry(username, vittorie, tempoMedio));
+            }
+
+        } catch (SQLException e) {
+            System.err.println("[ResultDAO] Errore durante il recupero della classifica: " + e.getMessage());
+        }
+        return leaderboard;
     }
 }

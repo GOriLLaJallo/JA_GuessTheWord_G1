@@ -1,50 +1,55 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/javafx/FXMain.java to edit this template
- */
 package guesstheword_server;
 
+import guesstheword_server.db.DatabaseManager;
 import javafx.application.Application;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 /**
- *
- * @author Pc
+ * Classe principale (Entry Point) dell'applicazione GuessTheWord_Server.
+ * Avvia l'interfaccia grafica JavaFX per l'amministratore e inizializza
+ * la connessione e lo schema del database locale SQLite.
+ * 
+ * @author Carmine Muollo
  */
 public class ServerApp extends Application {
-    
+
     @Override
     public void start(Stage primaryStage) {
-        Button btn = new Button();
-        btn.setText("Say 'Hello World'");
-        btn.setOnAction(new EventHandler<ActionEvent>() {
+        try {
+            // Inizializza il database SQLite all'avvio (con relativo seeding dei dati se necessario)
+            System.out.println("[ServerApp] Connessione ed inizializzazione del database in corso...");
+            DatabaseManager.getInstance();
+
+            // Caricamento del file FXML per la vista di login dell'amministratore
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/guesstheword_server/resources/view/AdminLoginView.fxml"));
+            Parent root = loader.load();
+
+            Scene scene = new Scene(root);
+
+            // Configurazione dello Stage principale
+            primaryStage.setTitle("GuessTheWord - Login Amministratore");
+            primaryStage.setScene(scene);
+            primaryStage.setResizable(false);
+            primaryStage.centerOnScreen();
+            primaryStage.show();
             
-            @Override
-            public void handle(ActionEvent event) {
-                System.out.println("Hello World!");
-            }
-        });
-        
-        StackPane root = new StackPane();
-        root.getChildren().add(btn);
-        
-        Scene scene = new Scene(root, 300, 250);
-        
-        primaryStage.setTitle("Hello World!");
-        primaryStage.setScene(scene);
-        primaryStage.show();
+            System.out.println("[ServerApp] Interfaccia grafica caricata con successo.");
+
+        } catch (Exception e) {
+            System.err.println("[ServerApp] Errore irreversibile all'avvio dell'applicazione server:");
+            e.printStackTrace();
+        }
     }
 
     /**
-     * @param args the command line arguments
+     * Metodo main per l'avvio manuale dell'applicazione.
+     *
+     * @param args gli argomenti passati da riga di comando
      */
     public static void main(String[] args) {
         launch(args);
     }
-    
 }
