@@ -53,7 +53,7 @@ public class GameServer {
     }
 
     public static void main(String[] args) throws IOException {
-        new GameServer().start();
+        new GameServer().startCon();
     }
 
     public void start() {

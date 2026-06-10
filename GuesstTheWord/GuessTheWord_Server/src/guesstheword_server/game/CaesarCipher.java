@@ -4,6 +4,8 @@
  */
 package guesstheword_server.game;
 
+import java.util.Random;
+
 /**
  *
  *
@@ -16,7 +18,7 @@ public class CaesarCipher {
      *
      * @param word  
      * @param shift (0-25)
-     * @retur parola codificata
+     * @return parola codificata
      */
     public static String encrypt(String word, int shift) {
         if (word == null || word.isEmpty()) return word;
@@ -71,11 +73,38 @@ public class CaesarCipher {
     }
 
     /**
-     * Genera un random shift, motodo probabilmente da aggiornare
+     * Genera un random shift a seconda della difficoltà
+     * Capire se effettivamente è più facile
      *
+     * @param difficulty
      * @return shift del cifrario di Cesare
      */
-    public static int randomShift() {
-        return 1 + (int) (Math.random() * 25);
+    public static int randomShift(Difficulty difficulty) {
+        Random random = new Random();
+
+        switch (difficulty) {
+            case EASY: {
+            // Sceglie casualmente tra range basso [1-5] o alto [21-25]
+                if (random.nextBoolean()) {
+                    return 1 + random.nextInt(4);   // [1-4]
+                } else {
+                    return 23 + random.nextInt(4);  // [23-26]
+                }
+            }
+            case MEDIUM: {
+                // Sceglie casualmente tra range [5-8] o [19-22]
+                if (random.nextBoolean()) {
+                    return 5 + random.nextInt(4);   // [5-8]
+                } else {
+                    return 19 + random.nextInt(4);  // [19-22]
+                }
+            }
+            case HARD:
+                default: {
+                return 9 + random.nextInt(10);      // [9-18]
+            }
+        }
     }
+
+
 }
