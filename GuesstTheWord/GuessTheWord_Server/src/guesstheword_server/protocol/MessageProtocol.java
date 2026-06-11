@@ -51,6 +51,12 @@ public class MessageProtocol {
 
     //messaggio di tempo scaduto senza una vittoria: GAME_TIMEOUT
     public static final String GAME_TIMEOUT = "GAME_TIMEOUT";
+    
+    //messaggio inviato dal client a login avvenuto: REQ_HISTORY
+    public static final String REQ_HISTORY = "REQ_HISTORY";
+    
+    //messaggio inviato dal server con lo storico formattato: HISTORY_DATA
+    public static final String HISTORY_DATA = "HISTORY_DATA";
 
     /**
      * Costruisco un messaggio

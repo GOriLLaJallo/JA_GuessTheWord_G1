@@ -6,9 +6,10 @@
 package guesstheword_server.game;
 
 /**
- *
- * @author ssabr
+ * Livelli di difficoltà della sfida.
  */
-public class Difficulty {
-    
+public enum Difficulty {
+    EASY,
+    MEDIUM,
+    HARD
 }
