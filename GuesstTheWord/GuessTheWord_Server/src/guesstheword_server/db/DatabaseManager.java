@@ -1,9 +1,11 @@
 package guesstheword_server.db;
 
+import guesstheword_server.utils.HashUtil;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.ResultSet;
 import java.sql.Statement;
 
 /**
@@ -142,6 +144,19 @@ public class DatabaseManager {
             stmt.execute(createUtentiTable);
             stmt.execute(createSfideTable);
             stmt.execute(createRisultatiTable);
+
+            // Inserimento utente admin predefinito se non è già presente
+            try (ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM utenti WHERE username = 'admin';")) {
+                if (rs.next() && rs.getInt(1) == 0) {
+                    // Password hash per "admin" usando SHA-25
+                    String adminPasswordHash = HashUtil.sha256("admin");
+                    String insertAdmin = "INSERT INTO utenti (username, password, ruolo, data_iscrizione) "
+                            + "VALUES ('admin', '" + adminPasswordHash + "', 'admin', '" 
+                            + java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME) + "');";
+                    stmt.execute(insertAdmin);
+                    System.out.println("[DB] Account amministratore predefinito creato.");
+                }
+            }
 
             System.out.println("[DB] Schema del database inizializzato con successo.");
 

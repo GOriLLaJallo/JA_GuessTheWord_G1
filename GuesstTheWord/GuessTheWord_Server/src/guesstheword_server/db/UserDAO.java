@@ -66,15 +66,18 @@ public class UserDAO {
      * @param passwordHash l'hash della password inserita
      * @return l'oggetto User corrispondente se le credenziali sono corrette, null altrimenti
      */
-    public User authenticate(String username, String passwordHash) {
-        String query = "SELECT id, username, password, ruolo, data_iscrizione FROM utenti WHERE username = ? AND password = ?;";
+    public User authenticate(String username, String password) throws SQLException {
+        if (password == null) return null;
+        String passwordHash = guesstheword_server.utils.HashUtil.sha256(password);
+        String query = "SELECT id, username, password, ruolo, data_iscrizione FROM utenti WHERE username = ? AND (password = ? OR password = ?);";
         DatabaseManager dbManager = DatabaseManager.getInstance();
 
         try (Connection conn = dbManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
 
             ps.setString(1, username);
-            ps.setString(2, passwordHash);
+            ps.setString(2, password);      // Confronto in chiaro
+            ps.setString(3, passwordHash);  // Confronto con l'hash SHA-256
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -90,9 +93,6 @@ public class UserDAO {
                     return user;
                 }
             }
-
-        } catch (SQLException e) {
-            System.err.println("[UserDAO] Errore durante l'autenticazione: " + e.getMessage());
         }
         return null;
     }

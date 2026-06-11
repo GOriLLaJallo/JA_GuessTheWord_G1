@@ -1,11 +1,98 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
-<AnchorPane id="AnchorPane" prefHeight="400.0" prefWidth="600.0" xmlns:fx="http://javafx.com/fxml/1" fx:controller="guesstheword_server.controller.AdminDashboardViewController">
-    
+<AnchorPane prefHeight="550.0" prefWidth="800.0" styleClass="parent" stylesheets="@../styles/stylesheet.css" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="guesstheword_server.controller.AdminDashboardViewController">
+   <children>
+      <VBox spacing="20.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <padding>
+            <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
+         </padding>
+         <children>
+            <!-- Titolo ed Intestazione -->
+            <VBox spacing="5.0">
+               <children>
+                  <Label text="CONSOLE DI AMMINISTRAZIONE" textFill="#6747cd">
+                     <font>
+                        <Font name="System Bold" size="24.0" />
+                     </font>
+                  </Label>
+                  <Label text="Carica documenti testuali, effettua l'analisi delle frequenze e gestisci la persistenza serializzata." textFill="#7a7a7a">
+                     <font>
+                        <Font name="System Bold" size="13.0" />
+                     </font>
+                  </Label>
+               </children>
+            </VBox>
+            
+            <HBox spacing="30.0" VBox.vgrow="ALWAYS">
+               <children>
+                  <!-- Sezione Sinistra: Selezione e Analisi File -->
+                  <VBox spacing="15.0" style="-fx-border-color: #e2e2e2; -fx-border-radius: 8px; -fx-background-color: #f9f9f9; -fx-background-radius: 8px;" HBox.hgrow="ALWAYS">
+                     <padding>
+                        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                     </padding>
+                     <children>
+                        <Label text="Analisi Frequenza Parole" textFill="#6747cd">
+                           <font>
+                              <Font name="System Bold" size="16.0" />
+                           </font>
+                        </Label>
+                        
+                        <Button fx:id="selectFilesBtn" mnemonicParsing="false" onAction="#handleSelectFiles" prefHeight="35.0" prefWidth="300.0" styleClass="loginBtn" text="Seleziona Documenti (.txt)" />
+                        
+                        <Label text="File Selezionati:" textFill="#5a5a5a">
+                           <font>
+                              <Font name="System Bold" size="12.0" />
+                           </font>
+                        </Label>
+                        
+                        <ListView fx:id="filesListView" prefHeight="150.0" prefWidth="300.0" VBox.vgrow="ALWAYS" />
+                        
+                        <Button fx:id="startAnalysisBtn" mnemonicParsing="false" onAction="#handleStartAnalysis" prefHeight="40.0" prefWidth="300.0" styleClass="loginBtn" text="Avvia Analisi delle Parole" />
+                        
+                        <ProgressBar fx:id="progressBar" prefWidth="300.0" progress="0.0" visible="false" />
+                        <Label fx:id="statusLabel" text="Stato: In attesa di file..." textFill="#8a8a8a" />
+                     </children>
+                  </VBox>
+                  
+                  <!-- Sezione Destra: Gestione Cache Serializzata -->
+                  <VBox spacing="15.0" style="-fx-border-color: #e2e2e2; -fx-border-radius: 8px; -fx-background-color: #f9f9f9; -fx-background-radius: 8px;" HBox.hgrow="ALWAYS">
+                     <padding>
+                        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                     </padding>
+                     <children>
+                        <Label text="Persistenza Risultati" textFill="#6747cd">
+                           <font>
+                              <Font name="System Bold" size="16.0" />
+                           </font>
+                        </Label>
+                        <Label text="Consente di salvare su disco l'analisi effettuata per non ripeterla ad ogni avvio." textFill="#7a7a7a" wrapText="true">
+                           <font>
+                              <Font name="System Bold" size="11.0" />
+                           </font></Label>
+                        
+                        <VBox alignment="CENTER" spacing="20.0" VBox.vgrow="ALWAYS">
+                           <children>
+                              <Button fx:id="saveResultsBtn" mnemonicParsing="false" onAction="#handleSaveResults" prefHeight="45.0" prefWidth="280.0" styleClass="loginBtn" text="Salva Risultati di Analisi" />
+                              <Button fx:id="loadResultsBtn" mnemonicParsing="false" onAction="#handleLoadResults" prefHeight="45.0" prefWidth="280.0" styleClass="loginBtn" text="Carica Risultati Precedenti" />
+                           </children>
+                        </VBox>
+                        
+                        <Label fx:id="cacheStatusLabel" text="Nessun file di cache caricato in memoria." textFill="#8a8a8a" wrapText="true" />
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+   </children>
 </AnchorPane>
