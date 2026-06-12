@@ -1,8 +1,9 @@
 package guesstheword_server.controller;
 
 import guesstheword_server.utils.HashUtil;
-import guesstheword_server.db.UserDAO;
+import guesstheword_server.service.AuthService;
 import guesstheword_server.model.User;
+import guesstheword_server.exception.DataAccessException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -54,14 +55,14 @@ public class AdminLoginViewController implements Initializable {
     @FXML
     private Button loginButton;
 
-    private UserDAO userDAO;
+    private AuthService authService;
 
     /**
      * Inizializza il controller. Viene chiamato automaticamente dopo il caricamento del file FXML.
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        userDAO = new UserDAO();
+        authService = new AuthService();
         errorLabel.setText(""); // Resetta eventuali messaggi di errore iniziali
 
         // Caricamento programmatico del font FontAwesome per assicurarne la disponibilità
@@ -101,7 +102,7 @@ public class AdminLoginViewController implements Initializable {
 
     /**
      * Gestisce l'evento di click sul pulsante Login.
-     * Recupera le credenziali, calcola l'hash della password e autentica l'utente tramite UserDAO.
+     * Recupera le credenziali, calcola l'hash della password e autentica l'utente tramite AuthService.
      * In caso di esito positivo e ruolo 'admin', esegue la transizione alla dashboard principale.
      *
      * @param event l'evento generato dal click
@@ -123,7 +124,7 @@ public class AdminLoginViewController implements Initializable {
 
         // Autenticazione tramite database
         try {
-            User user = userDAO.authenticate(username, password);
+            User user = authService.login(username, password);
 
             if (user == null) {
                 errorLabel.setText("Username o password errati!");
@@ -156,7 +157,7 @@ public class AdminLoginViewController implements Initializable {
                 e.printStackTrace();
                 errorLabel.setText("Errore di caricamento della dashboard!");
             }
-        } catch (java.sql.SQLException e) {
+        } catch (DataAccessException e) {
             System.err.println("[Login] Errore del database durante l'accesso: " + e.getMessage());
             e.printStackTrace();
             errorLabel.setText("Errore di connessione al database!");

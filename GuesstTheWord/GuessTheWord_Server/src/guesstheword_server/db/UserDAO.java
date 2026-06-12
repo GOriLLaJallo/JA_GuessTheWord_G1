@@ -1,6 +1,7 @@
 package guesstheword_server.db;
 
 import guesstheword_server.model.User;
+import guesstheword_server.exception.DataAccessException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -54,8 +55,7 @@ public class UserDAO {
             return true;
 
         } catch (SQLException e) {
-            System.err.println("[UserDAO] Errore durante la registrazione dell'utente: " + e.getMessage());
-            return false;
+            throw new DataAccessException("Errore durante la registrazione dell'utente: " + user.getUsername(), e);
         }
     }
 
@@ -66,18 +66,16 @@ public class UserDAO {
      * @param passwordHash l'hash della password inserita
      * @return l'oggetto User corrispondente se le credenziali sono corrette, null altrimenti
      */
-    public User authenticate(String username, String password) throws SQLException {
-        if (password == null) return null;
-        String passwordHash = guesstheword_server.utils.HashUtil.sha256(password);
-        String query = "SELECT id, username, password, ruolo, data_iscrizione FROM utenti WHERE username = ? AND (password = ? OR password = ?);";
+    public User authenticate(String username, String passwordHash) {
+        if (passwordHash == null) return null;
+        String query = "SELECT id, username, password, ruolo, data_iscrizione FROM utenti WHERE username = ? AND password = ?;";
         DatabaseManager dbManager = DatabaseManager.getInstance();
 
         try (Connection conn = dbManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
 
             ps.setString(1, username);
-            ps.setString(2, password);      // Confronto in chiaro
-            ps.setString(3, passwordHash);  // Confronto con l'hash SHA-256
+            ps.setString(2, passwordHash);
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -93,6 +91,8 @@ public class UserDAO {
                     return user;
                 }
             }
+        } catch (SQLException e) {
+            throw new DataAccessException("Errore durante l'autenticazione del nome utente: " + username, e);
         }
         return null;
     }
@@ -128,7 +128,7 @@ public class UserDAO {
             }
 
         } catch (SQLException e) {
-            System.err.println("[UserDAO] Errore durante la ricerca per ID: " + e.getMessage());
+            throw new DataAccessException("Errore durante la ricerca dell'utente per ID: " + id, e);
         }
         return null;
     }
@@ -164,7 +164,7 @@ public class UserDAO {
             }
 
         } catch (SQLException e) {
-            System.err.println("[UserDAO] Errore durante la ricerca per username: " + e.getMessage());
+            throw new DataAccessException("Errore durante la ricerca dell'utente per username: " + username, e);
         }
         return null;
     }
