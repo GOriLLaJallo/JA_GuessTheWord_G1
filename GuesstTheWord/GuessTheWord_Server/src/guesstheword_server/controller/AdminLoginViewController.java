@@ -1,6 +1,5 @@
 package guesstheword_server.controller;
 
-import guesstheword_server.utils.HashUtil;
 import guesstheword_server.service.AuthService;
 import guesstheword_server.model.User;
 import guesstheword_server.exception.DataAccessException;
@@ -84,6 +83,11 @@ public class AdminLoginViewController implements Initializable {
         
         // Sincronizzazione bidirezionale del testo inserito
         showPasswordField.textProperty().bindBidirectional(passwordField.textProperty());
+
+        // Supporto per l'invio del form premendo il tasto Invio (Enter)
+        usernameField.setOnAction(this::handleLogin);
+        passwordField.setOnAction(this::handleLogin);
+        showPasswordField.setOnAction(this::handleLogin);
     }
 
     /**
@@ -109,6 +113,8 @@ public class AdminLoginViewController implements Initializable {
      */
     @FXML
     private void handleLogin(ActionEvent event) {
+        errorLabel.setText(""); // Reset dell'etichetta dell'errore ad inizio tentativo
+        
         String username = usernameField.getText().trim();
         // Acquisizione sicura del testo dal campo attivo per evitare problemi di sincronizzazione del binding
         String password = togglePasswordButton.isSelected() ? showPasswordField.getText() : passwordField.getText();
