@@ -1,7 +1,7 @@
 package guesstheword_server.controller;
 
 import guesstheword_server.analysis.AnalysisResult;
-import guesstheword_server.service.AnalysisService;
+import guesstheword_server.analysis.AnalysisService;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -78,9 +78,15 @@ public class AdminDashboardViewController implements Initializable {
         // Inizializzazione del servizio asincrono
         analysisService = new AnalysisService();
 
-        // Configurazione delle proprietà asincrone tramite binding
+        // Configurazione delle proprietà asincrone tramite binding/listener
         progressBar.progressProperty().bind(analysisService.progressProperty());
-        statusLabel.textProperty().bind(analysisService.messageProperty());
+        
+        // Listener per aggiornare statusLabel in modo sicuro e non bloccante sul thread grafico
+        analysisService.messageProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                statusLabel.setText(newVal);
+            }
+        });
 
         // Evento di completamento con successo del task asincrono
         analysisService.setOnSucceeded(event -> {
@@ -88,7 +94,6 @@ public class AdminDashboardViewController implements Initializable {
             progressBar.setVisible(false);
             
             if (lastAnalysisResult != null) {
-                statusLabel.textProperty().unbind(); // Scollega temporaneamente il binding per mostrare il testo statico
                 statusLabel.setText("Analisi completata con successo.");
                 saveResultsBtn.setDisable(false);
                 showAlert(Alert.AlertType.INFORMATION, "Risultato Analisi", "Analisi completata con successo!",
@@ -102,7 +107,6 @@ public class AdminDashboardViewController implements Initializable {
         // Evento di fallimento del task asincrono
         analysisService.setOnFailed(event -> {
             progressBar.setVisible(false);
-            statusLabel.textProperty().unbind();
             Throwable exception = analysisService.getException();
             String errorMsg = exception != null ? exception.getMessage() : "Errore ignoto.";
             statusLabel.setText("Errore durante l'analisi.");
@@ -172,10 +176,6 @@ public class AdminDashboardViewController implements Initializable {
                 filesListView.getItems().add(file.getName());
             }
             
-            // Ripristina il binding con il messaggio del servizio
-            if (!statusLabel.textProperty().isBound()) {
-                statusLabel.textProperty().bind(analysisService.messageProperty());
-            }
             analysisService.setFilesToAnalyze(selectedFiles);
             statusLabel.setText("Selezionati " + selectedFiles.size() + " file pronti per l'analisi.");
             progressBar.setVisible(false);
@@ -195,11 +195,6 @@ public class AdminDashboardViewController implements Initializable {
             showAlert(Alert.AlertType.WARNING, "Attenzione", "Nessun file selezionato", 
                     "Seleziona almeno un file di testo (.txt) prima di avviare l'analisi.");
             return;
-        }
-
-        // Assicura il collegamento del binding del testo prima del lancio
-        if (!statusLabel.textProperty().isBound()) {
-            statusLabel.textProperty().bind(analysisService.messageProperty());
         }
 
         progressBar.setVisible(true);
@@ -272,7 +267,6 @@ public class AdminDashboardViewController implements Initializable {
                     filesListView.getItems().addAll(lastAnalysisResult.getFileNames());
                     selectedFiles.clear(); // La cache non contiene i file reali ma solo il risultato
 
-                    statusLabel.textProperty().unbind();
                     statusLabel.setText("Risultati caricati da cache.");
                     cacheStatusLabel.setText("Cache: Caricata (" + file.getName() + ")");
                     saveResultsBtn.setDisable(false);

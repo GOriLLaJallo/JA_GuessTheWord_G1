@@ -174,4 +174,13 @@ Autore: Carmine Muollo
     -fx-background-color: #4B329B;
     -fx-text-fill: #FFFFFF;
     -fx-effect: dropshadow(three-pass-box, rgba(103, 71, 205, 0.2), 6, 0, 0, 0);
-}
+}
+
+/* Pannello contenitore Dashboard */
+.dashboard-panel {
+    -fx-border-color: #E2E2E6;
+    -fx-border-radius: 8px;
+    -fx-background-color: #F9F9F9;
+    -fx-background-radius: 8px;
+}
+

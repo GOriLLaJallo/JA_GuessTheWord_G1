@@ -1,4 +1,4 @@
-package guesstheword_server.service;
+package guesstheword_server.analysis;
 
 import guesstheword_server.analysis.AnalysisResult;
 import guesstheword_server.analysis.DocumentAnalyzer;
