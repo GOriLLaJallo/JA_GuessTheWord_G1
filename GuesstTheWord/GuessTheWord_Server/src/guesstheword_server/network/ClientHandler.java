@@ -251,11 +251,13 @@ public class ClientHandler implements Runnable {
         StringBuilder sb = new StringBuilder();
         history.forEach(result -> {
             sb.append(result.getSfida().getDataSfida())
-                    .append(",")
-                    .append(result.getEsito())
-                    .append(",")
-                    .append(result.getSfida().getParolaNascosta())
-                    .append(";");
+                .append(",")
+                .append(result.getEsito())
+                .append(",")
+                .append(result.getSfida().getParolaNascosta())
+                .append(",")
+                .append(result.getRispostaInviata())
+                .append(";");
         });
         sendMessage(MessageProtocol.build(MessageProtocol.HISTORY_DATA, sb.toString()));
     }
