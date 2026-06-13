@@ -10,7 +10,7 @@ import java.util.Properties;
 
 /**
  *
- * @author Pc
+ * @author Sabrina Soriano
  */
 
 public class ServerConnection {
@@ -52,14 +52,15 @@ public class ServerConnection {
      */
     
     public static synchronized ServerConnection getInstance() throws IOException {
-        if (instance == null) {
+        if (instance == null || instance.socket.isClosed()) {
             instance = new ServerConnection();
         }
         return instance;
     }
     
+    
     /**
-     * Metodo da aggiornare per adesso manda solo un messaggio sul canale out
+     * Manda solo un messaggi sul canale out
      * 
      * @param message 
      */

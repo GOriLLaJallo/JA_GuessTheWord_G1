@@ -4,6 +4,7 @@
  */
 package guesstheword_client.controller;
 
+import guesstheword_client.network.ServerConnection;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -34,7 +35,13 @@ public class LoginViewController implements Initializable {
     private Label subtitleLabel;
 
     @FXML
+    private Label usernameLabel;
+
+    @FXML
     private TextField usernameField;
+
+    @FXML
+    private Label passwordLabel;
 
     @FXML
     private PasswordField passwordField;
@@ -44,6 +51,18 @@ public class LoginViewController implements Initializable {
 
     @FXML
     private ToggleButton togglePasswordButton;
+    
+    @FXML
+    private Label confirmPasswordLabel;
+    
+    @FXML
+    private PasswordField confirmPasswordField;
+    
+    @FXML
+    private TextField showConfirmPasswordField;
+    
+    @FXML
+    private ToggleButton toggleConfirmPasswordButton;
 
     @FXML
     private Label errorLabel;
@@ -77,8 +96,14 @@ public class LoginViewController implements Initializable {
         passwordField.managedProperty().bind(togglePasswordButton.selectedProperty().not());
         passwordField.visibleProperty().bind(togglePasswordButton.selectedProperty().not());
         
-        // Sincronizzazione bidirezionale del testo inserito
+        // Sincronizzazione bidirezionale del testo inserito per la password
         showPasswordField.textProperty().bindBidirectional(passwordField.textProperty());
+        
+        // Imposta l'icona dell'occhio aperto come iniziale per la conferma password
+        toggleConfirmPasswordButton.setText("\uf06e");
+
+        // Sincronizzazione bidirezionale del testo inserito per la conferma password
+        showConfirmPasswordField.textProperty().bindBidirectional(confirmPasswordField.textProperty());
     }
 
     @FXML
@@ -90,10 +115,60 @@ public class LoginViewController implements Initializable {
         }
     }
 
+    /**
+     * Gestisce la visibilità della conferma password modificando l'icona ed il testo del pulsante toggle.
+     */
+    @FXML
+    private void handleToggleConfirmPassword(ActionEvent event) {
+        if (toggleConfirmPasswordButton.isSelected()) {
+            toggleConfirmPasswordButton.setText("\uf070"); // fa-eye-slash
+            showConfirmPasswordField.setVisible(true);
+            confirmPasswordField.setVisible(false);
+        } else {
+            toggleConfirmPasswordButton.setText("\uf06e"); // fa-eye
+            showConfirmPasswordField.setVisible(false);
+            confirmPasswordField.setVisible(true);
+        }
+    }
+
     @FXML
     private void handleSwitchMode(ActionEvent event) {
         isLoginMode = !isLoginMode;
         errorLabel.setText(""); // resetta errori quando si cambia modalità
+        
+        boolean showConfirm = !isLoginMode;
+        confirmPasswordLabel.setVisible(showConfirm);
+        
+        // Rispetta lo stato del toggle quando mostra la conferma
+        if (showConfirm) {
+            if (toggleConfirmPasswordButton.isSelected()) {
+                showConfirmPasswordField.setVisible(true);
+                confirmPasswordField.setVisible(false);
+            } else {
+                showConfirmPasswordField.setVisible(false);
+                confirmPasswordField.setVisible(true);
+            }
+        } else {
+            showConfirmPasswordField.setVisible(false);
+            confirmPasswordField.setVisible(false);
+        }
+        
+        toggleConfirmPasswordButton.setVisible(showConfirm);
+
+        // Alza o abbassa i textfields, mantenendo i bottoni fermi
+        double offset = showConfirm ? -76.0 : 76.0;
+        
+        usernameLabel.setLayoutY(usernameLabel.getLayoutY() + offset);
+        usernameField.setLayoutY(usernameField.getLayoutY() + offset);
+        passwordLabel.setLayoutY(passwordLabel.getLayoutY() + offset);
+        passwordField.setLayoutY(passwordField.getLayoutY() + offset);
+        showPasswordField.setLayoutY(showPasswordField.getLayoutY() + offset);
+        togglePasswordButton.setLayoutY(togglePasswordButton.getLayoutY() + offset);
+        
+        confirmPasswordLabel.setLayoutY(confirmPasswordLabel.getLayoutY() + offset);
+        confirmPasswordField.setLayoutY(confirmPasswordField.getLayoutY() + offset);
+        showConfirmPasswordField.setLayoutY(showConfirmPasswordField.getLayoutY() + offset);
+        toggleConfirmPasswordButton.setLayoutY(toggleConfirmPasswordButton.getLayoutY() + offset);
         
         if (isLoginMode) {
             titleLabel.setText("WELCOME, USER");
@@ -111,16 +186,46 @@ public class LoginViewController implements Initializable {
     @FXML
     private void handleAction(ActionEvent event) {
         String username = usernameField.getText().trim();
+        // Acquisizione sicura del testo dal campo attivo
         String password = togglePasswordButton.isSelected() ? showPasswordField.getText() : passwordField.getText();
-        
         if (password == null) {
             password = "";
+        }
+        
+        String confirmPassword = toggleConfirmPasswordButton.isSelected() ? showConfirmPasswordField.getText() : confirmPasswordField.getText();
+        if (confirmPassword == null) {
+            confirmPassword = "";
         }
 
         // Validazione base
         if (username.isEmpty() || password.isEmpty()) {
             errorLabel.setText("Inserisci username e/o password!");
             return;
+        }
+
+        // Controllo carattere vietato ':'
+        if (username.contains(":") || password.contains(":")) {
+            errorLabel.setText("Il carattere ':' non è consentito!");
+            return;
+        }
+        
+        // Controllo lunghezza minima
+        if (username.length() < 5) {
+            errorLabel.setText("L'username deve avere almeno 5 caratteri.");
+            return;
+        }
+        
+        if (password.length() < 7) {
+            errorLabel.setText("La password deve avere almeno 7 caratteri.");
+            return;
+        }
+        
+        // Controllo corrispondenza password in fase di registrazione
+        if (!isLoginMode) {
+            if (!password.equals(confirmPassword)) {
+                errorLabel.setText("Le password non coincidono!");
+                return;
+            }
         }
 
         String hashedPassword = guesstheword_client.utils.HashUtil.sha256(password);
@@ -157,7 +262,7 @@ public class LoginViewController implements Initializable {
                     System.out.println("[Client] Successo! Benvenuto: " + parts[1]);
                     
                     try {
-                        FXMLLoader loader = new FXMLLoader(getClass().getResource("/guesstheword_client/resources/view/WaitingRoomView.fxml"));
+                        FXMLLoader loader = new FXMLLoader(getClass().getResource("/guesstheword_client/resources/view/DifficultyView.fxml"));
                         Parent viewParent = loader.load();
                         
                         Scene scene = new Scene(viewParent);
@@ -166,7 +271,7 @@ public class LoginViewController implements Initializable {
                         window.centerOnScreen();
                         window.show();
                     } catch (IOException e) {
-                        errorLabel.setText("Errore caricamento schermata d'attesa.");
+                        errorLabel.setText("Errore caricamento schermata difficoltà.");
                         e.printStackTrace();
                         serverConn.close();
                     }

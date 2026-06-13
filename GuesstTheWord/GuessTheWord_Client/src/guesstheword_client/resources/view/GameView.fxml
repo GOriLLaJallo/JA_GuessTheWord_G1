@@ -1,11 +1,66 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
-<AnchorPane id="AnchorPane" prefHeight="400.0" prefWidth="600.0" xmlns:fx="http://javafx.com/fxml/1" fx:controller="guesstheword_client.controller.GameViewController">
-    
+<AnchorPane id="AnchorPane" prefHeight="400.0" prefWidth="600.0" styleClass="parent" stylesheets="@../styles/stylesheet.css" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="guesstheword_client.controller.GameViewController">
+   <children>
+      <VBox alignment="CENTER" layoutX="150.0" layoutY="50.0" prefHeight="300.0" prefWidth="300.0" spacing="20.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <Label fx:id="timerLabel" text="00:00" textFill="#ff9500">
+               <font>
+                  <Font name="System Bold" size="36.0" />
+               </font>
+            </Label>
+            
+            <Label text="Parola Cifrata:" textFill="#7a7a7a">
+               <font>
+                  <Font size="14.0" />
+               </font>
+            </Label>
+            <Label fx:id="encryptedWordLabel" text="???" textFill="#6747cd">
+               <font>
+                  <Font name="Monospaced Bold" size="48.0" />
+               </font>
+            </Label>
+            
+            <TextField fx:id="answerField" alignment="CENTER" disable="true" maxHeight="-Infinity" maxWidth="-Infinity" onAction="#handleGuess" prefHeight="40.0" prefWidth="300.0" promptText="Scrivi qui la parola decifrata..." styleClass="text-field" opacity="0.8">
+               <font>
+                  <Font size="16.0" />
+               </font>
+            </TextField>
+            
+            <Button fx:id="guessButton" disable="true" mnemonicParsing="false" onAction="#handleGuess" prefHeight="40.0" prefWidth="150.0" styleClass="loginBtn" text="Indovina">
+               <font>
+                  <Font name="System Bold" size="14.0" />
+               </font>
+            </Button>
+            
+            <Label fx:id="statusLabel" alignment="CENTER" prefHeight="40.0" prefWidth="400.0" text="In attesa del Server..." textFill="#7a7a7a" wrapText="true">
+               <font>
+                  <Font name="System Bold" size="14.0" />
+               </font>
+            </Label>
+            
+            <javafx.scene.layout.HBox fx:id="postGameBox" alignment="CENTER" spacing="20.0" visible="false" managed="false">
+               <children>
+                  <Button fx:id="playAgainButton" mnemonicParsing="false" onAction="#handlePlayAgain" styleClass="loginBtn" text="Gioca Ancora (Lobby)">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Button>
+                  <Button fx:id="historyButton" mnemonicParsing="false" onAction="#handleHistory" styleClass="registerBtn" text="Storico Partite">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Button>
+               </children>
+            </javafx.scene.layout.HBox>
+         </children>
+      </VBox>
+   </children>
 </AnchorPane>

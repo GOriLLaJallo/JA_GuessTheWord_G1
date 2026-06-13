@@ -6,7 +6,14 @@ package guesstheword_client.network;
 
 /**
  * Definisce tutti i comandi scambiati tra Client e Server
+ * I messaggi sono stati implementati seguendo delle convenzioni per i protocolli testuali
+ * Es:
+ * AUTH LOGIN -> SMTP
+ * Usando il separatore ":" per semplicità di implementazione (split(":"))
+ * 
+ * @author Pc
  */
+
 public class MessageProtocol {
     
     // messaggio di login: AUTH_LOGIN:username:password
@@ -51,15 +58,29 @@ public class MessageProtocol {
     //messaggio inviato dal server con lo storico formattato: HISTORY_DATA
     public static final String HISTORY_DATA = "HISTORY_DATA";
 
+    /**
+     * Costruisco un messaggio
+     *
+     * @param command   costante del comando
+     * @param params    String... params è un varargs: accetta zero o più stringhe come parametri.
+     * @return messaggio formattato
+     */
     public static String build(String command, String... params) {
         if (params == null || params.length == 0) return command;
         return command + ":" + String.join(":", params);
     }
 
+    /**
+     * Divide un messaggio ricevuto nei suoi componenti
+     *
+     * @param message
+     * @return array di componenti
+     */
     public static String[] parse(String message) {
         return message.split(":");
     }
 
+    // Classe di utilità, non istanziabile, non so se lasciarlo o meno, serve solo a impedire l'istanza di un oggetto MessageProtocol
     private MessageProtocol() {
         throw new UnsupportedOperationException("Utility class");
     }

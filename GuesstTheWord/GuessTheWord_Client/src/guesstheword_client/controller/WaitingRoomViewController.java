@@ -31,6 +31,8 @@ public class WaitingRoomViewController implements Initializable {
     private Timeline dotAnimation;
     private int dotCount = 0;
 
+    private ListenerTask listenerTask;
+
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         // Animazione dei tre pallini
@@ -48,24 +50,24 @@ public class WaitingRoomViewController implements Initializable {
         // Inizializza rete usando il Singleton
         try {
             this.serverConn = ServerConnection.getInstance();
-            startWaiting();
+            // Non avviamo startWaiting qui, aspettiamo setDifficultyAndStart
         } catch (IOException ex) {
             ex.printStackTrace();
             waitingLabel.setText("Errore di connessione al server.");
         }
     }
 
-    private void startWaiting() {
+    public void setDifficultyAndStart(String difficulty) {
         if (serverConn == null) return;
 
-        // Invia il comando di attesa al server
-        String waitingMsg = MessageProtocol.build(MessageProtocol.WAITING);
+        // Invia il comando di attesa al server con la difficoltà (es. WAITING:EASY)
+        String waitingMsg = MessageProtocol.build(MessageProtocol.WAITING, difficulty);
         serverConn.sendMessage(waitingMsg);
 
         // Avvia l'ascoltatore asincrono
-        ListenerTask listener = new ListenerTask(serverConn);
+        listenerTask = new ListenerTask(serverConn);
         
-        listener.messageProperty().addListener((obs, oldMsg, newMsg) -> {
+        listenerTask.messageProperty().addListener((obs, oldMsg, newMsg) -> {
             if (newMsg == null) return;
             
             Platform.runLater(() -> {
@@ -82,7 +84,7 @@ public class WaitingRoomViewController implements Initializable {
             });
         });
 
-        Thread listenerThread = new Thread(listener);
+        Thread listenerThread = new Thread(listenerTask);
         listenerThread.setDaemon(true); // Termina se chiudiamo l'app
         listenerThread.start();
     }
@@ -94,7 +96,9 @@ public class WaitingRoomViewController implements Initializable {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/guesstheword_client/resources/view/GameView.fxml"));
             Parent viewParent = loader.load();
             
-            // TODO: In futuro, dovremo passare la serverConn anche a GameViewController
+            // Passa il listener al GameViewController
+            guesstheword_client.controller.GameViewController gameController = loader.getController();
+            gameController.setListener(listenerTask);
             
             Scene scene = new Scene(viewParent);
             Stage window = (Stage) waitingLabel.getScene().getWindow();
