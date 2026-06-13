@@ -24,7 +24,11 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 /**
- * Controller per la schermata di login del client (LoginView.fxml).
+ * Controller principale per la gestione dell'autenticazione utente (Login e Registrazione).
+ * Gestisce l'interazione con l'interfaccia grafica (LoginView.fxml), la validazione dei
+ * campi di input, e l'invio delle credenziali cifrate tramite hash SHA-256 al server.
+ * 
+ * @author William Menza
  */
 public class LoginViewController implements Initializable {
 
@@ -75,6 +79,11 @@ public class LoginViewController implements Initializable {
 
     private boolean isLoginMode = true;
 
+    /**
+     * Inizializza il controller. Viene chiamato automaticamente dopo il caricamento del file FXML.
+     * Configura le icone per mostrare/nascondere le password, imposta il font FontAwesome
+     * e prepara i binding di visualizzazione.
+     */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         errorLabel.setText(""); // Resetta eventuali messaggi di errore iniziali
@@ -106,6 +115,12 @@ public class LoginViewController implements Initializable {
         showConfirmPasswordField.textProperty().bindBidirectional(confirmPasswordField.textProperty());
     }
 
+    /**
+     * Alterna la visibilità del testo della password (chiaro/nascosto) modificando l'icona
+     * del pulsante "occhio" per il campo password principale.
+     * 
+     * @param event l'evento generato dal click sul ToggleButton
+     */
     @FXML
     private void handleTogglePassword(ActionEvent event) {
         if (togglePasswordButton.isSelected()) {
@@ -116,7 +131,11 @@ public class LoginViewController implements Initializable {
     }
 
     /**
-     * Gestisce la visibilità della conferma password modificando l'icona ed il testo del pulsante toggle.
+     * Alterna la visibilità del testo della password (chiaro/nascosto) modificando l'icona
+     * del pulsante "occhio" per il campo conferma password. Mostra il campo appropriato
+     * in base allo stato del toggle.
+     * 
+     * @param event l'evento generato dal click sul ToggleButton
      */
     @FXML
     private void handleToggleConfirmPassword(ActionEvent event) {
@@ -131,6 +150,13 @@ public class LoginViewController implements Initializable {
         }
     }
 
+    /**
+     * Cambia la modalità della schermata tra "Login" e "Registrazione".
+     * Modifica dinamicamente le label, i bottoni e sposta (shift) in alto o in basso
+     * i campi di testo per fare spazio al campo "Conferma Password" quando necessario.
+     * 
+     * @param event l'evento generato dal click sul bottone di switch
+     */
     @FXML
     private void handleSwitchMode(ActionEvent event) {
         isLoginMode = !isLoginMode;
@@ -183,6 +209,14 @@ public class LoginViewController implements Initializable {
         }
     }
 
+    /**
+     * Gestisce l'azione principale del form (effettua Login o Registrazione).
+     * Recupera i dati dai campi di testo, esegue controlli stringenti di validazione
+     * (lunghezza minima, caratteri vietati, coincidenza password) e invia le credenziali
+     * cifrate al Server. Attende infine la risposta per concedere l'accesso o mostrare un errore.
+     * 
+     * @param event l'evento generato dal bottone di submit (Login o Conferma Registrazione)
+     */
     @FXML
     private void handleAction(ActionEvent event) {
         String username = usernameField.getText().trim();

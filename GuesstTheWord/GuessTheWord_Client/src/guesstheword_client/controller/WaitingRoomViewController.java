@@ -20,7 +20,11 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 
 /**
- * Controller per la Waiting Room
+ * Controller per la schermata di Waiting Room (Attesa Avversario).
+ * Gestisce l'animazione di caricamento e la ricezione asincrona
+ * dell'evento di inizio partita dal server.
+ * 
+ * @author William Menza
  */
 public class WaitingRoomViewController implements Initializable {
 
@@ -28,25 +32,14 @@ public class WaitingRoomViewController implements Initializable {
     private Label waitingLabel;
 
     private ServerConnection serverConn;
-    private Timeline dotAnimation;
-    private int dotCount = 0;
-
     private ListenerTask listenerTask;
 
+    /**
+     * Inizializza il controller.
+     * Tenta di agganciarsi all'istanza Singleton della ServerConnection.
+     */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        // Animazione dei tre pallini
-        dotAnimation = new Timeline(new KeyFrame(Duration.millis(500), e -> {
-            dotCount = (dotCount + 1) % 4;
-            String dots = "";
-            for (int i = 0; i < dotCount; i++) {
-                dots += ".";
-            }
-            waitingLabel.setText("In attesa di un avversario" + dots);
-        }));
-        dotAnimation.setCycleCount(Timeline.INDEFINITE);
-        dotAnimation.play();
-
         // Inizializza rete usando il Singleton
         try {
             this.serverConn = ServerConnection.getInstance();
@@ -57,6 +50,13 @@ public class WaitingRoomViewController implements Initializable {
         }
     }
 
+    /**
+     * Imposta la difficoltà scelta dall'utente e inizia ad attendere un avversario.
+     * Invia il comando WAITING al server e avvia il ListenerTask per ricevere
+     * l'evento OPPONENT_FOUND.
+     * 
+     * @param difficulty il livello di difficoltà ("EASY", "MEDIUM", "HARD")
+     */
     public void setDifficultyAndStart(String difficulty) {
         if (serverConn == null) return;
 
@@ -75,7 +75,7 @@ public class WaitingRoomViewController implements Initializable {
                 String command = parts[0];
 
                 if (command.equals(MessageProtocol.OPPONENT_FOUND)) {
-                    // Avversario trovato! Passiamo alla schermata di gioco
+                    // Avversario trovato. Passa alla schermata di gioco
                     System.out.println("[Client] Avversario trovato!");
                     goToGameView();
                 } else {
@@ -85,13 +85,17 @@ public class WaitingRoomViewController implements Initializable {
         });
 
         Thread listenerThread = new Thread(listenerTask);
-        listenerThread.setDaemon(true); // Termina se chiudiamo l'app
+        listenerThread.setDaemon(true); // Termina se l'app viene chiusa
         listenerThread.start();
     }
 
+    /**
+     * Passa alla schermata di Gioco (GameView) non appena il server
+     * comunica di aver trovato un avversario.
+     * Passa il ListenerTask al nuovo controller.
+     */
     private void goToGameView() {
         try {
-            if (dotAnimation != null) dotAnimation.stop();
             
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/guesstheword_client/resources/view/GameView.fxml"));
             Parent viewParent = loader.load();

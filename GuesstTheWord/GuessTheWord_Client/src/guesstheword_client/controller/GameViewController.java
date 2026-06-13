@@ -18,7 +18,12 @@ import javafx.scene.control.TextField;
 import javafx.util.Duration;
 
 /**
- * Controller per la schermata di Gioco
+ * Controller per la schermata principale di Gioco (GameView.fxml).
+ * Gestisce l'interfaccia durante una partita attiva: mostra la parola cifrata,
+ * gestisce il countdown (timer), invia le risposte (guess) dell'utente al server
+ * ed elabora gli esiti finali (Vittoria, Sconfitta, Timeout, Disconnessione).
+ * 
+ * @author William Menza
  */
 public class GameViewController implements Initializable {
 
@@ -40,13 +45,19 @@ public class GameViewController implements Initializable {
     private Timeline countdownTimeline;
     private int secondsRemaining = 0;
 
+    /**
+     * Inizializzazione base del controller. Chiamata automaticamente da JavaFX.
+     */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         // Inizializzazione base
     }    
     
     /**
-     * Riceve il listener di rete dalla WaitingRoom in modo da non perderlo.
+     * Aggancia il listener di rete (creato in precedenza dalla WaitingRoom) a questo controller,
+     * permettendo di continuare a ricevere i messaggi del server senza interruzioni.
+     * 
+     * @param listener il task in background responsabile della ricezione messaggi
      */
     public void setListener(ListenerTask listener) {
         this.listenerTask = listener;
@@ -57,6 +68,12 @@ public class GameViewController implements Initializable {
         });
     }
 
+    /**
+     * Analizza ed elabora un messaggio in arrivo dal server.
+     * Risponde dinamicamente ai comandi di protocollo (es. GAME_START, GAME_WIN, AUTH_FAIL).
+     * 
+     * @param message il messaggio formattato ricevuto dal server
+     */
     private void handleServerMessage(String message) {
         String[] parts = MessageProtocol.parse(message);
         String command = parts[0];
@@ -99,6 +116,10 @@ public class GameViewController implements Initializable {
         }
     }
 
+    /**
+     * Inizia il conto alla rovescia (countdown) aggiornando visivamente
+     * la label del timer ogni secondo.
+     */
     private void startCountdown() {
         if (countdownTimeline != null) {
             countdownTimeline.stop();
@@ -115,12 +136,23 @@ public class GameViewController implements Initializable {
         countdownTimeline.play();
     }
     
+    /**
+     * Aggiorna la label del timer formattando i secondi residui nel formato MM:SS.
+     */
     private void updateTimerLabel() {
         int min = secondsRemaining / 60;
         int sec = secondsRemaining % 60;
         timerLabel.setText(String.format("%02d:%02d", min, sec));
     }
 
+    /**
+     * Blocca l'interfaccia di gioco al termine di una partita.
+     * Disabilita input e bottoni di gioco, mostra il messaggio di esito con
+     * il colore appropriato e rende visibile la pulsantiera di navigazione post-partita.
+     * 
+     * @param message  il testo del messaggio finale (es. "Hai vinto!")
+     * @param colorHex il colore esadecimale da applicare al testo
+     */
     private void stopGame(String message, String colorHex) {
         if (countdownTimeline != null) countdownTimeline.stop();
         answerField.setDisable(true);
@@ -133,6 +165,11 @@ public class GameViewController implements Initializable {
         postGameBox.setManaged(true);
     }
 
+    /**
+     * Raccoglie la risposta (guess) digitata dall'utente e la invia al server per la verifica.
+     * 
+     * @param event l'evento generato dalla pressione del tasto "Indovina"
+     */
     @FXML
     private void handleGuess(ActionEvent event) {
         String guess = answerField.getText().trim();
@@ -151,6 +188,12 @@ public class GameViewController implements Initializable {
         }
     }
 
+    /**
+     * Gestisce la volontà di giocare una nuova partita.
+     * Reindirizza l'utente alla schermata di Selezione Difficoltà.
+     * 
+     * @param event l'evento generato dalla pressione del tasto "Gioca Ancora"
+     */
     @FXML
     private void handlePlayAgain(ActionEvent event) {
         try {
@@ -170,6 +213,11 @@ public class GameViewController implements Initializable {
         }
     }
 
+    /**
+     * Gestisce il passaggio alla schermata dello Storico.
+     * 
+     * @param event l'evento generato dalla pressione del tasto "Storico"
+     */
     @FXML
     private void handleHistory(ActionEvent event) {
         try {

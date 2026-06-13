@@ -26,6 +26,13 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.stage.Stage;
 
+/**
+ * Controller per la schermata dello Storico Partite (HistoryView.fxml).
+ * Gestisce la visualizzazione delle partite precedenti dell'utente all'interno
+ * di una TableView, richiedendo i dati al server e parsando la risposta.
+ * 
+ * @author William Menza
+ */
 public class HistoryViewController implements Initializable {
 
     @FXML
@@ -42,6 +49,10 @@ public class HistoryViewController implements Initializable {
     private ListenerTask listenerTask;
     private ObservableList<HistoryItem> historyData = FXCollections.observableArrayList();
 
+    /**
+     * Inizializza il controller e configura le colonne della tabella associandole
+     * alle Properties del modello HistoryItem.
+     */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         dateColumn.setCellValueFactory(cellData -> cellData.getValue().dateProperty());
@@ -51,6 +62,13 @@ public class HistoryViewController implements Initializable {
         historyTable.setItems(historyData);
     }    
 
+    /**
+     * Aggancia il listener di rete a questo controller per catturare la risposta
+     * asincrona del server contenente i dati dello storico.
+     * Scatena automaticamente la richiesta dello storico.
+     * 
+     * @param listener il task di ascolto rete attivo
+     */
     public void setListener(ListenerTask listener) {
         this.listenerTask = listener;
         this.listenerTask.messageProperty().addListener((obs, oldMsg, newMsg) -> {
@@ -63,6 +81,9 @@ public class HistoryViewController implements Initializable {
         requestHistory();
     }
     
+    /**
+     * Invia al server il comando REQ_HISTORY per chiedere i dati aggiornati dello storico.
+     */
     private void requestHistory() {
         try {
             ServerConnection.getInstance().sendMessage(MessageProtocol.build(MessageProtocol.REQ_HISTORY));
@@ -71,6 +92,12 @@ public class HistoryViewController implements Initializable {
         }
     }
 
+    /**
+     * Elabora il messaggio in arrivo dal server, facendo parsing della stringa 
+     * con i dati storici (formato: data,esito,parola;) e popolando la TableView.
+     * 
+     * @param message il messaggio formattato in arrivo dal server
+     */
     private void handleServerMessage(String message) {
         String[] parts = MessageProtocol.parse(message);
         String command = parts[0];
@@ -102,6 +129,11 @@ public class HistoryViewController implements Initializable {
         }
     }
 
+    /**
+     * Gestisce la navigazione indietro alla schermata di Selezione Difficoltà.
+     * 
+     * @param event l'evento generato dalla pressione del bottone "Indietro"
+     */
     @FXML
     private void handleBackToLobby(ActionEvent event) {
         try {

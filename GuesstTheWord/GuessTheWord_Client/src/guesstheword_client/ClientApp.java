@@ -12,11 +12,20 @@ import javafx.stage.Stage;
 
 /**
  * Classe principale che avvia il Client di GuessTheWord.
+ * Si occupa di caricare l'interfaccia grafica iniziale (LoginView)
+ * e di configurare la finestra principale dell'applicazione (Stage).
  *
- * @author Pc
+ * @author William Menza
  */
 public class ClientApp extends Application {
     
+    /**
+     * Metodo di avvio principale per l'applicazione JavaFX.
+     * Carica il layout FXML della schermata di login e mostra la finestra.
+     *
+     * @param primaryStage lo stage principale fornito dal framework JavaFX
+     * @throws Exception se si verifica un errore durante il caricamento del file FXML
+     */
     @Override
     public void start(Stage primaryStage) throws Exception {
         // Carica il file FXML della schermata di Login
@@ -32,7 +41,10 @@ public class ClientApp extends Application {
     }
 
     /**
-     * @param args the command line arguments
+     * Entry point dell'applicazione Java.
+     * Invoca il metodo launch di JavaFX per far partire il ciclo di vita dell'interfaccia grafica.
+     *
+     * @param args argomenti passati da riga di comando
      */
     public static void main(String[] args) {
         launch(args);
