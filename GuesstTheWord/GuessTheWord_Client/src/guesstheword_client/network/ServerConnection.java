@@ -15,6 +15,7 @@ import java.util.Properties;
 
 public class ServerConnection {
 
+    private static ServerConnection instance;
     private Socket socket;
     private BufferedReader in;
     private PrintWriter out;
@@ -27,7 +28,7 @@ public class ServerConnection {
      * @throws IOException 
      */
     
-    public ServerConnection() throws IOException {
+    private ServerConnection() throws IOException {
         Properties props = new Properties();
         //props.load(new FileInputStream("client.properties"));
         InputStream input = getClass().getResourceAsStream("/guesstheword_client/resources/properties/client.properties");
@@ -42,7 +43,24 @@ public class ServerConnection {
     }
     
     /**
-     * Metodo da aggiornare per adesso manda solo un messaggio sul canale out
+     * metodo che serve a istanziare un nuovo oggetto ServerConnection
+     * garantisce che solo un thread alla volta possa eseguire il metodo (synchronized)
+     * controlla se esiste già l'istanza e nel caso la riusa
+     * 
+     * @return
+     * @throws IOException 
+     */
+    
+    public static synchronized ServerConnection getInstance() throws IOException {
+        if (instance == null) {
+            instance = new ServerConnection();
+        }
+        return instance;
+    }
+    
+    
+    /**
+     * Manda solo un messaggi sul canale out
      * 
      * @param message 
      */
