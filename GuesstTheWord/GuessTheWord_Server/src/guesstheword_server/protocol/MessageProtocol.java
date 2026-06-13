@@ -11,7 +11,7 @@ package guesstheword_server.protocol;
  * AUTH LOGIN -> SMTP
  * Usando il separatore ":" per semplicità di implementazione (split(":"))
  * 
- * @author Pc
+ * @author Sabrina Soriano
  */
 
 public class MessageProtocol {
@@ -28,7 +28,7 @@ public class MessageProtocol {
     //messaggio di autenticazione fallita: AUTH_FAIL:motivo
     public static final String AUTH_FAIL = "AUTH_FAIL";
 
-    // messaggio client in attesa dell'avversario
+    // messaggio client in attesa dell'avversario + difficoltà: WAITING:difficulty (es. WAITING:EASY, WAITING:MEDIUM, WAITING:HARD)
     public static final String WAITING = "WAITING";
 
     //messaggio avversario trovato, la partita sta per iniziare

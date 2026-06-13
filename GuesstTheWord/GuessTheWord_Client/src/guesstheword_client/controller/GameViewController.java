@@ -1,5 +1,6 @@
 package guesstheword_client.controller;
 
+import guesstheword_client.model.GameState;
 import guesstheword_client.network.ListenerTask;
 import guesstheword_client.network.MessageProtocol;
 import guesstheword_client.network.ServerConnection;
@@ -11,10 +12,15 @@ import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.stage.Stage;
 import javafx.util.Duration;
 
 /**
@@ -29,6 +35,13 @@ public class GameViewController implements Initializable {
 
     @FXML
     private Label timerLabel;
+    
+    @FXML
+    private Label attemptsLabel;
+    
+    @FXML
+    private Label turnLabel;
+
     @FXML
     private Label encryptedWordLabel;
     @FXML
@@ -44,13 +57,17 @@ public class GameViewController implements Initializable {
     private ListenerTask listenerTask;
     private Timeline countdownTimeline;
     private int secondsRemaining = 0;
+    
+    private GameState gameState;
+    private guesstheword_client.service.GameService gameService;
 
     /**
      * Inizializzazione base del controller. Chiamata automaticamente da JavaFX.
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        // Inizializzazione base
+        gameState = new GameState();
+        gameService = new guesstheword_client.service.GameService();
     }    
     
     /**
@@ -78,42 +95,71 @@ public class GameViewController implements Initializable {
         String[] parts = MessageProtocol.parse(message);
         String command = parts[0];
 
-        switch (command) {
-            case MessageProtocol.GAME_START:
-                if (parts.length >= 3) {
-                    encryptedWordLabel.setText(parts[1]);
+        if (command.equals(MessageProtocol.GAME_START)) {
+            // GAME_START:testoCifrato:durataSecondi
+            String encryptedWord = parts.length > 1 ? parts[1] : "???";
+            if (parts.length > 2) {
+                try {
                     secondsRemaining = Integer.parseInt(parts[2]);
-                    startCountdown();
-                    answerField.setDisable(false);
-                    guessButton.setDisable(false);
-                    postGameBox.setVisible(false);
-                    postGameBox.setManaged(false);
-                    statusLabel.setText("Partita iniziata! Indovina la parola.");
-                    statusLabel.setTextFill(javafx.scene.paint.Color.web("#a3a3a3"));
+                } catch (NumberFormatException e) {
+                    secondsRemaining = 60;
                 }
-                break;
-            case MessageProtocol.GAME_WIN:
-                stopGame("Complimenti! Hai indovinato per primo!", "#4cd964"); // verde
-                break;
-            case MessageProtocol.GAME_LOSE:
-                stopGame("L'avversario ha indovinato! Hai perso.", "#ff3b30"); // rosso
-                break;
-            case MessageProtocol.GAME_TIMEOUT:
-                stopGame("Tempo scaduto! Partita terminata.", "#ff3b30");
-                break;
-            case MessageProtocol.OPPONENT_DISCONNECTED:
-                stopGame("L'avversario si è disconnesso.", "#ffca28"); // giallo
-                break;
-            case MessageProtocol.AUTH_FAIL:
-                // Il server riutilizza AUTH_FAIL per indicare una risposta errata
-                if (parts.length > 1) {
-                    statusLabel.setText(parts[1]);
-                } else {
-                    statusLabel.setText("Risposta errata. Riprova!");
-                }
-                statusLabel.setTextFill(javafx.scene.paint.Color.web("#ffca28")); // giallo/arancio
-                break;
+            } else {
+                secondsRemaining = 60;
+            }
+            
+            // Inizializza lo stato del gioco con i valori base o ipotizzati
+            gameState.setStatus("PLAYING");
+            gameState.setWordPattern(encryptedWord);
+            gameState.setAttemptsLeft(3);
+            gameState.setMyTurn(true); // Assumiamo sia il nostro turno
+
+            updateUIFromState();
+            startCountdown();
+
+        } else if (command.equals(MessageProtocol.GAME_WIN)) {
+            gameState.setStatus("WON");
+            stopGame("Hai Vinto!", "#34c759"); // Verde
+        } else if (command.equals(MessageProtocol.GAME_LOSE)) {
+            gameState.setStatus("LOST");
+            stopGame("Hai Perso!", "#ff3b30"); // Rosso
+        } else if (command.equals(MessageProtocol.GAME_TIMEOUT)) {
+            gameState.setStatus("TIMEOUT");
+            stopGame("Tempo Scaduto!", "#ff9500"); // Arancione
+        } else if (command.equals(MessageProtocol.OPPONENT_DISCONNECTED)) {
+            gameState.setStatus("DISCONNECTED");
+            stopGame("Avversario Disconnesso!", "#a3a3a3"); // Grigio
+        } else if (command.equals(MessageProtocol.AUTH_FAIL)) {
+            // Il server riutilizza AUTH_FAIL per indicare una risposta errata
+            if (parts.length > 1) {
+                statusLabel.setText(parts[1]);
+            } else {
+                statusLabel.setText("Risposta errata. Riprova!");
+            }
+            statusLabel.setTextFill(javafx.scene.paint.Color.web("#ffca28")); // giallo/arancio
         }
+    }
+    
+    /**
+     * Aggiorna le etichette dell'interfaccia basandosi su GameState
+     */
+    private void updateUIFromState() {
+        encryptedWordLabel.setText(gameState.getWordPattern());
+        attemptsLabel.setText("Tentativi: " + gameState.getAttemptsLeft());
+        
+        if (gameState.isMyTurn()) {
+            turnLabel.setText("È il tuo turno!");
+            turnLabel.setTextFill(javafx.scene.paint.Color.web("#34c759")); // Verde
+            answerField.setDisable(false);
+            guessButton.setDisable(false);
+        } else {
+            turnLabel.setText("Turno dell'avversario...");
+            turnLabel.setTextFill(javafx.scene.paint.Color.web("#ff9500")); // Arancione
+            answerField.setDisable(true);
+            guessButton.setDisable(true);
+        }
+        
+        statusLabel.setText("");
     }
 
     /**
@@ -172,19 +218,32 @@ public class GameViewController implements Initializable {
      */
     @FXML
     private void handleGuess(ActionEvent event) {
+        if (!gameState.isMyTurn()) return;
+        
         String guess = answerField.getText().trim();
-        if (!guess.isEmpty()) {
-            try {
-                String msg = MessageProtocol.build(MessageProtocol.GAME_ANSWER, guess);
-                ServerConnection.getInstance().sendMessage(msg);
-                answerField.clear();
-                statusLabel.setText("Risposta inviata... attesa verdetto.");
-                statusLabel.setTextFill(javafx.scene.paint.Color.web("#a3a3a3"));
-            } catch (IOException e) {
-                e.printStackTrace();
-                statusLabel.setText("Errore di rete nell'invio.");
-                statusLabel.setTextFill(javafx.scene.paint.Color.web("#ff3b30"));
+        if (guess.isEmpty()) return;
+
+        try {
+            // Aggiorna tentativi localmente
+            int attempts = gameState.getAttemptsLeft();
+            if (attempts > 0) {
+                gameState.setAttemptsLeft(attempts - 1);
+                updateUIFromState();
             }
+            
+            // Invia al server tramite GameService
+            gameService.sendGuess(guess);
+            answerField.clear();
+            statusLabel.setText("Risposta inviata, in attesa...");
+            
+            // Se finito tentativi
+            if (gameState.getAttemptsLeft() <= 0) {
+                gameState.setMyTurn(false);
+                updateUIFromState();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            statusLabel.setText("Errore invio risposta.");
         }
     }
 

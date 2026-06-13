@@ -26,7 +26,7 @@
                         <Font name="System Bold" size="24.0" />
                      </font>
                   </Label>
-                  <Label text="template" textFill="#7a7a7a">
+                  <Label text="In base alla difficoltà scelta, la parola sarà più difficile da indovinare" textFill="#7a7a7a">
                      <font>
                         <Font size="14.0" />
                      </font>
@@ -60,6 +60,15 @@
                   <Insets top="10.0" />
                </VBox.margin>
             </Label>
+            
+            <Button mnemonicParsing="false" onAction="#handleHistory" prefHeight="40.0" prefWidth="250.0" style="-fx-background-color: transparent; -fx-text-fill: #6747cd; -fx-border-color: #6747cd; -fx-border-radius: 5px; -fx-border-width: 2px;" text="Visualizza Storico Partite">
+               <font>
+                  <Font name="System Bold" size="14.0" />
+               </font>
+               <VBox.margin>
+                  <Insets top="20.0" />
+               </VBox.margin>
+            </Button>
          </children>
       </VBox>
    </children>

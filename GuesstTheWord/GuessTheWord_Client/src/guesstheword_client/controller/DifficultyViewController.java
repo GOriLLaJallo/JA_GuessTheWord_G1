@@ -62,6 +62,36 @@ public class DifficultyViewController implements Initializable {
     }
 
     /**
+     * Gestisce la selezione dello Storico Partite.
+     * @param event l'evento del click sul bottone
+     */
+    @FXML
+    private void handleHistory(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/guesstheword_client/resources/view/HistoryView.fxml"));
+            Parent viewParent = loader.load();
+            
+            // Passa il listener di rete per ricevere i dati
+            HistoryViewController historyController = loader.getController();
+            guesstheword_client.network.ListenerTask listenerTask = new guesstheword_client.network.ListenerTask(guesstheword_client.network.ServerConnection.getInstance());
+            historyController.setListener(listenerTask);
+            
+            // Avvia il listener in un thread background
+            Thread listenerThread = new Thread(listenerTask);
+            listenerThread.setDaemon(true);
+            listenerThread.start();
+            
+            Scene scene = new Scene(viewParent);
+            Stage window = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            window.setScene(scene);
+            window.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+            errorLabel.setText("Errore caricamento Storico.");
+        }
+    }
+
+    /**
      * Gestisce il passaggio alla schermata della Waiting Room.
      * Istanzia il controller della Waiting Room e gli passa la difficoltà scelta.
      * 

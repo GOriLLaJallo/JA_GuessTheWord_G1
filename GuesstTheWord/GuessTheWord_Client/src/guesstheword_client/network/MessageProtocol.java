@@ -13,7 +13,6 @@ package guesstheword_client.network;
  * 
  * @author Pc
  */
-
 public class MessageProtocol {
     
     // messaggio di login: AUTH_LOGIN:username:password

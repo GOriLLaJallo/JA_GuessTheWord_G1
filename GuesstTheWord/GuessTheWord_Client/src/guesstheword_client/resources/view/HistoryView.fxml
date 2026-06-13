@@ -36,7 +36,7 @@
               <columns>
                 <TableColumn fx:id="dateColumn" prefWidth="180.0" text="Data e Ora" />
                 <TableColumn fx:id="resultColumn" prefWidth="100.0" text="Esito" />
-                <TableColumn fx:id="wordColumn" prefWidth="250.0" text="Parola Nascosta" />
+                <TableColumn fx:id="wordColumn" prefWidth="250.0" text="Parola Segreta" />
               </columns>
             </TableView>
             

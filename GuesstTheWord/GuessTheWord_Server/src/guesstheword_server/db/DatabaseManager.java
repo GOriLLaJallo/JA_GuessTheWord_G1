@@ -29,9 +29,6 @@ public class DatabaseManager {
     /** URL JDBC per la connessione al database SQLite. */
     private static final String DB_URL = "jdbc:sqlite:" + DB_DIR + "/" + DB_FILE;
 
-    /** Connessione JDBC condivisa. */
-    private Connection connection;
-
     /**
      * Costruttore privato per prevenire l'istanziazione diretta dall'esterno (Singleton).
      * Inizializza la directory del database e crea lo schema iniziale delle tabelle.
@@ -69,13 +66,14 @@ public class DatabaseManager {
     }
 
     /**
-     * Restituisce la connessione attiva al database SQLite.
-     * Se la connessione non è presente o è stata chiusa, ne viene aperta una nuova.
+     * Restituisce una NUOVA connessione attiva al database SQLite (Connection Factory).
+     * Ogni thread riceve la propria istanza di connessione per garantire la concorrenzialità e
+     * la stabilità durante le transazioni JDBC.
      *
-     * @return oggetto Connection per le operazioni JDBC
+     * @return oggetto Connection indipendente per le operazioni JDBC
      * @throws SQLException in caso di errore di connessione al database
      */
-    public synchronized Connection getConnection() throws SQLException {
+    public Connection getConnection() throws SQLException {
         try {
             // Carica esplicitamente il driver SQLite
             Class.forName("org.sqlite.JDBC");
@@ -83,28 +81,21 @@ public class DatabaseManager {
             System.err.println("[DB] Driver JDBC SQLite non trovato: " + e.getMessage());
         }
 
-        if (connection == null || connection.isClosed()) {
-            connection = DriverManager.getConnection(DB_URL);
-            // Abilita il supporto alle Foreign Key in SQLite
-            try (Statement stmt = connection.createStatement()) {
-                stmt.execute("PRAGMA foreign_keys = ON;");
-            }
+        Connection conn = DriverManager.getConnection(DB_URL);
+        // Abilita il supporto alle Foreign Key in SQLite
+        try (Statement stmt = conn.createStatement()) {
+            stmt.execute("PRAGMA foreign_keys = ON;");
         }
-        return connection;
+        return conn;
     }
 
     /**
-     * Chiude la connessione attiva al database se aperta.
+     * Metodo deprecato. Le connessioni sono ora gestite in modalità indipendente (Connection Factory).
+     * Ciascuna connessione aperta deve essere chiusa direttamente dal chiamante (o tramite try-with-resources).
      */
-    public synchronized void closeConnection() {
-        try {
-            if (connection != null && !connection.isClosed()) {
-                connection.close();
-                System.out.println("[DB] Connessione al database chiusa correttamente.");
-            }
-        } catch (SQLException e) {
-            System.err.println("[DB] Errore durante la chiusura della connessione: " + e.getMessage());
-        }
+    @Deprecated
+    public void closeConnection() {
+        // No-op per compatibilità di firma
     }
 
     /**

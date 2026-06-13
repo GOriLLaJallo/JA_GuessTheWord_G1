@@ -33,6 +33,7 @@ public class WaitingRoomViewController implements Initializable {
 
     private ServerConnection serverConn;
     private ListenerTask listenerTask;
+    private guesstheword_client.service.GameService gameService;
 
     /**
      * Inizializza il controller.
@@ -40,10 +41,9 @@ public class WaitingRoomViewController implements Initializable {
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        // Inizializza rete usando il Singleton
+        gameService = new guesstheword_client.service.GameService();
         try {
             this.serverConn = ServerConnection.getInstance();
-            // Non avviamo startWaiting qui, aspettiamo setDifficultyAndStart
         } catch (IOException ex) {
             ex.printStackTrace();
             waitingLabel.setText("Errore di connessione al server.");
@@ -60,9 +60,13 @@ public class WaitingRoomViewController implements Initializable {
     public void setDifficultyAndStart(String difficulty) {
         if (serverConn == null) return;
 
-        // Invia il comando di attesa al server con la difficoltà (es. WAITING:EASY)
-        String waitingMsg = MessageProtocol.build(MessageProtocol.WAITING, difficulty);
-        serverConn.sendMessage(waitingMsg);
+        try {
+            gameService.joinWaitingRoom(difficulty);
+        } catch (IOException e) {
+            e.printStackTrace();
+            waitingLabel.setText("Errore invio richiesta partita.");
+            return;
+        }
 
         // Avvia l'ascoltatore asincrono
         listenerTask = new ListenerTask(serverConn);

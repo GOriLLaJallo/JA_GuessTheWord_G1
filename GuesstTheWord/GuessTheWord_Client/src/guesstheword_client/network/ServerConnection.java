@@ -68,7 +68,8 @@ public class ServerConnection {
     }
     
     /**
-     * Metodo da aggiornare per adesso legge un messaggio in arrivo dal server (bloccante)
+     * Legge un messaggio in arrivo dal server (bloccante)
+     * Gestito dalla classe ListenerTask
      * 
      * @return
      * @throws IOException 

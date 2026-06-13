@@ -4,7 +4,7 @@
  */
 package guesstheword_client.controller;
 
-import guesstheword_client.model.HistoryItem;
+import guesstheword_client.model.MatchRecord;
 import guesstheword_client.network.ListenerTask;
 import guesstheword_client.network.MessageProtocol;
 import guesstheword_client.network.ServerConnection;
@@ -24,6 +24,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 
 /**
@@ -36,18 +37,23 @@ import javafx.stage.Stage;
 public class HistoryViewController implements Initializable {
 
     @FXML
-    private TableView<HistoryItem> historyTable;
+    private TableView<MatchRecord> historyTable;
+
     @FXML
-    private TableColumn<HistoryItem, String> dateColumn;
+    private TableColumn<MatchRecord, String> dateColumn;
+
     @FXML
-    private TableColumn<HistoryItem, String> resultColumn;
+    private TableColumn<MatchRecord, String> resultColumn;
+
     @FXML
-    private TableColumn<HistoryItem, String> wordColumn;
+    private TableColumn<MatchRecord, String> wordColumn;
+
     @FXML
     private Label errorLabel;
 
     private ListenerTask listenerTask;
-    private ObservableList<HistoryItem> historyData = FXCollections.observableArrayList();
+    private ObservableList<MatchRecord> historyData = FXCollections.observableArrayList();
+    private guesstheword_client.service.HistoryService historyService;
 
     /**
      * Inizializza il controller e configura le colonne della tabella associandole
@@ -55,10 +61,11 @@ public class HistoryViewController implements Initializable {
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        dateColumn.setCellValueFactory(cellData -> cellData.getValue().dateProperty());
-        resultColumn.setCellValueFactory(cellData -> cellData.getValue().resultProperty());
-        wordColumn.setCellValueFactory(cellData -> cellData.getValue().wordProperty());
-        
+        historyService = new guesstheword_client.service.HistoryService();
+        dateColumn.setCellValueFactory(new PropertyValueFactory<>("matchDate"));
+        wordColumn.setCellValueFactory(new PropertyValueFactory<>("secretWord"));
+        resultColumn.setCellValueFactory(new PropertyValueFactory<>("outcome"));
+
         historyTable.setItems(historyData);
     }    
 
@@ -86,7 +93,7 @@ public class HistoryViewController implements Initializable {
      */
     private void requestHistory() {
         try {
-            ServerConnection.getInstance().sendMessage(MessageProtocol.build(MessageProtocol.REQ_HISTORY));
+            historyService.requestHistory();
         } catch (IOException e) {
             errorLabel.setText("Errore di connessione.");
         }
@@ -105,19 +112,20 @@ public class HistoryViewController implements Initializable {
         if (command.equals(MessageProtocol.HISTORY_DATA)) {
             historyData.clear();
             if (parts.length > 1) {
-                String dataString = parts[1];
-                if (dataString.equals("Nessuna partita giocata.")) {
-                    errorLabel.setText(dataString);
-                    errorLabel.setTextFill(javafx.scene.paint.Color.web("#a3a3a3"));
-                } else {
-                    // Formato: data1,esito1,parola1;data2,esito2,parola2;
-                    String[] games = dataString.split(";");
-                    for (String game : games) {
-                        if (!game.trim().isEmpty()) {
-                            String[] gameData = game.split(",");
-                            if (gameData.length == 3) {
-                                historyData.add(new HistoryItem(gameData[0], gameData[1], gameData[2]));
-                            }
+                // Formato inviato dal server
+                // Dati separati da punto e virgola: "Data,Esito,Parola;"
+                String allRecords = parts[1];
+                if (!allRecords.isEmpty()) {
+                    String[] records = allRecords.split(";");
+                    for (String record : records) {
+                        String[] fields = record.split(",");
+                        if (fields.length >= 3) {
+                            String date = fields[0];
+                            String outcome = fields[1];
+                            String word = fields[2];
+                            // Usiamo MatchRecord per memorizzare il dato internamente,
+                            // omettendo avversario e tempo poiché non inviati dal server
+                            historyData.add(new MatchRecord(word, null, outcome, null, date));
                         }
                     }
                 }

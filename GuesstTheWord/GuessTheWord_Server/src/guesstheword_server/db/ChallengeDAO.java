@@ -1,6 +1,7 @@
 package guesstheword_server.db;
 
 import guesstheword_server.model.Challenge;
+import guesstheword_server.exception.DataAccessException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -21,26 +22,24 @@ public class ChallengeDAO {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     /**
-     * Salva una nuova sfida nel database SQLite.
-     * Imposta l'ID autoincrementante generato sull'oggetto Challenge passato come parametro.
+     * Salva una nuova sfida nel database SQLite utilizzando una connessione gestita esternamente.
+     * Utile all'interno di transazioni JDBC.
      *
      * @param challenge la sfida da salvare
-     * @return true se il salvataggio è riuscito, false altrimenti
+     * @param conn la connessione JDBC attiva
+     * @return true se il salvataggio è riuscito
+     * @throws DataAccessException in caso di errore di persistenza
      */
-    public boolean save(Challenge challenge) {
+    public boolean save(Challenge challenge, Connection conn) {
         String query = "INSERT INTO sfide (parola_nascosta, shift_cesare, data_sfida) VALUES (?, ?, ?);";
-        DatabaseManager dbManager = DatabaseManager.getInstance();
-
-        try (Connection conn = dbManager.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
-
+        try (PreparedStatement ps = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, challenge.getParolaNascosta());
             ps.setInt(2, challenge.getShiftCesare());
             ps.setString(3, challenge.getDataSfida().format(DATE_FORMATTER));
 
             int affectedRows = ps.executeUpdate();
             if (affectedRows == 0) {
-                return false;
+                throw new DataAccessException("Salvataggio sfida fallito: nessuna riga inserita.");
             }
 
             try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
@@ -49,10 +48,23 @@ public class ChallengeDAO {
                 }
             }
             return true;
-
         } catch (SQLException e) {
-            System.err.println("[ChallengeDAO] Errore durante il salvataggio della sfida: " + e.getMessage());
-            return false;
+            throw new DataAccessException("Errore durante il salvataggio della sfida nel DB", e);
+        }
+    }
+
+    /**
+     * Salva una nuova sfida nel database SQLite. Apre e gestisce internamente la connessione.
+     *
+     * @param challenge la sfida da salvare
+     * @return true se il salvataggio è riuscito
+     * @throws DataAccessException in caso di errore di persistenza
+     */
+    public boolean save(Challenge challenge) {
+        try (Connection conn = DatabaseManager.getInstance().getConnection()) {
+            return save(challenge, conn);
+        } catch (SQLException e) {
+            throw new DataAccessException("Errore di connessione durante il salvataggio della sfida", e);
         }
     }
 
@@ -86,7 +98,7 @@ public class ChallengeDAO {
             }
 
         } catch (SQLException e) {
-            System.err.println("[ChallengeDAO] Errore durante il recupero della sfida per ID: " + e.getMessage());
+            throw new DataAccessException("Errore durante il recupero della sfida per ID: " + id, e);
         }
         return null;
     }

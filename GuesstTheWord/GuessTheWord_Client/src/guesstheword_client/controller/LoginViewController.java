@@ -78,6 +78,7 @@ public class LoginViewController implements Initializable {
     private Button registerButton;
 
     private boolean isLoginMode = true;
+    private guesstheword_client.service.AuthService authService;
 
     /**
      * Inizializza il controller. Viene chiamato automaticamente dopo il caricamento del file FXML.
@@ -86,6 +87,7 @@ public class LoginViewController implements Initializable {
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        authService = new guesstheword_client.service.AuthService();
         errorLabel.setText(""); // Resetta eventuali messaggi di errore iniziali
 
         // Caricamento programmatico del font FontAwesome per l'icona dell'occhio
@@ -262,32 +264,16 @@ public class LoginViewController implements Initializable {
             }
         }
 
-        String hashedPassword = guesstheword_client.utils.HashUtil.sha256(password);
-
         try {
-            // Ottieni l'istanza Singleton della connessione
-            ServerConnection serverConn = ServerConnection.getInstance();
-
+            String response;
             if (isLoginMode) {
-                // Invia richiesta di Login
                 System.out.println("[Client] Invio richiesta di login per: " + username);
-                String msg = guesstheword_client.network.MessageProtocol.build(
-                        guesstheword_client.network.MessageProtocol.AUTH_LOGIN, 
-                        username, 
-                        hashedPassword);
-                serverConn.sendMessage(msg);
+                response = authService.login(username, password);
             } else {
-                // Invia richiesta di Registrazione
                 System.out.println("[Client] Invio richiesta di registrazione per: " + username);
-                String msg = guesstheword_client.network.MessageProtocol.build(
-                        guesstheword_client.network.MessageProtocol.AUTH_REGISTER, 
-                        username, 
-                        hashedPassword);
-                serverConn.sendMessage(msg);
+                response = authService.register(username, password);
             }
 
-            // Attendi risposta (bloccante)
-            String response = serverConn.receiveMessage();
             if (response != null) {
                 String[] parts = guesstheword_client.network.MessageProtocol.parse(response);
                 String command = parts[0];
@@ -307,19 +293,19 @@ public class LoginViewController implements Initializable {
                     } catch (IOException e) {
                         errorLabel.setText("Errore caricamento schermata difficoltà.");
                         e.printStackTrace();
-                        serverConn.close();
+                        ServerConnection.getInstance().close();
                     }
                 } else if (command.equals(guesstheword_client.network.MessageProtocol.AUTH_FAIL)) {
                     String reason = parts.length > 1 ? parts[1] : "Errore sconosciuto.";
                     errorLabel.setText(reason);
-                    serverConn.close(); // Chiudiamo solo se fallisce
+                    ServerConnection.getInstance().close(); // Chiudiamo solo se fallisce
                 } else {
                     errorLabel.setText("Risposta del server non riconosciuta.");
-                    serverConn.close(); // Chiudiamo solo se fallisce
+                    ServerConnection.getInstance().close(); // Chiudiamo solo se fallisce
                 }
             } else {
                 errorLabel.setText("Il server non ha risposto.");
-                serverConn.close(); // Chiudiamo solo se fallisce
+                ServerConnection.getInstance().close(); // Chiudiamo solo se fallisce
             }
 
         } catch (java.net.ConnectException e) {

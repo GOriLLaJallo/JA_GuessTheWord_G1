@@ -36,7 +36,7 @@
             <HBox spacing="30.0" VBox.vgrow="ALWAYS">
                <children>
                   <!-- Sezione Sinistra: Selezione e Analisi File -->
-                  <VBox spacing="15.0" style="-fx-border-color: #e2e2e2; -fx-border-radius: 8px; -fx-background-color: #f9f9f9; -fx-background-radius: 8px;" HBox.hgrow="ALWAYS">
+                  <VBox spacing="15.0" styleClass="dashboard-panel" HBox.hgrow="ALWAYS">
                      <padding>
                         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
                      </padding>
@@ -65,7 +65,7 @@
                   </VBox>
                   
                   <!-- Sezione Destra: Gestione Cache Serializzata -->
-                  <VBox spacing="15.0" style="-fx-border-color: #e2e2e2; -fx-border-radius: 8px; -fx-background-color: #f9f9f9; -fx-background-radius: 8px;" HBox.hgrow="ALWAYS">
+                  <VBox spacing="15.0" styleClass="dashboard-panel" HBox.hgrow="ALWAYS">
                      <padding>
                         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
                      </padding>
