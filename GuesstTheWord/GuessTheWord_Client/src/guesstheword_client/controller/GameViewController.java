@@ -60,6 +60,7 @@ public class GameViewController implements Initializable {
     
     private GameState gameState;
     private guesstheword_client.service.GameService gameService;
+    private javafx.beans.value.ChangeListener<String> messageListener;
 
     /**
      * Inizializzazione base del controller. Chiamata automaticamente da JavaFX.
@@ -78,11 +79,20 @@ public class GameViewController implements Initializable {
      */
     public void setListener(ListenerTask listener) {
         this.listenerTask = listener;
-        this.listenerTask.messageProperty().addListener((obs, oldMsg, newMsg) -> {
+        
+        messageListener = (obs, oldMsg, newMsg) -> {
             if (newMsg != null) {
-                Platform.runLater(() -> handleServerMessage(newMsg));
+                handleServerMessage(newMsg);
             }
-        });
+        };
+        
+        // Verifica se c'è già un messaggio GAME_START memorizzato nella property del task
+        String currentMsg = listener.getMessage();
+        if (currentMsg != null && currentMsg.startsWith(MessageProtocol.GAME_START)) {
+            handleServerMessage(currentMsg);
+        }
+        
+        this.listenerTask.messageProperty().addListener(messageListener);
     }
 
     /**
@@ -96,9 +106,27 @@ public class GameViewController implements Initializable {
         String command = parts[0];
 
         if (command.equals(MessageProtocol.GAME_START)) {
-            // GAME_START:testoCifrato:durataSecondi
+            // GAME_START:testoCifrato:shiftCesare:durataSecondi
             String encryptedWord = parts.length > 1 ? parts[1] : "???";
+            
+            // Imposta lo shift di Cesare nel modello
             if (parts.length > 2) {
+                try {
+                    int shift = Integer.parseInt(parts[2]);
+                    gameState.setCaesarShift(shift);
+                } catch (NumberFormatException e) {
+                    gameState.setCaesarShift(0);
+                }
+            }
+            
+            // Imposta la durata corretta del timer (parts[3] se presente, altrimenti fallback)
+            if (parts.length > 3) {
+                try {
+                    secondsRemaining = Integer.parseInt(parts[3]);
+                } catch (NumberFormatException e) {
+                    secondsRemaining = 60;
+                }
+            } else if (parts.length > 2) {
                 try {
                     secondsRemaining = Integer.parseInt(parts[2]);
                 } catch (NumberFormatException e) {
@@ -209,6 +237,13 @@ public class GameViewController implements Initializable {
         // Mostra i bottoni di navigazione a fine partita
         postGameBox.setVisible(true);
         postGameBox.setManaged(true);
+
+        // Pre-fetch dello storico per averlo pronto all'istante
+        try {
+            new guesstheword_client.service.HistoryService().requestHistory();
+        } catch (java.io.IOException e) {
+            System.err.println("[GameViewController] Errore nel pre-fetch dello storico: " + e.getMessage());
+        }
     }
 
     /**
@@ -255,12 +290,14 @@ public class GameViewController implements Initializable {
      */
     @FXML
     private void handlePlayAgain(ActionEvent event) {
+        // Rimuove il listener per evitare duplicazioni
+        if (listenerTask != null && messageListener != null) {
+            listenerTask.messageProperty().removeListener(messageListener);
+        }
+        
         try {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/guesstheword_client/resources/view/DifficultyView.fxml"));
             javafx.scene.Parent viewParent = loader.load();
-            
-            // Ritornando alla selezione difficoltà, non serve passare il listener (in quanto WaitingRoom lo ricrea se necessario, ma dovremmo stare attenti al socket.
-            // Poichè il progetto è semplice, il GC distruggerà il vecchio e il socket è condiviso.
             
             javafx.scene.Scene scene = new javafx.scene.Scene(viewParent);
             javafx.stage.Stage window = (javafx.stage.Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
@@ -279,6 +316,11 @@ public class GameViewController implements Initializable {
      */
     @FXML
     private void handleHistory(ActionEvent event) {
+        // Rimuove il listener per evitare duplicazioni
+        if (listenerTask != null && messageListener != null) {
+            listenerTask.messageProperty().removeListener(messageListener);
+        }
+        
         try {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/guesstheword_client/resources/view/HistoryView.fxml"));
             javafx.scene.Parent viewParent = loader.load();

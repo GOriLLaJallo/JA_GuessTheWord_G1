@@ -156,7 +156,7 @@ Autore: Carmine Muollo
 
 /* Intestazione delle colonne */
 .table-view .column-header-background {
-    -fx-background-color: #F4F4F6;
+    -fx-background-color: #6747CD;
     -fx-background-radius: 8px 8px 0px 0px;
 }
 
@@ -167,7 +167,7 @@ Autore: Carmine Muollo
 }
 
 .table-view .column-header .label {
-    -fx-text-fill: #5A5A5A;
+    -fx-text-fill: #FFFFFF;
     -fx-font-weight: bold;
     -fx-alignment: CENTER_LEFT;
 }
@@ -182,16 +182,6 @@ Autore: Carmine Muollo
 /* Effetto hover sulle righe */
 .table-row-cell:hover {
     -fx-background-color: #F8F7FF;
-}
-
-/* Riga selezionata */
-.table-row-cell:selected {
-    -fx-background-color: #ECE8FF;
-    -fx-text-fill: #6747CD;
-}
-
-.table-row-cell:selected .label {
-    -fx-text-fill: #6747CD;
 }
 
 /* Rimuove la visualizzazione delle celle vuote extra */

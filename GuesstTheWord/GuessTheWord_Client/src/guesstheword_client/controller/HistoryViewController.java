@@ -54,6 +54,7 @@ public class HistoryViewController implements Initializable {
     private ListenerTask listenerTask;
     private ObservableList<MatchRecord> historyData = FXCollections.observableArrayList();
     private guesstheword_client.service.HistoryService historyService;
+    private javafx.beans.value.ChangeListener<String> messageListener;
 
     /**
      * Inizializza il controller e configura le colonne della tabella associandole
@@ -78,16 +79,24 @@ public class HistoryViewController implements Initializable {
      */
     public void setListener(ListenerTask listener) {
         this.listenerTask = listener;
-        this.listenerTask.messageProperty().addListener((obs, oldMsg, newMsg) -> {
+        messageListener = (obs, oldMsg, newMsg) -> {
             if (newMsg != null) {
-                Platform.runLater(() -> handleServerMessage(newMsg));
+                handleServerMessage(newMsg);
             }
-        });
+        };
+        
+        // Controlla se il messaggio corrente nella property è già HISTORY_DATA
+        String currentMsg = listener.getMessage();
+        if (currentMsg != null && currentMsg.startsWith(MessageProtocol.HISTORY_DATA)) {
+            handleServerMessage(currentMsg);
+        }
+        
+        this.listenerTask.messageProperty().addListener(messageListener);
         
         // Richiedi lo storico al server
         requestHistory();
     }
-    
+
     /**
      * Invia al server il comando REQ_HISTORY per chiedere i dati aggiornati dello storico.
      */
@@ -144,6 +153,11 @@ public class HistoryViewController implements Initializable {
      */
     @FXML
     private void handleBackToLobby(ActionEvent event) {
+        // Rimuove il listener prima di cambiare schermata
+        if (listenerTask != null && messageListener != null) {
+            listenerTask.messageProperty().removeListener(messageListener);
+        }
+        
         try {
             // Torniamo alla selezione difficoltà invece che direttamente in attesa,
             // così l'utente può scegliere di nuovo il livello.

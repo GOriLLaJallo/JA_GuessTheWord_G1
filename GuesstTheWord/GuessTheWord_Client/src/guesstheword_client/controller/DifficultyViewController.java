@@ -73,13 +73,9 @@ public class DifficultyViewController implements Initializable {
             
             // Passa il listener di rete per ricevere i dati
             HistoryViewController historyController = loader.getController();
-            guesstheword_client.network.ListenerTask listenerTask = new guesstheword_client.network.ListenerTask(guesstheword_client.network.ServerConnection.getInstance());
-            historyController.setListener(listenerTask);
-            
-            // Avvia il listener in un thread background
-            Thread listenerThread = new Thread(listenerTask);
-            listenerThread.setDaemon(true);
-            listenerThread.start();
+            guesstheword_client.network.ServerConnection conn = guesstheword_client.network.ServerConnection.getInstance();
+            conn.startListener();
+            historyController.setListener(conn.getListenerTask());
             
             Scene scene = new Scene(viewParent);
             Stage window = (Stage) ((Node) event.getSource()).getScene().getWindow();

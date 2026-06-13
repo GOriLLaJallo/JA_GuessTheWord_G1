@@ -85,6 +85,21 @@ public class ServerConnection {
      * @throws IOException 
      */
 
+    private ListenerTask listenerTask;
+
+    public synchronized void startListener() {
+        if (listenerTask == null || listenerTask.isDone()) {
+            listenerTask = new ListenerTask(this);
+            Thread t = new Thread(listenerTask);
+            t.setDaemon(true);
+            t.start();
+        }
+    }
+
+    public synchronized ListenerTask getListenerTask() {
+        return listenerTask;
+    }
+
     public void close() throws IOException {
         socket.close();
     }

@@ -156,6 +156,9 @@ public class GameSession {
 
         ClientHandler loser = getOpponent(winner);
 
+        // Salva i risultati nel database PRIMA di inviare i messaggi per evitare race condition
+        persistResults(winner, loser, responseTimeMs);
+
         winner.sendMessage(MessageProtocol.build(MessageProtocol.GAME_WIN, String.valueOf(responseTimeMs)));
         if (loser != null) {
             loser.sendMessage(MessageProtocol.build(MessageProtocol.GAME_LOSE, winner.getUsername(), String.valueOf(responseTimeMs)));
@@ -164,7 +167,6 @@ public class GameSession {
         System.out.println("[GameSession] " + winner.getUsername()
                 + " ha vinto in " + responseTimeMs + " ms.");
 
-        persistResults(winner, loser, responseTimeMs);
         GameManager.getInstance().removeSession(this);
     }
 
@@ -178,12 +180,14 @@ public class GameSession {
         }
         finished = true;
 
+        // Salva i risultati nel database PRIMA di inviare i messaggi per evitare race condition
+        persistTimeoutResults();
+
         player1.sendMessage(MessageProtocol.build(MessageProtocol.GAME_TIMEOUT));
         player2.sendMessage(MessageProtocol.build(MessageProtocol.GAME_TIMEOUT));
 
         System.out.println("[GameSession] Timeout! Nessun vincitore.");
 
-        persistTimeoutResults();
         GameManager.getInstance().removeSession(this);
     }
 

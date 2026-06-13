@@ -34,6 +34,7 @@ public class WaitingRoomViewController implements Initializable {
     private ServerConnection serverConn;
     private ListenerTask listenerTask;
     private guesstheword_client.service.GameService gameService;
+    private javafx.beans.value.ChangeListener<String> messageListener;
 
     /**
      * Inizializza il controller.
@@ -60,37 +61,43 @@ public class WaitingRoomViewController implements Initializable {
     public void setDifficultyAndStart(String difficulty) {
         if (serverConn == null) return;
 
+        // 1. Avvia/recupera l'ascoltatore asincrono condiviso PRIMA dell'invio
+        try {
+            serverConn.startListener();
+            listenerTask = serverConn.getListenerTask();
+        } catch (Exception e) {
+            e.printStackTrace();
+            waitingLabel.setText("Errore inizializzazione ascolto.");
+            return;
+        }
+        
+        // 2. Registra il listener PRIMA dell'invio per non perdere messaggi istantanei
+        messageListener = (obs, oldMsg, newMsg) -> {
+            if (newMsg == null) return;
+            
+            String[] parts = MessageProtocol.parse(newMsg);
+            String command = parts[0];
+
+            if (command.equals(MessageProtocol.OPPONENT_FOUND) || command.equals(MessageProtocol.GAME_START)) {
+                // Avversario trovato o gioco già iniziato. Passa alla schermata di gioco
+                System.out.println("[Client] Avversario trovato o inizio partita rilevato!");
+                goToGameView();
+            } else {
+                System.out.println("[Client] Ricevuto in attesa: " + newMsg);
+            }
+        };
+        listenerTask.messageProperty().addListener(messageListener);
+
+        // 3. Invia la richiesta al server dopo che l'ascoltatore è configurato
         try {
             gameService.joinWaitingRoom(difficulty);
         } catch (IOException e) {
             e.printStackTrace();
             waitingLabel.setText("Errore invio richiesta partita.");
+            // Rimuove il listener in caso di errore
+            listenerTask.messageProperty().removeListener(messageListener);
             return;
         }
-
-        // Avvia l'ascoltatore asincrono
-        listenerTask = new ListenerTask(serverConn);
-        
-        listenerTask.messageProperty().addListener((obs, oldMsg, newMsg) -> {
-            if (newMsg == null) return;
-            
-            Platform.runLater(() -> {
-                String[] parts = MessageProtocol.parse(newMsg);
-                String command = parts[0];
-
-                if (command.equals(MessageProtocol.OPPONENT_FOUND)) {
-                    // Avversario trovato. Passa alla schermata di gioco
-                    System.out.println("[Client] Avversario trovato!");
-                    goToGameView();
-                } else {
-                    System.out.println("[Client] Ricevuto in attesa: " + newMsg);
-                }
-            });
-        });
-
-        Thread listenerThread = new Thread(listenerTask);
-        listenerThread.setDaemon(true); // Termina se l'app viene chiusa
-        listenerThread.start();
     }
 
     /**
@@ -99,8 +106,12 @@ public class WaitingRoomViewController implements Initializable {
      * Passa il ListenerTask al nuovo controller.
      */
     private void goToGameView() {
+        // Rimuove il listener prima di cambiare schermata
+        if (listenerTask != null && messageListener != null) {
+            listenerTask.messageProperty().removeListener(messageListener);
+        }
+        
         try {
-            
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/guesstheword_client/resources/view/GameView.fxml"));
             Parent viewParent = loader.load();
             

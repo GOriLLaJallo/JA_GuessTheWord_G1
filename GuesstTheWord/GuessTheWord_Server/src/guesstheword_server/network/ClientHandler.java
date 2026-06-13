@@ -248,9 +248,10 @@ public class ClientHandler implements Runnable {
             return;
         }
     
+        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH.mm");
         StringBuilder sb = new StringBuilder();
         history.forEach(result -> {
-            sb.append(result.getSfida().getDataSfida())
+            sb.append(result.getSfida().getDataSfida().format(formatter))
                     .append(",")
                     .append(result.getEsito())
                     .append(",")
