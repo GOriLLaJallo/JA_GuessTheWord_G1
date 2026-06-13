@@ -8,7 +8,7 @@ import javafx.concurrent.Task;
 
 /**
  *
- * @author Pc
+ * @author Sabrina Soriano
  */
 public class ListenerTask extends Task<Void> {
 

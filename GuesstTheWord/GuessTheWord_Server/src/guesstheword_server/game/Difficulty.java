@@ -7,6 +7,8 @@ package guesstheword_server.game;
 
 /**
  * Livelli di difficoltà della sfida.
+ * 
+ * @author Sabrina Soriano
  */
 public enum Difficulty {
     EASY,
