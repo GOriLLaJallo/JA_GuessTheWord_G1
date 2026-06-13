@@ -6,6 +6,7 @@ package guesstheword_server.network;
 
 import guesstheword_server.db.ResultDAO;
 import guesstheword_server.db.UserDAO;
+import guesstheword_server.game.Difficulty;
 import guesstheword_server.game.GameManager;
 import guesstheword_server.game.GameSession;
 import guesstheword_server.model.User;
@@ -96,7 +97,7 @@ public class ClientHandler implements Runnable {
                         handleRegister(parts);
                         break;
                     case MessageProtocol.WAITING:
-                        handleWaiting();
+                        handleWaiting(parts);
                         break;
                     case MessageProtocol.GAME_ANSWER:
                         handleAnswer(parts);
@@ -176,10 +177,6 @@ public class ClientHandler implements Runnable {
             return;
         }
         
-        if (password.contains(":")) {
-            sendMessage(MessageProtocol.build(MessageProtocol.AUTH_FAIL, "La password non può contenere il carattere ':'."));
-            return;
-        }
 
         User newUser = new User(name, password, "giocatore", LocalDateTime.now());
         boolean ok = userDAO.register(newUser);
@@ -195,14 +192,25 @@ public class ClientHandler implements Runnable {
     }
     
     /**
-     * Questo metodo deve gestire la Lobby, il client manda un WAITING e il server gli risponde con un WAITING per confermare al client che è in coda.
-     * Poi controlla la lobby se non c'è nessuno allora mette il client in attesa, se c'è già un client li accoppia
-     * 
+     * Il server ha ricevuto un WAITING dal client; risponde con un WAITING per confermare al client che è in coda.
+     * Poi controlla la lobby se non c'è nessuno allora mette il client in attesa, se c'è già un client li accoppia (principio gestito dal metodo addToLobby)
+     * Gestendo le varie difficoltà (MEDIUM default)
      * 
      */
     
-    private void handleWaiting() {
-        // Da implementare
+    private void handleWaiting(String[] parts) {
+        Difficulty difficulty = Difficulty.MEDIUM;
+        
+        if (parts.length >= 2) {
+            try {
+                difficulty = Difficulty.valueOf(parts[1].toUpperCase());
+            } catch (IllegalArgumentException e) {
+            // valore non valido, resta MEDIUM
+            }
+        }
+        
+        sendMessage(MessageProtocol.build(MessageProtocol.WAITING));
+        GameManager.getInstance().addToLobby(this, difficulty);
     }
     
     /**
