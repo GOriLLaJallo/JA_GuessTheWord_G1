@@ -12,7 +12,6 @@ import java.util.Properties;
  *
  * @author Sabrina Soriano
  */
-
 public class ServerConnection {
 
     private static ServerConnection instance;
