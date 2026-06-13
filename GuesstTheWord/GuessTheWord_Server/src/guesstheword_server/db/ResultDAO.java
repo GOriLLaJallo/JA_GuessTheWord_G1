@@ -4,6 +4,7 @@ import guesstheword_server.model.Challenge;
 import guesstheword_server.model.GameResult;
 import guesstheword_server.model.User;
 import guesstheword_server.model.LeaderboardEntry;
+import guesstheword_server.exception.DataAccessException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -29,21 +30,17 @@ public class ResultDAO {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     /**
-     * Salva un nuovo risultato di gioco nel database SQLite.
-     * Gestisce in modo sicuro i campi opzionali (risposta inviata e tempo di risposta)
-     * che possono essere nulli in caso di TIMEOUT.
-     * Imposta l'ID autoincrementante generato dal DB sull'oggetto GameResult passato.
+     * Salva un nuovo risultato di gioco nel database SQLite utilizzando una connessione esterna.
+     * Consente la partecipazione a transazioni JDBC.
      *
      * @param result il risultato da memorizzare
-     * @return true se il salvataggio è andato a buon fine, false altrimenti
+     * @param conn la connessione JDBC attiva
+     * @return true se il salvataggio è andato a buon fine
+     * @throws DataAccessException in caso di errore di persistenza
      */
-    public boolean save(GameResult result) {
+    public boolean save(GameResult result, Connection conn) {
         String query = "INSERT INTO risultati (id_utente, id_sfida, esito, risposta_inviata, tempo_risposta) VALUES (?, ?, ?, ?, ?);";
-        DatabaseManager dbManager = DatabaseManager.getInstance();
-
-        try (Connection conn = dbManager.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
-
+        try (PreparedStatement ps = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, result.getUtente().getId());
             ps.setInt(2, result.getSfida().getId());
             ps.setString(3, result.getEsito());
@@ -62,7 +59,7 @@ public class ResultDAO {
 
             int affectedRows = ps.executeUpdate();
             if (affectedRows == 0) {
-                return false;
+                throw new DataAccessException("Salvataggio risultato fallito: nessuna riga inserita.");
             }
 
             try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
@@ -71,10 +68,23 @@ public class ResultDAO {
                 }
             }
             return true;
-
         } catch (SQLException e) {
-            System.err.println("[ResultDAO] Errore durante il salvataggio del risultato di gioco: " + e.getMessage());
-            return false;
+            throw new DataAccessException("Errore durante il salvataggio del risultato di gioco nel DB", e);
+        }
+    }
+
+    /**
+     * Salva un nuovo risultato di gioco nel database SQLite. Apre e gestisce internamente la connessione.
+     *
+     * @param result il risultato da memorizzare
+     * @return true se il salvataggio è andato a buon fine
+     * @throws DataAccessException in caso di errore di persistenza
+     */
+    public boolean save(GameResult result) {
+        try (Connection conn = DatabaseManager.getInstance().getConnection()) {
+            return save(result, conn);
+        } catch (SQLException e) {
+            throw new DataAccessException("Errore di connessione durante il salvataggio del risultato", e);
         }
     }
 
@@ -141,7 +151,7 @@ public class ResultDAO {
             }
 
         } catch (SQLException e) {
-            System.err.println("[ResultDAO] Errore durante il recupero dello storico partite: " + e.getMessage());
+            throw new DataAccessException("Errore durante il recupero dello storico partite per l'utente con ID: " + userId, e);
         }
         return history;
     }
@@ -168,7 +178,7 @@ public class ResultDAO {
             }
 
         } catch (SQLException e) {
-            System.err.println("[ResultDAO] Errore durante il conteggio delle vittorie: " + e.getMessage());
+            throw new DataAccessException("Errore durante il conteggio delle vittorie per l'utente con ID: " + userId, e);
         }
         return 0;
     }
@@ -195,7 +205,7 @@ public class ResultDAO {
             }
 
         } catch (SQLException e) {
-            System.err.println("[ResultDAO] Errore durante il conteggio delle partite giocate: " + e.getMessage());
+            throw new DataAccessException("Errore durante il conteggio delle partite giocate per l'utente con ID: " + userId, e);
         }
         return 0;
     }
@@ -223,7 +233,7 @@ public class ResultDAO {
             }
 
         } catch (SQLException e) {
-            System.err.println("[ResultDAO] Errore durante il calcolo del tempo medio di risposta: " + e.getMessage());
+            throw new DataAccessException("Errore durante il calcolo del tempo medio di risposta per l'utente con ID: " + userId, e);
         }
         return 0.0;
     }
@@ -261,7 +271,7 @@ public class ResultDAO {
             }
 
         } catch (SQLException e) {
-            System.err.println("[ResultDAO] Errore durante il recupero della classifica: " + e.getMessage());
+            throw new DataAccessException("Errore durante il recupero della classifica utenti", e);
         }
         return leaderboard;
     }

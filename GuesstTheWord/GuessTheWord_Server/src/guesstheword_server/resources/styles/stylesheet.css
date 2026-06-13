@@ -135,3 +135,52 @@ Autore: Carmine Muollo
     -fx-text-fill: #A3A3A6;
     -fx-font-style: italic;
 }
+
+/* --- Dialoghi e Alert --- */
+.dialog-pane {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #6747CD;
+    -fx-border-width: 1.5px;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+}
+
+.dialog-pane .label {
+    -fx-text-fill: #2D2D2D;
+    -fx-font-size: 13px;
+}
+
+.dialog-pane:header .header-panel {
+    -fx-background-color: #F4F4F6;
+    -fx-background-radius: 8px 8px 0px 0px;
+    -fx-padding: 10px;
+}
+
+.dialog-pane:header .header-panel .label {
+    -fx-text-fill: #6747CD;
+    -fx-font-weight: bold;
+    -fx-font-size: 15px;
+}
+
+.dialog-pane .button-bar button {
+    -fx-background-color: #6747CD;
+    -fx-text-fill: #FFFFFF;
+    -fx-background-radius: 6px;
+    -fx-padding: 6px 14px;
+    -fx-cursor: hand;
+}
+
+.dialog-pane .button-bar button:hover {
+    -fx-background-color: #4B329B;
+    -fx-text-fill: #FFFFFF;
+    -fx-effect: dropshadow(three-pass-box, rgba(103, 71, 205, 0.2), 6, 0, 0, 0);
+}
+
+/* Pannello contenitore Dashboard */
+.dashboard-panel {
+    -fx-border-color: #E2E2E6;
+    -fx-border-radius: 8px;
+    -fx-background-color: #F9F9F9;
+    -fx-background-radius: 8px;
+}
+

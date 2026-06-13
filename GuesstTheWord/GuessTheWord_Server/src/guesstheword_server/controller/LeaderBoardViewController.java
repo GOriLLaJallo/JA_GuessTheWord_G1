@@ -1,6 +1,6 @@
 package guesstheword_server.controller;
 
-import guesstheword_server.db.ResultDAO;
+import guesstheword_server.service.LeaderboardService;
 import guesstheword_server.model.LeaderboardEntry;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -38,14 +38,14 @@ public class LeaderBoardViewController implements Initializable {
     @FXML
     private TableColumn<LeaderboardEntry, Double> avgTimeColumn;
 
-    private ResultDAO resultDAO;
+    private LeaderboardService leaderboardService;
 
     /**
      * Inizializza il controller. Configura le associazioni delle colonne e carica i dati dal database.
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        resultDAO = new ResultDAO();
+        leaderboardService = new LeaderboardService();
 
         // Associazione delle colonne con i campi del modello LeaderboardEntry
         usernameColumn.setCellValueFactory(new PropertyValueFactory<>("username"));
@@ -74,7 +74,7 @@ public class LeaderBoardViewController implements Initializable {
      */
     public void loadLeaderboardData() {
         try {
-            ObservableList<LeaderboardEntry> data = FXCollections.observableArrayList(resultDAO.getLeaderboard());
+            ObservableList<LeaderboardEntry> data = FXCollections.observableArrayList(leaderboardService.getLeaderboard());
             leaderboardTable.setItems(data);
             System.out.println("[Leaderboard] Dati della classifica caricati con successo: " + data.size() + " record.");
         } catch (Exception e) {

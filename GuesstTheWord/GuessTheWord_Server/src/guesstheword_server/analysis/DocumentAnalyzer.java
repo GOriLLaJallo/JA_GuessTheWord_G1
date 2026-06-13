@@ -45,7 +45,7 @@ public class DocumentAnalyzer {
         "ogni", "tutti", "tutte", "tutto", "tutta", "altri", "altre",
         "dopo", "prima", "ancora", "sempre", "mai", "però", "quindi",
         "perché", "perche", "mentre", "invece", "oppure", "nonché",
-        "dalla", "nella", "nella", "dalla", "aveva", "hanno", "erano",
+        "aveva", "hanno", "erano",
         "stata", "stato", "stati", "state", "verrà", "sarà"
     ));
 
@@ -72,23 +72,19 @@ public class DocumentAnalyzer {
         // Tokenizzazione: split su tutto ciò che non è una lettera
         String[] tokens = text.toLowerCase().split("[^a-zA-Zàèìòùáéíóúâêîôûäëïöü]+");
 
-        // Conta le frequenze filtrando stopword e parole troppo corte
-        Map<String, Integer> freq = new HashMap<>();
-        for (String token : tokens) {
-            if (token.length() < MIN_WORD_LENGTH) continue;
-            if (STOPWORDS.contains(token)) continue;
-            freq.put(token, freq.getOrDefault(token, 0) + 1);
-        }
-
-        if (freq.isEmpty()) {
-            return randomFallback();
-        }
-
-        // Restituisce la parola con frequenza massima
-        return freq.entrySet().stream()
+        // Conta le frequenze filtrando stopword e parole troppo corte tramite Stream
+        return Arrays.stream(tokens)
+                .filter(token -> token.length() >= MIN_WORD_LENGTH)
+                .filter(token -> !STOPWORDS.contains(token))
+                .collect(java.util.stream.Collectors.groupingBy(
+                        token -> token,
+                        java.util.stream.Collectors.summingInt(token -> 1)
+                ))
+                .entrySet()
+                .stream()
                 .max(Map.Entry.comparingByValue())
-                .get()
-                .getKey();
+                .map(Map.Entry::getKey)
+                .orElseGet(this::randomFallback);
     }
 
     /**
