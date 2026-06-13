@@ -123,26 +123,32 @@ public class LoginViewController implements Initializable {
             return;
         }
 
+        String hashedPassword = guesstheword_client.utils.HashUtil.sha256(password);
+
         try {
-            // Usa il costruttore originale di ServerConnection
-            guesstheword_client.network.ServerConnection serverConn = new guesstheword_client.network.ServerConnection();
-            String response;
-            String msg;
+            // Ottieni l'istanza Singleton della connessione
+            ServerConnection serverConn = ServerConnection.getInstance();
 
             if (isLoginMode) {
-                System.out.println("[Client Login] Tentativo di login per: " + username);
-                String hashedPassword = guesstheword_client.utils.HashUtil.sha256(password);
-                msg = guesstheword_client.network.MessageProtocol.build(guesstheword_client.network.MessageProtocol.AUTH_LOGIN, username, hashedPassword);
+                // Invia richiesta di Login
+                System.out.println("[Client] Invio richiesta di login per: " + username);
+                String msg = guesstheword_client.network.MessageProtocol.build(
+                        guesstheword_client.network.MessageProtocol.AUTH_LOGIN, 
+                        username, 
+                        hashedPassword);
+                serverConn.sendMessage(msg);
             } else {
-                System.out.println("[Client Register] Tentativo di registrazione per: " + username);
-                String hashedPassword = guesstheword_client.utils.HashUtil.sha256(password);
-                msg = guesstheword_client.network.MessageProtocol.build(guesstheword_client.network.MessageProtocol.AUTH_REGISTER, username, hashedPassword);
+                // Invia richiesta di Registrazione
+                System.out.println("[Client] Invio richiesta di registrazione per: " + username);
+                String msg = guesstheword_client.network.MessageProtocol.build(
+                        guesstheword_client.network.MessageProtocol.AUTH_REGISTER, 
+                        username, 
+                        hashedPassword);
+                serverConn.sendMessage(msg);
             }
 
-            serverConn.sendMessage(msg);
-            response = serverConn.receiveMessage();
-
-            // Analizziamo la risposta del server usando il protocollo
+            // Attendi risposta (bloccante)
+            String response = serverConn.receiveMessage();
             if (response != null) {
                 String[] parts = guesstheword_client.network.MessageProtocol.parse(response);
                 String command = parts[0];
@@ -153,10 +159,6 @@ public class LoginViewController implements Initializable {
                     try {
                         FXMLLoader loader = new FXMLLoader(getClass().getResource("/guesstheword_client/resources/view/WaitingRoomView.fxml"));
                         Parent viewParent = loader.load();
-                        
-                        // Passa la connessione al controller della Waiting Room
-                        guesstheword_client.controller.WaitingRoomViewController waitingController = loader.getController();
-                        waitingController.setConnection(serverConn);
                         
                         Scene scene = new Scene(viewParent);
                         Stage window = (Stage) ((Node) event.getSource()).getScene().getWindow();

@@ -44,14 +44,15 @@ public class WaitingRoomViewController implements Initializable {
         }));
         dotAnimation.setCycleCount(Timeline.INDEFINITE);
         dotAnimation.play();
-    }
 
-    /**
-     * Riceve la connessione aperta dal LoginViewController
-     */
-    public void setConnection(ServerConnection conn) {
-        this.serverConn = conn;
-        startWaiting();
+        // Inizializza rete usando il Singleton
+        try {
+            this.serverConn = ServerConnection.getInstance();
+            startWaiting();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            waitingLabel.setText("Errore di connessione al server.");
+        }
     }
 
     private void startWaiting() {

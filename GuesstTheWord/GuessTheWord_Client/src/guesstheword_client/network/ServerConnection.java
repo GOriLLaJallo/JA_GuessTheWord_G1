@@ -10,7 +10,7 @@ import java.util.Properties;
 
 /**
  *
- * @author Sabrina Soriano
+ * @author Pc
  */
 
 public class ServerConnection {
@@ -58,9 +58,8 @@ public class ServerConnection {
         return instance;
     }
     
-    
     /**
-     * Manda solo un messaggi sul canale out
+     * Metodo da aggiornare per adesso manda solo un messaggio sul canale out
      * 
      * @param message 
      */
