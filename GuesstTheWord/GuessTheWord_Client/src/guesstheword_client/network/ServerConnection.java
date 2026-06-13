@@ -10,7 +10,7 @@ import java.util.Properties;
 
 /**
  *
- * @author Pc
+ * @author Sabrina Soriano
  */
 
 public class ServerConnection {

@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 
 /**
  * 
- * @author Pc
+ * @author Sabrina Soriano
  */
 
 public class ClientHandler implements Runnable {
