@@ -40,7 +40,7 @@ public class GameViewController implements Initializable {
     private Label attemptsLabel;
     
     @FXML
-    private Label turnLabel;
+    private Label infoLabel;
 
     @FXML
     private Label encryptedWordLabel;
@@ -69,6 +69,13 @@ public class GameViewController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         gameState = new GameState();
         gameService = new guesstheword_client.service.GameService();
+        
+        // Permetti l'inserimento di solo testo (lettere e spazi) nel campo di risposta
+        answerField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.matches("[a-zA-Z\\s]*")) {
+                answerField.setText(newValue.replaceAll("[^a-zA-Z\\s]", ""));
+            }
+        });
     }    
     
     /**
@@ -140,23 +147,26 @@ public class GameViewController implements Initializable {
             gameState.setStatus("PLAYING");
             gameState.setWordPattern(encryptedWord);
             gameState.setAttemptsLeft(3);
-            gameState.setMyTurn(true); // Assumiamo sia il nostro turno
 
             updateUIFromState();
             startCountdown();
 
         } else if (command.equals(MessageProtocol.GAME_WIN)) {
             gameState.setStatus("WON");
-            stopGame("Hai Vinto!", "#34c759"); // Verde
+            String clearWord = parts.length > 2 ? parts[2] : "";
+            stopGame("Hai Vinto!", "#34c759", clearWord); // Verde
         } else if (command.equals(MessageProtocol.GAME_LOSE)) {
             gameState.setStatus("LOST");
-            stopGame("Hai Perso!", "#ff3b30"); // Rosso
+            String clearWord = parts.length > 3 ? parts[3] : "";
+            stopGame("Hai Perso!", "#ff3b30", clearWord); // Rosso
         } else if (command.equals(MessageProtocol.GAME_TIMEOUT)) {
             gameState.setStatus("TIMEOUT");
-            stopGame("Tempo Scaduto!", "#ff9500"); // Arancione
+            String clearWord = parts.length > 1 ? parts[1] : "";
+            stopGame("Tempo Scaduto!", "#ff9500", clearWord); // Arancione
         } else if (command.equals(MessageProtocol.OPPONENT_DISCONNECTED)) {
             gameState.setStatus("DISCONNECTED");
-            stopGame("Avversario Disconnesso!", "#a3a3a3"); // Grigio
+            String clearWord = parts.length > 1 ? parts[1] : "";
+            stopGame("Avversario Disconnesso!", "#a3a3a3", clearWord); // Grigio
         } else if (command.equals(MessageProtocol.AUTH_FAIL)) {
             // Il server riutilizza AUTH_FAIL per indicare una risposta errata
             if (parts.length > 1) {
@@ -175,14 +185,14 @@ public class GameViewController implements Initializable {
         encryptedWordLabel.setText(gameState.getWordPattern());
         attemptsLabel.setText("Tentativi: " + gameState.getAttemptsLeft());
         
-        if (gameState.isMyTurn()) {
-            turnLabel.setText("È il tuo turno!");
-            turnLabel.setTextFill(javafx.scene.paint.Color.web("#34c759")); // Verde
+        if (gameState.getAttemptsLeft() > 0) {
+            infoLabel.setText("Sii il più veloce a indovinare!");
+            infoLabel.setTextFill(javafx.scene.paint.Color.web("#6747cd")); // Viola
             answerField.setDisable(false);
             guessButton.setDisable(false);
         } else {
-            turnLabel.setText("Turno dell'avversario...");
-            turnLabel.setTextFill(javafx.scene.paint.Color.web("#ff9500")); // Arancione
+            infoLabel.setText("Tentativi esauriti, aspetta l'esito della partita");
+            infoLabel.setTextFill(javafx.scene.paint.Color.web("#ff9500")); // Arancione
             answerField.setDisable(true);
             guessButton.setDisable(true);
         }
@@ -226,13 +236,19 @@ public class GameViewController implements Initializable {
      * 
      * @param message  il testo del messaggio finale (es. "Hai vinto!")
      * @param colorHex il colore esadecimale da applicare al testo
+     * @param clearWord la parola in chiaro da mostrare a fine partita
      */
-    private void stopGame(String message, String colorHex) {
+    private void stopGame(String message, String colorHex, String clearWord) {
         if (countdownTimeline != null) countdownTimeline.stop();
         answerField.setDisable(true);
         guessButton.setDisable(true);
         statusLabel.setText(message);
         statusLabel.setTextFill(javafx.scene.paint.Color.web(colorHex));
+        
+        if (clearWord != null && !clearWord.isEmpty()) {
+            encryptedWordLabel.setText(clearWord);
+            encryptedWordLabel.setTextFill(javafx.scene.paint.Color.web("#34c759")); // Verde
+        }
         
         // Mostra i bottoni di navigazione a fine partita
         postGameBox.setVisible(true);
@@ -253,7 +269,7 @@ public class GameViewController implements Initializable {
      */
     @FXML
     private void handleGuess(ActionEvent event) {
-        if (!gameState.isMyTurn()) return;
+        if (gameState.getAttemptsLeft() <= 0) return;
         
         String guess = answerField.getText().trim();
         if (guess.isEmpty()) return;
@@ -271,11 +287,6 @@ public class GameViewController implements Initializable {
             answerField.clear();
             statusLabel.setText("Risposta inviata, in attesa...");
             
-            // Se finito tentativi
-            if (gameState.getAttemptsLeft() <= 0) {
-                gameState.setMyTurn(false);
-                updateUIFromState();
-            }
         } catch (IOException e) {
             e.printStackTrace();
             statusLabel.setText("Errore invio risposta.");

@@ -189,3 +189,12 @@ Autore: Carmine Muollo
     -fx-text-fill: #A3A3A6;
     -fx-font-style: italic;
 }
+
+/* Stile per la riga selezionata */
+.table-row-cell:selected {
+    -fx-background-color: #6747CD;
+}
+
+.table-row-cell:selected .text {
+    -fx-fill: #FFFFFF;
+}

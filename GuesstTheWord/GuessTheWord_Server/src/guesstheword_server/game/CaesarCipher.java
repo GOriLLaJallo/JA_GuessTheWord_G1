@@ -86,9 +86,9 @@ public class CaesarCipher {
             case EASY: {
             // Sceglie casualmente tra range basso [1-5] o alto [21-25]
                 if (random.nextBoolean()) {
-                    return 1 + random.nextInt(4);   // [1-4]
+                    return 1 + random.nextInt(5);   // Restituisce 1, 2, 3, 4, o 5
                 } else {
-                    return 23 + random.nextInt(4);  // [23-26]
+                    return 21 + random.nextInt(5);  // Restituisce 21, 22, 23, 24, o 25 (EVITA 26 CHE E' UGUALE A 0)
                 }
             }
             case MEDIUM: {

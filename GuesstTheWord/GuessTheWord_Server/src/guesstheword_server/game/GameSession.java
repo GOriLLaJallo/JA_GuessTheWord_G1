@@ -48,6 +48,12 @@ public class GameSession {
     /** Timer per la gestione del timeout. */
     private Timer timeoutTimer;
 
+    /** Tentativi rimasti per il primo giocatore. */
+    private int player1Attempts = 3;
+
+    /** Tentativi rimasti per il secondo giocatore. */
+    private int player2Attempts = 3;
+
     /**
      * Crea una nuova sessione di gioco tra i due client specificati.
      *
@@ -112,6 +118,20 @@ public class GameSession {
         if (correct) {
             finishWithWinner(handler, responseTimeMs);
         } else {
+            // Decrementa tentativi
+            if (handler == player1) {
+                player1Attempts--;
+            } else if (handler == player2) {
+                player2Attempts--;
+            }
+
+            // Se entrambi hanno esaurito i tentativi, termina istantaneamente la partita con un TIMEOUT anticipato
+            if (player1Attempts <= 0 && player2Attempts <= 0) {
+                System.out.println("[GameSession] Entrambi i giocatori hanno esaurito i tentativi. Termine anticipato.");
+                handleTimeout();
+                return;
+            }
+
             handler.sendMessage(MessageProtocol.build(MessageProtocol.AUTH_FAIL, "Risposta errata. Riprova!"));
         }
     }
@@ -132,7 +152,7 @@ public class GameSession {
 
         ClientHandler opponent = getOpponent(disconnectedHandler);
         if (opponent != null) {
-            opponent.sendMessage(MessageProtocol.build(MessageProtocol.OPPONENT_DISCONNECTED));
+            opponent.sendMessage(MessageProtocol.build(MessageProtocol.OPPONENT_DISCONNECTED, challenge.getParolaNascosta()));
         }
 
         System.out.println("[GameSession] Il giocatore " + disconnectedHandler.getUsername()
@@ -159,9 +179,10 @@ public class GameSession {
         // Salva i risultati nel database PRIMA di inviare i messaggi per evitare race condition
         persistResults(winner, loser, responseTimeMs);
 
-        winner.sendMessage(MessageProtocol.build(MessageProtocol.GAME_WIN, String.valueOf(responseTimeMs)));
+        String clearWord = challenge.getParolaNascosta();
+        winner.sendMessage(MessageProtocol.build(MessageProtocol.GAME_WIN, String.valueOf(responseTimeMs), clearWord));
         if (loser != null) {
-            loser.sendMessage(MessageProtocol.build(MessageProtocol.GAME_LOSE, winner.getUsername(), String.valueOf(responseTimeMs)));
+            loser.sendMessage(MessageProtocol.build(MessageProtocol.GAME_LOSE, winner.getUsername(), String.valueOf(responseTimeMs), clearWord));
         }
 
         System.out.println("[GameSession] " + winner.getUsername()
@@ -183,8 +204,9 @@ public class GameSession {
         // Salva i risultati nel database PRIMA di inviare i messaggi per evitare race condition
         persistTimeoutResults();
 
-        player1.sendMessage(MessageProtocol.build(MessageProtocol.GAME_TIMEOUT));
-        player2.sendMessage(MessageProtocol.build(MessageProtocol.GAME_TIMEOUT));
+        String clearWord = challenge.getParolaNascosta();
+        player1.sendMessage(MessageProtocol.build(MessageProtocol.GAME_TIMEOUT, clearWord));
+        player2.sendMessage(MessageProtocol.build(MessageProtocol.GAME_TIMEOUT, clearWord));
 
         System.out.println("[GameSession] Timeout! Nessun vincitore.");
 

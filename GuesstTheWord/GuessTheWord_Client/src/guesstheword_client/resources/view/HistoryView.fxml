@@ -34,9 +34,10 @@
             
             <TableView fx:id="historyTable" prefHeight="250.0" prefWidth="540.0" VBox.vgrow="ALWAYS">
               <columns>
-                <TableColumn fx:id="dateColumn" prefWidth="180.0" text="Data e Ora" />
-                <TableColumn fx:id="resultColumn" prefWidth="100.0" text="Esito" />
-                <TableColumn fx:id="wordColumn" prefWidth="250.0" text="Parola Segreta" />
+                <TableColumn fx:id="dateColumn" prefWidth="140.0" text="Data e Ora" />
+                <TableColumn fx:id="resultColumn" prefWidth="80.0" text="Esito" />
+                <TableColumn fx:id="difficultyColumn" prefWidth="100.0" text="Difficoltà" />
+                <TableColumn fx:id="wordColumn" prefWidth="210.0" text="Parola Segreta" />
               </columns>
             </TableView>
             

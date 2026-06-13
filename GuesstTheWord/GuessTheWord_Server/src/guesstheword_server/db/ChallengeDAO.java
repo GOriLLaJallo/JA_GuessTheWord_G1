@@ -31,11 +31,12 @@ public class ChallengeDAO {
      * @throws DataAccessException in caso di errore di persistenza
      */
     public boolean save(Challenge challenge, Connection conn) {
-        String query = "INSERT INTO sfide (parola_nascosta, shift_cesare, data_sfida) VALUES (?, ?, ?);";
+        String query = "INSERT INTO sfide (parola_nascosta, shift_cesare, data_sfida, difficolta) VALUES (?, ?, ?, ?);";
         try (PreparedStatement ps = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, challenge.getParolaNascosta());
             ps.setInt(2, challenge.getShiftCesare());
             ps.setString(3, challenge.getDataSfida().format(DATE_FORMATTER));
+            ps.setString(4, challenge.getDifficolta());
 
             int affectedRows = ps.executeUpdate();
             if (affectedRows == 0) {
@@ -75,7 +76,7 @@ public class ChallengeDAO {
      * @return l'oggetto Challenge se trovato, null altrimenti
      */
     public Challenge findById(int id) {
-        String query = "SELECT id, parola_nascosta, shift_cesare, data_sfida FROM sfide WHERE id = ?;";
+        String query = "SELECT id, parola_nascosta, shift_cesare, data_sfida, difficolta FROM sfide WHERE id = ?;";
         DatabaseManager dbManager = DatabaseManager.getInstance();
 
         try (Connection conn = dbManager.getConnection();
@@ -92,6 +93,7 @@ public class ChallengeDAO {
                     
                     String dateStr = rs.getString("data_sfida");
                     challenge.setDataSfida(LocalDateTime.parse(dateStr, DATE_FORMATTER));
+                    challenge.setDifficolta(rs.getString("difficolta"));
                     
                     return challenge;
                 }

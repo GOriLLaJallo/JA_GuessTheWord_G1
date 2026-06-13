@@ -26,7 +26,7 @@
                </children>
             </javafx.scene.layout.HBox>
             
-            <Label fx:id="turnLabel" text="In attesa del turno..." textFill="#6747cd">
+            <Label fx:id="infoLabel" text="Sii il più veloce a indovinare!" textFill="#6747cd">
                <font>
                   <Font name="System Bold" size="16.0" />
                </font>

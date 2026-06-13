@@ -99,7 +99,7 @@ public class ResultDAO {
         List<GameResult> history = new ArrayList<>();
         String query = "SELECT r.id AS r_id, r.esito, r.risposta_inviata, r.tempo_risposta, "
                 + "u.id AS u_id, u.username, u.password, u.ruolo, u.data_iscrizione, "
-                + "s.id AS s_id, s.parola_nascosta, s.shift_cesare, s.data_sfida "
+                + "s.id AS s_id, s.parola_nascosta, s.shift_cesare, s.data_sfida, s.difficolta "
                 + "FROM risultati r "
                 + "JOIN utenti u ON r.id_utente = u.id "
                 + "JOIN sfide s ON r.id_sfida = s.id "
@@ -129,6 +129,7 @@ public class ResultDAO {
                     challenge.setParolaNascosta(rs.getString("parola_nascosta"));
                     challenge.setShiftCesare(rs.getInt("shift_cesare"));
                     challenge.setDataSfida(LocalDateTime.parse(rs.getString("data_sfida"), DATE_FORMATTER));
+                    challenge.setDifficolta(rs.getString("difficolta"));
 
                     // Costruzione dell'oggetto GameResult
                     GameResult result = new GameResult();

@@ -49,6 +49,9 @@ public class HistoryViewController implements Initializable {
     private TableColumn<MatchRecord, String> wordColumn;
 
     @FXML
+    private TableColumn<MatchRecord, String> difficultyColumn;
+
+    @FXML
     private Label errorLabel;
 
     private ListenerTask listenerTask;
@@ -66,6 +69,7 @@ public class HistoryViewController implements Initializable {
         dateColumn.setCellValueFactory(new PropertyValueFactory<>("matchDate"));
         wordColumn.setCellValueFactory(new PropertyValueFactory<>("secretWord"));
         resultColumn.setCellValueFactory(new PropertyValueFactory<>("outcome"));
+        difficultyColumn.setCellValueFactory(new PropertyValueFactory<>("difficulty"));
 
         historyTable.setItems(historyData);
     }    
@@ -128,13 +132,20 @@ public class HistoryViewController implements Initializable {
                     String[] records = allRecords.split(";");
                     for (String record : records) {
                         String[] fields = record.split(",");
-                        if (fields.length >= 3) {
+                        if (fields.length >= 4) {
                             String date = fields[0];
                             String outcome = fields[1];
                             String word = fields[2];
+                            String difficulty = fields[3];
                             // Usiamo MatchRecord per memorizzare il dato internamente,
                             // omettendo avversario e tempo poiché non inviati dal server
-                            historyData.add(new MatchRecord(word, null, outcome, null, date));
+                            historyData.add(new MatchRecord(word, null, outcome, null, date, difficulty));
+                        } else if (fields.length >= 3) {
+                            // Fallback per vecchi record senza difficoltà
+                            String date = fields[0];
+                            String outcome = fields[1];
+                            String word = fields[2];
+                            historyData.add(new MatchRecord(word, null, outcome, null, date, "N/D"));
                         }
                     }
                 }
