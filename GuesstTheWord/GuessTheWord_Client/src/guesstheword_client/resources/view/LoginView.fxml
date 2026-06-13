@@ -1,11 +1,102 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import java.lang.*?>
-<?import java.util.*?>
+<?import javafx.geometry.*?>
 <?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
-<AnchorPane id="AnchorPane" prefHeight="400.0" prefWidth="600.0" xmlns:fx="http://javafx.com/fxml/1" fx:controller="guesstheword_client.controller.LoginViewController">
-    
+<AnchorPane id="AnchorPane" prefHeight="400.0" prefWidth="600.0" stylesheets="@../styles/stylesheet.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="guesstheword_client.controller.LoginViewController">
+    <children>
+      <VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="400.0" styleClass="sidebar">
+         <children>
+            <ImageView fitHeight="200.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../images/client_login-removebg-preview.png" />
+               </image>
+               <VBox.margin>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </VBox.margin>
+            </ImageView>
+         </children>
+      </VBox>
+      <Pane layoutX="400.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="417.0">
+         <children>
+            <ImageView fitHeight="100.0" fitWidth="120.0" layoutY="14.0" nodeOrientation="INHERIT" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../images/icon_dark_mode-removebg-preview.png" />
+               </image>
+               <cursor>
+                  <Cursor fx:constant="DEFAULT" />
+               </cursor>
+            </ImageView>
+            <Label fx:id="titleLabel" layoutX="31.0" layoutY="79.0" text="WELCOME, USER" textFill="#545454">
+               <font>
+                  <Font name="Impact" size="24.0" />
+               </font>
+            </Label>
+            <Label fx:id="subtitleLabel" layoutX="31.0" layoutY="108.0" prefHeight="20.0" text="Accedi o registrati per continuare" textFill="#a3a3a3">
+               <font>
+                  <Font name="Ebrima Bold" size="13.0" />
+               </font>
+            </Label>
+            <TextField fx:id="usernameField" layoutX="31.0" layoutY="260.0" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="40.0" prefWidth="300.0" promptText="inserisci il tuo username">
+               <font>
+                  <Font size="14.0" />
+               </font>
+            </TextField>
+            <PasswordField fx:id="passwordField" layoutX="31.0" layoutY="344.0" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="40.0" prefWidth="300.0" promptText="digita la tua password">
+               <font>
+                  <Font size="14.0" />
+               </font>
+            </PasswordField>
+            <TextField fx:id="showPasswordField" layoutX="31.0" layoutY="344.0" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="40.0" prefWidth="300.0" promptText="digita la tua password">
+               <font>
+                  <Font size="14.0" />
+               </font>
+            </TextField>
+            <ToggleButton fx:id="togglePasswordButton" layoutX="295.0" layoutY="349.0" mnemonicParsing="false" onAction="#handleTogglePassword" prefHeight="30.0" prefWidth="30.0" styleClass="toggleBtn" text="" />
+            <Label fx:id="errorLabel" alignment="CENTER" layoutX="31.0" layoutY="387.0" prefHeight="20.0" prefWidth="300.0" textFill="#ff3b30">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font>
+            </Label>
+            <Button fx:id="registerButton" alignment="CENTER" layoutX="31.0" layoutY="474.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#handleSwitchMode" prefHeight="50.0" prefWidth="300.0" styleClass="registerBtn" text="Nuovo utente? Registrati">
+               <font>
+                  <Font name="System Bold" size="14.0" />
+               </font>
+            </Button>
+            <Label layoutX="31.0" layoutY="231.0" prefHeight="20.0" prefWidth="139.0" text="Username" textFill="#a3a3a3">
+               <font>
+                  <Font name="Ebrima" size="14.0" />
+               </font>
+            </Label>
+            <Label layoutX="31.0" layoutY="317.0" prefHeight="20.0" prefWidth="139.0" text="Password" textFill="#a3a3a3">
+               <font>
+                  <Font name="Ebrima" size="14.0" />
+               </font>
+            </Label>
+            <Button fx:id="loginButton" alignment="CENTER" layoutX="31.0" layoutY="410.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#handleAction" prefHeight="50.0" prefWidth="300.0" styleClass="loginBtn" text="Login">
+               <font>
+                  <Font name="System Bold" size="14.0" />
+               </font>
+            </Button>
+         </children>
+      </Pane>
+   </children>
 </AnchorPane>
