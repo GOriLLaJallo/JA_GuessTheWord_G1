@@ -19,6 +19,7 @@ public class AnalysisResult implements Serializable {
     private final List<String> fileNames;
     private final int totalWordsProcessed;
     private final long analysisTimeMs;
+    private final String sourceText;
 
     /**
      * Costruttore completo del risultato dell'analisi.
@@ -28,11 +29,12 @@ public class AnalysisResult implements Serializable {
      * @param totalWordsProcessed il totale delle parole elaborate
      * @param analysisTimeMs      il tempo totale in ms impiegato
      */
-    public AnalysisResult(String keyWord, List<String> fileNames, int totalWordsProcessed, long analysisTimeMs) {
+    public AnalysisResult(String keyWord, List<String> fileNames, int totalWordsProcessed, long analysisTimeMs, String sourceText) {
         this.keyWord = keyWord;
         this.fileNames = fileNames;
         this.totalWordsProcessed = totalWordsProcessed;
         this.analysisTimeMs = analysisTimeMs;
+        this.sourceText = sourceText;
     }
 
     public String getKeyWord() {
@@ -49,6 +51,10 @@ public class AnalysisResult implements Serializable {
 
     public long getAnalysisTimeMs() {
         return analysisTimeMs;
+    }
+    
+    public String getSourceText() {
+        return sourceText;
     }
 
     @Override

@@ -124,33 +124,27 @@ public class HistoryViewController implements Initializable {
 
         if (command.equals(MessageProtocol.HISTORY_DATA)) {
             historyData.clear();
-            if (parts.length > 1) {
-                // Formato inviato dal server
-                // Dati separati da punto e virgola: "Data,Esito,Parola;"
-                String allRecords = parts[1];
-                if (!allRecords.isEmpty()) {
+            //Ricostruisce il payload dopo il primo ":" per evitare problemi con i timestamp
+            int firstColon = message.indexOf(":");
+            if (firstColon != -1 && firstColon < message.length() - 1) {
+                String allRecords = message.substring(firstColon + 1); //tutto quello dopo i primi ":"
+                if (!allRecords.isEmpty() && !allRecords.equals("Nessuna partita giocata.")) {
                     String[] records = allRecords.split(";");
                     for (String record : records) {
-                        String[] fields = record.split(",");
-                        if (fields.length >= 4) {
-                            String date = fields[0];
-                            String outcome = fields[1];
-                            String word = fields[2];
-                            String difficulty = fields[3];
-                            // Usiamo MatchRecord per memorizzare il dato internamente,
-                            // omettendo avversario e tempo poiché non inviati dal server
-                            historyData.add(new MatchRecord(word, null, outcome, null, date, difficulty));
-                        } else if (fields.length >= 3) {
-                            // Fallback per vecchi record senza difficoltà
-                            String date = fields[0];
-                            String outcome = fields[1];
-                            String word = fields[2];
-                            historyData.add(new MatchRecord(word, null, outcome, null, date, "N/D"));
+                        if (record.trim().isEmpty()) continue;
+                            String[] fields = record.split(",");
+                            if (fields.length >= 4) {
+                                String date = fields[0];
+                                String outcome = fields[1];
+                                String word = fields[2];
+                                String difficulty = fields[3];
+                                historyData.add(new MatchRecord(word, null, outcome, null, date, difficulty));
+                            }
                         }
-                    }
                 }
             }
-        } else if (command.equals(MessageProtocol.AUTH_FAIL)) {
+        } 
+        else if (command.equals(MessageProtocol.AUTH_FAIL)) {
             if (parts.length > 1) {
                 errorLabel.setText(parts[1]);
             }

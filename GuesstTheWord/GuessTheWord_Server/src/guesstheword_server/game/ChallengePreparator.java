@@ -36,6 +36,11 @@ public class ChallengePreparator {
 
     /**
      * Prepara una sfida a partire da un testo libero e da un livello di difficoltà.
+     * Principio di funzionamento
+     * 1) Considerando il testo e la difficoltà extractKeyWord (metodo classe DocumentAnalizer) estrapola la parola nascosta
+     * 2) Viene stabilito lo shift del cifrario di Cesare e viene creato un oggetto Challenge con tutti i parametri necessari
+     * 3) Viene infine salvato un estratto del text
+     * 
      *
      * @param text       il documento da cui estrarre la parola nascosta;
      *                   può essere null o vuoto (verrà usato il fallback)
@@ -43,12 +48,16 @@ public class ChallengePreparator {
      * @return un oggetto {@link Challenge} pronto per la sessione di gioco
      */
     public Challenge prepare(String text, Difficulty difficulty) {
-        // 1. Estrai la parola chiave dal testo
-        String parolaNascosta = analyzer.extractKeyWord(text);
+        // 1. Estrai la parola chiave dal testo a seconda della difficoltà
+        String parolaNascosta = analyzer.extractKeyWord(text, difficulty);
 
         int shift = CaesarCipher.randomShift(difficulty);
-
-        return new Challenge(parolaNascosta, shift, LocalDateTime.now(), difficulty.name());
+        
+        Challenge c = new Challenge(parolaNascosta, shift, LocalDateTime.now(), difficulty.name());
+        String estratto = analyzer.extractExcerpt(text, parolaNascosta);
+        c.setEstratto(estratto);
+        return c;
+        
     }
 
     /**

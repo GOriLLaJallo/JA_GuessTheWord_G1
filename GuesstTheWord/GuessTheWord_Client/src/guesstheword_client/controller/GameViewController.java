@@ -19,6 +19,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -43,7 +44,7 @@ public class GameViewController implements Initializable {
     private Label infoLabel;
 
     @FXML
-    private Label encryptedWordLabel;
+    private TextArea encryptedWordLabel;
     @FXML
     private TextField answerField;
     @FXML
@@ -245,9 +246,10 @@ public class GameViewController implements Initializable {
         statusLabel.setText(message);
         statusLabel.setTextFill(javafx.scene.paint.Color.web(colorHex));
         
+        //Mostra ai giocatori la parola in chiaro a fine partita
         if (clearWord != null && !clearWord.isEmpty()) {
             encryptedWordLabel.setText(clearWord);
-            encryptedWordLabel.setTextFill(javafx.scene.paint.Color.web("#34c759")); // Verde
+            encryptedWordLabel.setStyle("-fx-text-fill: #34c759; -fx-font-family: 'Monospaced'; -fx-font-size: 18;");
         }
         
         // Mostra i bottoni di navigazione a fine partita

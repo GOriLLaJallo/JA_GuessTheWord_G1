@@ -80,7 +80,7 @@ public class AnalysisService extends Service<AnalysisResult> {
                 long elapsedTime = System.currentTimeMillis() - startTime;
 
                 updateMessage("Analisi completata con successo.");
-                return new AnalysisResult(keyWord, fileNames, totalWords, elapsedTime);
+                return new AnalysisResult(keyWord, fileNames, totalWords, elapsedTime, combinedText.toString());
             }
         };
     }

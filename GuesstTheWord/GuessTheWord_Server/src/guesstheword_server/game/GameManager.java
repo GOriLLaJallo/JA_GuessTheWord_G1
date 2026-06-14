@@ -18,8 +18,10 @@ public class GameManager {
 
     private static GameManager instance;
     private final List<GameSession> activeSessions = new ArrayList<>();
-   private final Map<Difficulty, List<ClientHandler>> waitingPlayers = new HashMap<>(); //coda dei giocatori in attesa accoppiati alla difficoltà scelta
+    private final Map<Difficulty, List<ClientHandler>> waitingPlayers = new HashMap<>(); //coda dei giocatori in attesa accoppiati alla difficoltà scelta
     private final ChallengePreparator challengePreparator = new ChallengePreparator(); //oggetto per generare la Challenge
+    private String testoDisponibile = null;
+    private OnSessionStartedListener sessionListener; //il qualcuno che deve essere notificato
 
     /**
      * Unico scopo inizializzazione della Map con una cosa vuota per ogni difficoltà
@@ -28,6 +30,23 @@ public class GameManager {
     private GameManager() {
         for (Difficulty d : Difficulty.values()) {
             waitingPlayers.put(d, new ArrayList<>());
+        }
+    }
+    
+    //Interfaccia per notificare qualcuno che la partita sta iniziando (AdminDashboardViewController)
+    public interface OnSessionStartedListener {
+        void onSessionStarted(String parola, String difficolta);
+    }
+
+    //Setter
+    public void setOnSessionStartedListener(OnSessionStartedListener listener) {
+        this.sessionListener = listener;
+    }
+
+    //Metodo invocato all'inizio della partita, pubblico perchè fa da ponte tra il notificante e il notificato
+    public void notifySessionStarted(String parola, String difficolta) {
+        if (sessionListener != null) {
+            sessionListener.onSessionStarted(parola, difficolta);
         }
     }
 
@@ -41,6 +60,16 @@ public class GameManager {
             instance = new GameManager();
         }
         return instance;
+    }
+    
+    /**
+     * Setter del testo da visualizzare
+     * 
+     * @param testo 
+     */
+    
+    public synchronized void setTestoDisponibile(String testo) {
+        this.testoDisponibile = testo;
     }
 
     /**
@@ -76,11 +105,12 @@ public class GameManager {
      * Considera 2 casi:
      * 1) nessun giocatore in attesa per quella specifica difficoltà -> il giocatore viene messo in coda in attesa che arrivi un avversario
      * 2) c'è un giocatore in coda -> estrae il giocatore dalla lista waitingPlayers e inizia a preparare la sfida
-     * Generazione sfida per adesso la difficoltà è media da cambiare
+     * Gestisce la possibità di mancato caricamento di un testo
      * Generazione GameSession e poi collega i 2 avversarsari alla stessa GameSession
      * Notifica avversari e inzio partita
      *  
      * @param player
+     * @param difficulty
      */
     
     public synchronized void addToLobby(ClientHandler player, Difficulty difficulty) {
@@ -93,8 +123,10 @@ public class GameManager {
         else {
             ClientHandler opponent = queue.remove(0);
 
-            Challenge challenge = challengePreparator.prepareRandom(difficulty);
-        
+            Challenge challenge = (testoDisponibile != null)
+                ? challengePreparator.prepare(testoDisponibile, difficulty)
+                : challengePreparator.prepareRandom(difficulty);
+            
             GameSession session = new GameSession(opponent, player, challenge);
             addSession(session);
 

@@ -1,5 +1,7 @@
 package guesstheword_server;
 
+import guesstheword_server.network.GameServer;
+import java.io.IOException;
 import guesstheword_server.db.DatabaseManager;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -22,6 +24,17 @@ public class ServerApp extends Application {
             // Inizializza il database SQLite all'avvio (con relativo seeding dei dati se necessario)
             System.out.println("[ServerApp] Connessione ed inizializzazione del database in corso...");
             DatabaseManager.getInstance();
+            
+            // Avvio del GameServer in un thread separato
+            Thread serverThread = new Thread(() -> {
+                try {
+                    new GameServer().startCon();
+                } catch (IOException e) {
+                    System.err.println("[ServerApp] Errore avvio GameServer: " + e.getMessage());
+                }
+            });
+            serverThread.setDaemon(true);
+            serverThread.start();
 
             // Caricamento del file FXML per la vista di login dell'amministratore
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/guesstheword_server/resources/view/AdminLoginView.fxml"));
@@ -38,10 +51,10 @@ public class ServerApp extends Application {
             
             System.out.println("[ServerApp] Interfaccia grafica caricata con successo.");
 
-        } catch (Exception e) {
-            System.err.println("[ServerApp] Errore irreversibile all'avvio dell'applicazione server:");
-            e.printStackTrace();
-        }
+            } catch (Exception e) {
+                System.err.println("[ServerApp] Errore irreversibile all'avvio dell'applicazione server:");
+                e.printStackTrace();
+            }
     }
 
     /**

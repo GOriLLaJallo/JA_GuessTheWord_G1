@@ -26,6 +26,9 @@ public class Challenge {
 
     /** La difficoltà della sfida ("EASY", "MEDIUM", "HARD"). */
     private String difficolta;
+    
+    /** L'estratto di testo contenente la parola nascosta nel suo contesto. */
+    private String estrattoTesto;
 
     /**
      * Costruttore di default vuoto.
@@ -157,6 +160,24 @@ public class Challenge {
      */
     public void setDifficolta(String difficolta) {
         this.difficolta = difficolta;
+    }
+    
+    /**
+    * Restituisce l'estratto di testo della sfida.
+    *
+    * @return estrattoTesto
+    */
+    public String getEstratto() {
+        return estrattoTesto;
+    }
+
+    /**
+    * Imposta l'estratto di testo della sfida.
+    *
+    * @param estrattoTesto l'estratto di testo
+    */
+    public void setEstratto(String estrattoTesto) {
+        this.estrattoTesto = estrattoTesto;
     }
 
     // --- Overriding di toString, equals e hashCode ---

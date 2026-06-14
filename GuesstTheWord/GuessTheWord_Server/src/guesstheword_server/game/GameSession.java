@@ -72,19 +72,33 @@ public class GameSession {
 
     /**
      * Avvia la sessione di gioco.
-     * Invia il messaggio GAME_START a entrambi i client, registra il timestamp
-     * di inizio e pianifica il timer di timeout.
+     * 1) Notifica il GameManager che la sessione di gioco è iniziata
+     * 2) Fa il pairing dei 2 player
+     * 3) Si prende la parola cifrata e l'estratto
+     * 4) Sostituisce (replaceAll) la parola in chiaro con quella cifrata
+     * 5) Comunica ai giocatori l'inizio del gioco
+     * 6) Parte il countdown
      */
     public void start() {
+        GameManager.getInstance().notifySessionStarted(
+            challenge.getParolaNascosta(), challenge.getDifficolta());
+        
         System.out.println("[GameSession] Partita avviata tra "
                 + player1.getUsername() + " e " + player2.getUsername());
 
-        String encryptedExcerpt = CaesarCipher.encrypt(
-                challenge.getParolaNascosta(), challenge.getShiftCesare());
+        String parolaCifrata = CaesarCipher.encrypt(
+            challenge.getParolaNascosta(), challenge.getShiftCesare());
+
+        String estratto = challenge.getEstratto() != null
+                ? challenge.getEstratto()
+                : challenge.getParolaNascosta();
+
+        String testoCifrato = estratto.replaceAll(
+                "(?i)" + challenge.getParolaNascosta(), parolaCifrata);
 
         String gameStartMsg = MessageProtocol.build(
                 MessageProtocol.GAME_START,
-                encryptedExcerpt,
+                testoCifrato,
                 String.valueOf(challenge.getShiftCesare()),
                 String.valueOf(DEFAULT_TIMER_SECONDS)
         );

@@ -257,6 +257,8 @@ public class ClientHandler implements Runnable {
                 .append(result.getSfida().getParolaNascosta())
                 .append(",")
                 .append(result.getRispostaInviata())
+                .append(result.getSfida().getDifficolta() != null 
+                    ? result.getSfida().getDifficolta() : "N/D")
                 .append(";");
         });
         sendMessage(MessageProtocol.build(MessageProtocol.HISTORY_DATA, sb.toString()));

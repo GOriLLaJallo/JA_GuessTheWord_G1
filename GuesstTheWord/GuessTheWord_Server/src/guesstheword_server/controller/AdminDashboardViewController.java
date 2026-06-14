@@ -2,6 +2,7 @@ package guesstheword_server.controller;
 
 import guesstheword_server.analysis.AnalysisResult;
 import guesstheword_server.analysis.AnalysisService;
+import guesstheword_server.game.GameManager;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -11,6 +12,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -92,14 +94,14 @@ public class AdminDashboardViewController implements Initializable {
         analysisService.setOnSucceeded(event -> {
             lastAnalysisResult = analysisService.getValue();
             progressBar.setVisible(false);
-            
+    
             if (lastAnalysisResult != null) {
+                GameManager.getInstance().setTestoDisponibile(lastAnalysisResult.getSourceText());
                 statusLabel.setText("Analisi completata con successo.");
                 saveResultsBtn.setDisable(false);
                 showAlert(Alert.AlertType.INFORMATION, "Risultato Analisi", "Analisi completata con successo!",
-                        "Parola chiave estratta: '" + lastAnalysisResult.getKeyWord() + "'\n" +
-                        "Parole totali elaborate: " + lastAnalysisResult.getTotalWordsProcessed() + "\n" +
-                        "Tempo di esecuzione: " + lastAnalysisResult.getAnalysisTimeMs() + " ms");
+                    "Parole totali elaborate: " + lastAnalysisResult.getTotalWordsProcessed() + "\n" +
+                    "Tempo di esecuzione: " + lastAnalysisResult.getAnalysisTimeMs() + " ms");
             }
             setControlsDisabled(false);
         });
@@ -115,6 +117,16 @@ public class AdminDashboardViewController implements Initializable {
         });
 
         saveResultsBtn.setDisable(true);
+        
+        //Registrazione come notificato (setOnSessionStartedListener) per capire quando la partita inizia ed eseguire il codice
+        GameManager.getInstance().setOnSessionStartedListener((parola, difficolta) -> {
+            Platform.runLater(() -> {
+                showAlert(Alert.AlertType.INFORMATION, "Partita Iniziata!",
+                    "Una nuova sfida è iniziata",
+                    "Difficoltà: " + difficolta + "\n" +
+                    "Parola nascosta: " + parola);
+            });
+        });
     }
 
     /**

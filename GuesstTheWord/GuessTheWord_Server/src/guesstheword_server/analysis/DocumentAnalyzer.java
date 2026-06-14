@@ -4,6 +4,7 @@
  */
 package guesstheword_server.analysis;
 
+import guesstheword_server.game.Difficulty;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -85,6 +86,108 @@ public class DocumentAnalyzer {
                 .max(Map.Entry.comparingByValue())
                 .map(Map.Entry::getKey)
                 .orElseGet(this::randomFallback);
+    }
+    
+    /**
+     * Analizza il testo fornito ed estrae la parola più significativa a seconda della difficoltà
+     * Assegna la coppia parola-frequenza, filtrando stopword e parole troppo corte
+     * 
+     * @param text
+     * @param difficulty
+     * @return 
+     */
+    
+    public String extractKeyWord(String text, Difficulty difficulty) {
+        if (text == null || text.trim().isEmpty()) {
+            return randomFallback();
+        }
+
+        String[] tokens = text.toLowerCase().split("[^a-zA-Zàèìòùáéíóúâêîôûäëïöü]+");
+
+        
+        Map<String, Integer> freqMap = Arrays.stream(tokens)
+                .filter(token -> token.length() >= MIN_WORD_LENGTH)
+                .filter(token -> !STOPWORDS.contains(token))
+                .collect(java.util.stream.Collectors.groupingBy(
+                        token -> token,
+                        java.util.stream.Collectors.summingInt(token -> 1)
+             ));
+
+        if (freqMap.isEmpty()) return randomFallback();
+
+        switch (difficulty) {
+            case EASY:
+                //Parola più frequente e più corta (lunghezza <= 6)
+                return freqMap.entrySet().stream()
+                        .filter(e -> e.getKey().length() <= 6)
+                        .max(Map.Entry.comparingByValue())
+                        .map(Map.Entry::getKey)
+                        .orElseGet(() -> freqMap.entrySet().stream()
+                                .max(Map.Entry.comparingByValue())
+                                .map(Map.Entry::getKey)
+                                .orElseGet(this::randomFallback));
+
+            case HARD:
+                //Parola più rara con lunghezza >= 9
+                return freqMap.entrySet().stream()
+                    .filter(e -> e.getKey().length() >= 9)
+                    .min(Map.Entry.comparingByValue())
+                    .map(Map.Entry::getKey)
+                    .orElseGet(() -> freqMap.entrySet().stream()
+                            .min(Map.Entry.comparingByValue())
+                            .map(Map.Entry::getKey)
+                            .orElseGet(this::randomFallback));
+                
+            case MEDIUM:
+            default:
+                //Parola con lunghezza media (tra 6 e 8 lettere) e frequenza media (Considerato caso default)
+                return freqMap.entrySet().stream()
+                    .filter(e -> e.getKey().length() >= 6 && e.getKey().length() <= 8)
+                    .max(Map.Entry.comparingByValue())
+                    .map(Map.Entry::getKey)
+                    .orElseGet(() -> freqMap.entrySet().stream()
+                            .max(Map.Entry.comparingByValue())
+                            .map(Map.Entry::getKey)
+                            .orElseGet(this::randomFallback));
+        }
+    }    
+    
+    /**
+    * Estrae uno snippet di testo attorno alla parola chiave.
+    * Principio di funzionamento
+    * 1) Divide in testo in un array di String (split)
+    * 2) Cerca l'indice della keyword (ciclo for)
+    * 3) Calcola una finestra di 30 parole prima e dopo della keyword (se ci sono) da mostrare all'utente
+    * 4) Costruisce l'estratto di testo
+    *
+    * @param text    il testo completo
+    * @param keyword la parola attorno a cui estrarre lo snippet
+    * @return uno snippet di circa 20 parole attorno alla keyword
+    */
+    public String extractExcerpt(String text, String keyword) {
+        if (text == null || text.trim().isEmpty()) return keyword;
+
+        String[] words = text.split("\\s+");
+        int keyIndex = -1;
+
+        for (int i = 0; i < words.length; i++) {
+            if (words[i].toLowerCase().replaceAll("[^a-zA-Zàèìòùáéíóú]", "").equals(keyword)) {
+                keyIndex = i;
+                break;
+            }
+        }
+
+        if (keyIndex == -1) return keyword;
+
+        int from = Math.max(0, keyIndex - 30);
+        int to   = Math.min(words.length, keyIndex + 30);
+
+        StringBuilder sb = new StringBuilder();
+            for (int i = from; i < to; i++) {
+                sb.append(words[i]);
+                if (i < to - 1) sb.append(" ");
+            }
+        return sb.toString();
     }
 
     /**
