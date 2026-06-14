@@ -12,7 +12,6 @@ import java.util.Properties;
  *
  * @author Sabrina Soriano
  */
-
 public class ServerConnection {
 
     private static ServerConnection instance;
@@ -52,7 +51,7 @@ public class ServerConnection {
      */
     
     public static synchronized ServerConnection getInstance() throws IOException {
-        if (instance == null) {
+        if (instance == null || instance.socket.isClosed()) {
             instance = new ServerConnection();
         }
         return instance;
@@ -85,6 +84,21 @@ public class ServerConnection {
      * 
      * @throws IOException 
      */
+
+    private ListenerTask listenerTask;
+
+    public synchronized void startListener() {
+        if (listenerTask == null || listenerTask.isDone()) {
+            listenerTask = new ListenerTask(this);
+            Thread t = new Thread(listenerTask);
+            t.setDaemon(true);
+            t.start();
+        }
+    }
+
+    public synchronized ListenerTask getListenerTask() {
+        return listenerTask;
+    }
 
     public void close() throws IOException {
         socket.close();

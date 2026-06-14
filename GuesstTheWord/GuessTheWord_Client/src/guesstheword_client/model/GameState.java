@@ -22,9 +22,6 @@ public class GameState implements Serializable {
     /** Numero di tentativi residui prima del fallimento/timeout. */
     private int attemptsLeft;
 
-    /** Indica se è il turno del giocatore corrente. */
-    private boolean myTurn;
-
     /** Nome dell'avversario. */
     private String opponentName;
 
@@ -43,18 +40,16 @@ public class GameState implements Serializable {
     public GameState() {
         this.status = "WAITING";
         this.attemptsLeft = 3;
-        this.myTurn = false;
     }
 
     /**
      * Costruttore completo.
      */
-    public GameState(String wordPattern, String opponentPattern, int attemptsLeft, boolean myTurn,
+    public GameState(String wordPattern, String opponentPattern, int attemptsLeft,
                      String opponentName, String cipheredHint, int caesarShift, String status) {
         this.wordPattern = wordPattern;
         this.opponentPattern = opponentPattern;
         this.attemptsLeft = attemptsLeft;
-        this.myTurn = myTurn;
         this.opponentName = opponentName;
         this.cipheredHint = cipheredHint;
         this.caesarShift = caesarShift;
@@ -85,14 +80,6 @@ public class GameState implements Serializable {
 
     public void setAttemptsLeft(int attemptsLeft) {
         this.attemptsLeft = attemptsLeft;
-    }
-
-    public boolean isMyTurn() {
-        return myTurn;
-    }
-
-    public void setMyTurn(boolean myTurn) {
-        this.myTurn = myTurn;
     }
 
     public String getOpponentName() {
@@ -133,7 +120,6 @@ public class GameState implements Serializable {
                 "wordPattern='" + wordPattern + '\'' +
                 ", opponentPattern='" + opponentPattern + '\'' +
                 ", attemptsLeft=" + attemptsLeft +
-                ", myTurn=" + myTurn +
                 ", opponentName='" + opponentName + '\'' +
                 ", status='" + status + '\'' +
                 '}';

@@ -46,11 +46,9 @@ public class ChallengePreparator {
         // 1. Estrai la parola chiave dal testo
         String parolaNascosta = analyzer.extractKeyWord(text);
 
-        // 2. Genera lo shift in base alla difficoltà
         int shift = CaesarCipher.randomShift(difficulty);
 
-        // 3. Costruisci e restituisci la Challenge
-        return new Challenge(parolaNascosta, shift, LocalDateTime.now());
+        return new Challenge(parolaNascosta, shift, LocalDateTime.now(), difficulty.name());
     }
 
     /**

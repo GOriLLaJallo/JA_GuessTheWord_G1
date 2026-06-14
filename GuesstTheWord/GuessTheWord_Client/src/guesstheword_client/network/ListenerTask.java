@@ -12,31 +12,29 @@ import javafx.concurrent.Task;
  */
 public class ListenerTask extends Task<Void> {
 
-    private ServerConnection connection;
+    private final ServerConnection connection;
 
     /**
      * Il costruttore ha il solo compito di ricevere la ServerConnection (già aperta) e salvarla.
      * 
      * @param connection 
      */
-    
     public ListenerTask(ServerConnection connection) {
         this.connection = connection;
     }
     
     /**
      * Metodo che serve a ricevere i messaggi senza che il metodo bloccante (receiveMessage) blocchi l'app. 
-     * Principio di funzionamento: l'app non si blocca per la classe ListenerTask estende Task che le permette di runnare in background
-     * 
-     * @return
-     * @throws Exception 
+     * Utilizza updateMessage per notificare la property in modo thread-safe.
      */
-    
     @Override
     protected Void call() throws Exception {
-        String messaggio;
-        while ((messaggio = connection.receiveMessage()) != null) {
-            updateMessage(messaggio);
+        String message;
+        while ((message = connection.receiveMessage()) != null) {
+            // Imposta a null e poi al messaggio ricevuto per forzare l'attivazione
+            // dei listener anche in caso di messaggi identici consecutivi.
+            updateMessage(null);
+            updateMessage(message);
         }
         return null;
     }

@@ -24,6 +24,9 @@ public class Challenge {
     /** Data e ora di inizio della sfida. */
     private LocalDateTime dataSfida;
 
+    /** La difficoltà della sfida ("EASY", "MEDIUM", "HARD"). */
+    private String difficolta;
+
     /**
      * Costruttore di default vuoto.
      */
@@ -38,12 +41,14 @@ public class Challenge {
      * @param parolaNascosta La parola segreta in chiaro
      * @param shiftCesare    Il valore dello shift di Cesare
      * @param dataSfida      Data e ora della sfida
+     * @param difficolta     La difficoltà della sfida
      */
-    public Challenge(int id, String parolaNascosta, int shiftCesare, LocalDateTime dataSfida) {
+    public Challenge(int id, String parolaNascosta, int shiftCesare, LocalDateTime dataSfida, String difficolta) {
         this.id = id;
         this.parolaNascosta = parolaNascosta;
         this.shiftCesare = shiftCesare;
         this.dataSfida = dataSfida;
+        this.difficolta = difficolta;
     }
 
     /**
@@ -53,11 +58,13 @@ public class Challenge {
      * @param parolaNascosta La parola segreta in chiaro
      * @param shiftCesare    Il valore dello shift di Cesare
      * @param dataSfida      Data e ora della sfida
+     * @param difficolta     La difficoltà della sfida
      */
-    public Challenge(String parolaNascosta, int shiftCesare, LocalDateTime dataSfida) {
+    public Challenge(String parolaNascosta, int shiftCesare, LocalDateTime dataSfida, String difficolta) {
         this.parolaNascosta = parolaNascosta;
         this.shiftCesare = shiftCesare;
         this.dataSfida = dataSfida;
+        this.difficolta = difficolta;
     }
 
     // --- Getter e Setter ---
@@ -134,6 +141,24 @@ public class Challenge {
         this.dataSfida = dataSfida;
     }
 
+    /**
+     * Restituisce la difficoltà della sfida.
+     *
+     * @return difficolta ("EASY", "MEDIUM", "HARD")
+     */
+    public String getDifficolta() {
+        return difficolta;
+    }
+
+    /**
+     * Imposta la difficoltà della sfida.
+     *
+     * @param difficolta nuova difficoltà
+     */
+    public void setDifficolta(String difficolta) {
+        this.difficolta = difficolta;
+    }
+
     // --- Overriding di toString, equals e hashCode ---
 
     /**
@@ -148,6 +173,7 @@ public class Challenge {
                 ", parolaNascosta='" + parolaNascosta + '\'' +
                 ", shiftCesare=" + shiftCesare +
                 ", dataSfida=" + dataSfida +
+                ", difficolta='" + difficolta + '\'' +
                 '}';
     }
 

@@ -27,6 +27,9 @@ public class MatchRecord implements Serializable {
     /** Data e ora in cui si è svolta la sfida (rappresentata come stringa formattata). */
     private String matchDate;
 
+    /** Difficoltà della sfida ("EASY", "MEDIUM", "HARD"). */
+    private String difficulty;
+
     /**
      * Costruttore vuoto.
      */
@@ -36,12 +39,13 @@ public class MatchRecord implements Serializable {
     /**
      * Costruttore completo.
      */
-    public MatchRecord(String secretWord, String opponentName, String outcome, Integer responseTime, String matchDate) {
+    public MatchRecord(String secretWord, String opponentName, String outcome, Integer responseTime, String matchDate, String difficulty) {
         this.secretWord = secretWord;
         this.opponentName = opponentName;
         this.outcome = outcome;
         this.responseTime = responseTime;
         this.matchDate = matchDate;
+        this.difficulty = difficulty;
     }
 
     // --- Getter e Setter ---
@@ -86,6 +90,14 @@ public class MatchRecord implements Serializable {
         this.matchDate = matchDate;
     }
 
+    public String getDifficulty() {
+        return difficulty;
+    }
+
+    public void setDifficulty(String difficulty) {
+        this.difficulty = difficulty;
+    }
+
     @Override
     public String toString() {
         return "MatchRecord{" +
@@ -94,6 +106,7 @@ public class MatchRecord implements Serializable {
                 ", outcome='" + outcome + '\'' +
                 ", responseTime=" + responseTime +
                 ", matchDate='" + matchDate + '\'' +
+                ", difficulty='" + difficulty + '\'' +
                 '}';
     }
 }
