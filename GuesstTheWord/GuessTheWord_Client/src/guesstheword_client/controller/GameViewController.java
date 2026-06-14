@@ -115,32 +115,31 @@ public class GameViewController implements Initializable {
 
         if (command.equals(MessageProtocol.GAME_START)) {
             // GAME_START:testoCifrato:shiftCesare:durataSecondi
-            String encryptedWord = parts.length > 1 ? parts[1] : "???";
-            
-            // Imposta lo shift di Cesare nel modello
-            if (parts.length > 2) {
+            String encryptedWord = "???";
+            if (parts.length >= 4) {
+                // Ricostruisce il testo cifrato (che può contenere i due punti)
+                StringBuilder sb = new StringBuilder();
+                for (int i = 1; i < parts.length - 2; i++) {
+                    sb.append(parts[i]);
+                    if (i < parts.length - 3) sb.append(":");
+                }
+                encryptedWord = sb.toString();
+                
                 try {
-                    int shift = Integer.parseInt(parts[2]);
+                    int shift = Integer.parseInt(parts[parts.length - 2]);
                     gameState.setCaesarShift(shift);
                 } catch (NumberFormatException e) {
                     gameState.setCaesarShift(0);
                 }
-            }
-            
-            // Imposta la durata corretta del timer (parts[3] se presente, altrimenti fallback)
-            if (parts.length > 3) {
+                
                 try {
-                    secondsRemaining = Integer.parseInt(parts[3]);
-                } catch (NumberFormatException e) {
-                    secondsRemaining = 60;
-                }
-            } else if (parts.length > 2) {
-                try {
-                    secondsRemaining = Integer.parseInt(parts[2]);
+                    secondsRemaining = Integer.parseInt(parts[parts.length - 1]);
                 } catch (NumberFormatException e) {
                     secondsRemaining = 60;
                 }
             } else {
+                encryptedWord = parts.length > 1 ? parts[1] : "???";
+                gameState.setCaesarShift(0);
                 secondsRemaining = 60;
             }
             
