@@ -138,14 +138,18 @@ public class GameSession {
             } else if (handler == player2) {
                 player2Attempts--;
             }
-
-            // Se entrambi hanno esaurito i tentativi, termina istantaneamente la partita con un TIMEOUT anticipato
-            if (player1Attempts <= 0 && player2Attempts <= 0) {
-                System.out.println("[GameSession] Entrambi i giocatori hanno esaurito i tentativi. Termine anticipato.");
-                handleTimeout();
+            
+            //Se uno dei due giocatori finisce i tentativi disponibili l'altro vince
+            if (handler == player1 && player1Attempts <= 0) {
+                System.out.println("[GameSession] " + player1.getUsername() + " ha esaurito i tentativi. Vince " + player2.getUsername());
+                finishWithWinner(player2, System.currentTimeMillis() - startTimeMs);
                 return;
             }
-
+            else if (handler == player2 && player2Attempts <= 0) {
+                System.out.println("[GameSession] " + player2.getUsername() + " ha esaurito i tentativi. Vince " + player1.getUsername());
+                finishWithWinner(player1, System.currentTimeMillis() - startTimeMs);
+                return;
+            }
             handler.sendMessage(MessageProtocol.build(MessageProtocol.AUTH_FAIL, "Risposta errata. Riprova!"));
         }
     }

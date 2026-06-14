@@ -5,6 +5,7 @@
 package guesstheword_server.analysis;
 
 import guesstheword_server.game.Difficulty;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -117,41 +118,37 @@ public class DocumentAnalyzer {
 
         switch (difficulty) {
             case EASY:
-                //Parola più frequente e più corta (lunghezza <= 6)
-                return freqMap.entrySet().stream()
-                        .filter(e -> e.getKey().length() <= 6)
-                        .max(Map.Entry.comparingByValue())
-                        .map(Map.Entry::getKey)
-                        .orElseGet(() -> freqMap.entrySet().stream()
-                                .max(Map.Entry.comparingByValue())
-                                .map(Map.Entry::getKey)
-                                .orElseGet(this::randomFallback));
+                List<String> easyPool = freqMap.entrySet().stream()
+                    .filter(e -> e.getKey().length() <= 6)
+                    .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
+                    .limit(5)
+                    .map(Map.Entry::getKey)
+                    .collect(java.util.stream.Collectors.toList());
+                if (easyPool.isEmpty()) easyPool = new ArrayList<>(freqMap.keySet());
+                return easyPool.get(new Random().nextInt(easyPool.size()));
 
             case HARD:
-                //Parola più rara con lunghezza >= 9
-                return freqMap.entrySet().stream()
+                List<String> hardPool = freqMap.entrySet().stream()
                     .filter(e -> e.getKey().length() >= 9)
-                    .min(Map.Entry.comparingByValue())
+                    .sorted(Map.Entry.comparingByValue())
+                    .limit(5)
                     .map(Map.Entry::getKey)
-                    .orElseGet(() -> freqMap.entrySet().stream()
-                            .min(Map.Entry.comparingByValue())
-                            .map(Map.Entry::getKey)
-                            .orElseGet(this::randomFallback));
-                
+                    .collect(java.util.stream.Collectors.toList());
+                if (hardPool.isEmpty()) hardPool = new ArrayList<>(freqMap.keySet());
+                return hardPool.get(new Random().nextInt(hardPool.size()));
+
             case MEDIUM:
             default:
-                //Parola con lunghezza media (tra 6 e 8 lettere) e frequenza media (Considerato caso default)
-                return freqMap.entrySet().stream()
+                List<String> mediumPool = freqMap.entrySet().stream()
                     .filter(e -> e.getKey().length() >= 6 && e.getKey().length() <= 8)
-                    .max(Map.Entry.comparingByValue())
+                    .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
+                    .limit(5)
                     .map(Map.Entry::getKey)
-                    .orElseGet(() -> freqMap.entrySet().stream()
-                            .max(Map.Entry.comparingByValue())
-                            .map(Map.Entry::getKey)
-                            .orElseGet(this::randomFallback));
-        }
-    }    
-    
+                    .collect(java.util.stream.Collectors.toList());
+                if (mediumPool.isEmpty()) mediumPool = new ArrayList<>(freqMap.keySet());
+                return mediumPool.get(new Random().nextInt(mediumPool.size()));
+        }    
+    }
     /**
     * Estrae uno snippet di testo attorno alla parola chiave.
     * Principio di funzionamento
