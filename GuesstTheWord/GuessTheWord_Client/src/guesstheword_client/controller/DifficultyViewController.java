@@ -68,19 +68,12 @@ public class DifficultyViewController implements Initializable {
     @FXML
     private void handleHistory(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/guesstheword_client/resources/view/HistoryView.fxml"));
-            Parent viewParent = loader.load();
+            HistoryViewController historyController = guesstheword_client.utils.SceneManager.switchScene(event, "/guesstheword_client/resources/view/HistoryView.fxml");
             
             // Passa il listener di rete per ricevere i dati
-            HistoryViewController historyController = loader.getController();
             guesstheword_client.network.ServerConnection conn = guesstheword_client.network.ServerConnection.getInstance();
             conn.startListener();
             historyController.setListener(conn.getListenerTask());
-            
-            Scene scene = new Scene(viewParent);
-            Stage window = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            window.setScene(scene);
-            window.show();
         } catch (IOException e) {
             e.printStackTrace();
             errorLabel.setText("Errore caricamento Storico.");
@@ -96,16 +89,8 @@ public class DifficultyViewController implements Initializable {
      */
     private void goToWaitingRoom(ActionEvent event, String difficulty) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/guesstheword_client/resources/view/WaitingRoomView.fxml"));
-            Parent viewParent = loader.load();
-            
-            WaitingRoomViewController waitingController = loader.getController();
+            WaitingRoomViewController waitingController = guesstheword_client.utils.SceneManager.switchScene(event, "/guesstheword_client/resources/view/WaitingRoomView.fxml");
             waitingController.setDifficultyAndStart(difficulty);
-            
-            Scene scene = new Scene(viewParent);
-            Stage window = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            window.setScene(scene);
-            window.show();
         } catch (IOException e) {
             e.printStackTrace();
             errorLabel.setText("Errore caricamento Lobby.");

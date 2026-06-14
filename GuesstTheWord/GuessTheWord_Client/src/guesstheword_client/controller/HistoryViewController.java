@@ -170,14 +170,7 @@ public class HistoryViewController implements Initializable {
         }
         
         try {
-            // Torniamo alla selezione difficoltà invece che direttamente in attesa,
-            // così l'utente può scegliere di nuovo il livello.
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/guesstheword_client/resources/view/DifficultyView.fxml"));
-            Parent viewParent = loader.load();
-            Scene scene = new Scene(viewParent);
-            Stage window = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            window.setScene(scene);
-            window.show();
+            guesstheword_client.utils.SceneManager.switchScene(event, "/guesstheword_client/resources/view/DifficultyView.fxml");
         } catch (IOException e) {
             e.printStackTrace();
             errorLabel.setText("Errore durante il caricamento della schermata Difficoltà.");

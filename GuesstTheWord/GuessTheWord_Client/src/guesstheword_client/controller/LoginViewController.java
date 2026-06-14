@@ -282,14 +282,7 @@ public class LoginViewController implements Initializable {
                     System.out.println("[Client] Successo! Benvenuto: " + parts[1]);
                     
                     try {
-                        FXMLLoader loader = new FXMLLoader(getClass().getResource("/guesstheword_client/resources/view/DifficultyView.fxml"));
-                        Parent viewParent = loader.load();
-                        
-                        Scene scene = new Scene(viewParent);
-                        Stage window = (Stage) ((Node) event.getSource()).getScene().getWindow();
-                        window.setScene(scene);
-                        window.centerOnScreen();
-                        window.show();
+                        guesstheword_client.utils.SceneManager.switchScene(event, "/guesstheword_client/resources/view/DifficultyView.fxml");
                     } catch (IOException e) {
                         errorLabel.setText("Errore caricamento schermata difficoltà.");
                         e.printStackTrace();

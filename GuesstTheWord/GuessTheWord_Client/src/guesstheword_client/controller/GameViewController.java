@@ -307,13 +307,7 @@ public class GameViewController implements Initializable {
         }
         
         try {
-            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/guesstheword_client/resources/view/DifficultyView.fxml"));
-            javafx.scene.Parent viewParent = loader.load();
-            
-            javafx.scene.Scene scene = new javafx.scene.Scene(viewParent);
-            javafx.stage.Stage window = (javafx.stage.Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
-            window.setScene(scene);
-            window.show();
+            guesstheword_client.utils.SceneManager.switchScene(event, "/guesstheword_client/resources/view/DifficultyView.fxml");
         } catch (Exception e) {
             e.printStackTrace();
             statusLabel.setText("Errore ritorno alla lobby.");
@@ -333,16 +327,8 @@ public class GameViewController implements Initializable {
         }
         
         try {
-            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/guesstheword_client/resources/view/HistoryView.fxml"));
-            javafx.scene.Parent viewParent = loader.load();
-            
-            guesstheword_client.controller.HistoryViewController historyController = loader.getController();
+            guesstheword_client.controller.HistoryViewController historyController = guesstheword_client.utils.SceneManager.switchScene(event, "/guesstheword_client/resources/view/HistoryView.fxml");
             historyController.setListener(listenerTask);
-            
-            javafx.scene.Scene scene = new javafx.scene.Scene(viewParent);
-            javafx.stage.Stage window = (javafx.stage.Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
-            window.setScene(scene);
-            window.show();
         } catch (Exception e) {
             e.printStackTrace();
             statusLabel.setText("Errore caricamento storico.");

@@ -112,18 +112,11 @@ public class WaitingRoomViewController implements Initializable {
         }
         
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/guesstheword_client/resources/view/GameView.fxml"));
-            Parent viewParent = loader.load();
+            Stage window = (Stage) waitingLabel.getScene().getWindow();
+            guesstheword_client.controller.GameViewController gameController = guesstheword_client.utils.SceneManager.switchScene(window, "/guesstheword_client/resources/view/GameView.fxml");
             
             // Passa il listener al GameViewController
-            guesstheword_client.controller.GameViewController gameController = loader.getController();
             gameController.setListener(listenerTask);
-            
-            Scene scene = new Scene(viewParent);
-            Stage window = (Stage) waitingLabel.getScene().getWindow();
-            window.setScene(scene);
-            window.centerOnScreen();
-            window.show();
         } catch (IOException e) {
             e.printStackTrace();
             waitingLabel.setText("Errore caricamento gioco.");
