@@ -80,11 +80,9 @@ public class GameSession {
      * 6) Parte il countdown
      */
     public void start() {
-        GameManager.getInstance().notifySessionStarted(
-            challenge.getParolaNascosta(), challenge.getDifficolta());
         
         System.out.println("[GameSession] Partita avviata tra "
-                + player1.getUsername() + " e " + player2.getUsername());
+                + player1.getUsername() + " e " + player2.getUsername() + "Parola nascosta: " + challenge.getParolaNascosta());
 
         String parolaCifrata = CaesarCipher.encrypt(
             challenge.getParolaNascosta(), challenge.getShiftCesare());
@@ -94,7 +92,7 @@ public class GameSession {
                 : challenge.getParolaNascosta();
 
         String testoCifrato = estratto.replaceAll(
-                "(?i)" + challenge.getParolaNascosta(), parolaCifrata);
+            "(?i)" + challenge.getParolaNascosta(), "**" + parolaCifrata + "**"); 
 
         String gameStartMsg = MessageProtocol.build(
                 MessageProtocol.GAME_START,
@@ -138,18 +136,14 @@ public class GameSession {
             } else if (handler == player2) {
                 player2Attempts--;
             }
-            
-            //Se uno dei due giocatori finisce i tentativi disponibili l'altro vince
-            if (handler == player1 && player1Attempts <= 0) {
-                System.out.println("[GameSession] " + player1.getUsername() + " ha esaurito i tentativi. Vince " + player2.getUsername());
-                finishWithWinner(player2, System.currentTimeMillis() - startTimeMs);
+
+            // Se entrambi hanno esaurito i tentativi, termina istantaneamente la partita con un TIMEOUT anticipato
+            if (player1Attempts <= 0 && player2Attempts <= 0) {
+                System.out.println("[GameSession] Entrambi i giocatori hanno esaurito i tentativi. Termine anticipato.");
+                handleTimeout();
                 return;
             }
-            else if (handler == player2 && player2Attempts <= 0) {
-                System.out.println("[GameSession] " + player2.getUsername() + " ha esaurito i tentativi. Vince " + player1.getUsername());
-                finishWithWinner(player1, System.currentTimeMillis() - startTimeMs);
-                return;
-            }
+
             handler.sendMessage(MessageProtocol.build(MessageProtocol.AUTH_FAIL, "Risposta errata. Riprova!"));
         }
     }

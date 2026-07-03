@@ -135,6 +135,12 @@ public class HistoryViewController implements Initializable {
                             String[] fields = record.split(",");
                             if (fields.length >= 4) {
                                 String date = fields[0];
+                                try {
+                                    java.time.LocalDateTime dt = java.time.LocalDateTime.parse(date);
+                                    date = dt.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH.mm"));
+                                } catch (Exception e) {
+                                    //lascia la data originale se il parsing fallisce
+                                }
                                 String outcome = fields[1];
                                 String word = fields[2];
                                 String difficulty = fields[3];

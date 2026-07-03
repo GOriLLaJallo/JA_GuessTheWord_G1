@@ -18,6 +18,7 @@ public class ServerConnection {
     private Socket socket;
     private BufferedReader in;
     private PrintWriter out;
+    private ListenerTask listenerTask;
     
     /**
      * Costruttore del client che:
@@ -85,8 +86,16 @@ public class ServerConnection {
      * @throws IOException 
      */
 
-    private ListenerTask listenerTask;
-
+    public void close() throws IOException {
+        socket.close();
+    }
+    
+    /**
+     * Crea un thread dedicato all'ascolto dei messsaggi mandati dal server
+     * Si assicura che nessun altro thread sia attivo per evitare che ci siano 2 thread che leggano dalla stessa socket
+     * Il thread è pensato come Deamon Thread (thread di backgroung (non blocca la chiusura dell'applicazione) che viene terminato dal sistema in caso di terminazione del programma)
+     */
+    
     public synchronized void startListener() {
         if (listenerTask == null || listenerTask.isDone()) {
             listenerTask = new ListenerTask(this);
@@ -95,12 +104,14 @@ public class ServerConnection {
             t.start();
         }
     }
+    
+    /**
+     * Getter
+     * 
+     * @return 
+     */
 
     public synchronized ListenerTask getListenerTask() {
         return listenerTask;
-    }
-
-    public void close() throws IOException {
-        socket.close();
     }
 }
