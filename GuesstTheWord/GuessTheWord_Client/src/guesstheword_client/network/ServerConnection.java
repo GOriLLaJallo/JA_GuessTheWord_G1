@@ -110,12 +110,13 @@ public class ServerConnection {
      */
     
     public synchronized void startListener() {
-        if (listenerTask == null || listenerTask.isDone()) {
-            listenerTask = new ListenerTask(this);
-            Thread t = new Thread(listenerTask);
-            t.setDaemon(true);
-            t.start();
+        if (listenerTask != null && !listenerTask.isDone()) {
+            listenerTask.cancel();
         }
+        listenerTask = new ListenerTask(this);
+        Thread t = new Thread(listenerTask);
+        t.setDaemon(true);
+        t.start();
     }
     
     /**

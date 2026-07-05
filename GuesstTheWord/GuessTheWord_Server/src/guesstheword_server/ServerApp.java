@@ -41,6 +41,21 @@ public class ServerApp extends Application {
                 }
             }));
             
+            // Carica la cache di analisi in modo sincrono all'avvio prima di accettare client
+            java.io.File defaultCache = new java.io.File("cache_analisi.ser");
+            if (defaultCache.exists()) {
+                try (java.io.ObjectInputStream ois = new java.io.ObjectInputStream(new java.io.FileInputStream(defaultCache))) {
+                    Object obj = ois.readObject();
+                    if (obj instanceof guesstheword_server.analysis.AnalysisResult) {
+                        guesstheword_server.analysis.AnalysisResult result = (guesstheword_server.analysis.AnalysisResult) obj;
+                        guesstheword_server.game.GameManager.getInstance().setTestoDisponibile(result.getSourceText());
+                        System.out.println("[ServerApp] Cache di analisi caricata in modo sincrono all'avvio.");
+                    }
+                } catch (Exception e) {
+                    System.err.println("[ServerApp] Errore nel caricamento della cache all'avvio: " + e.getMessage());
+                }
+            }
+            
             // Avvio del GameServer in un thread separato
             Thread serverThread = new Thread(() -> {
                 try {

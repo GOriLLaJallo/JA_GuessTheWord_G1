@@ -76,10 +76,10 @@ public class GameViewController implements Initializable {
         gameState = new GameState();
         gameService = new guesstheword_client.service.GameService();
         
-        // Permetti l'inserimento di solo testo (lettere e spazi) nel campo di risposta
+        // Permetti l'inserimento di lettere (inclusi i caratteri accentati italiani) e spazi nel campo di risposta
         answerField.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (!newValue.matches("[a-zA-Z\\s]*")) {
-                answerField.setText(newValue.replaceAll("[^a-zA-Z\\s]", ""));
+            if (!newValue.matches("[a-zA-ZàèéìòùÀÈÉÌÒÙ\\s]*")) {
+                answerField.setText(newValue.replaceAll("[^a-zA-ZàèéìòùÀÈÉÌÒÙ\\s]", ""));
             }
         });
     }    
@@ -156,6 +156,13 @@ public class GameViewController implements Initializable {
         String command = parts[0];
 
         if (command.equals(MessageProtocol.GAME_START)) {
+            // Imposta timeout dinamico di 90 secondi (60s + 30s)
+            try {
+                guesstheword_client.network.ServerConnection.getInstance().setSoTimeout(90000);
+            } catch (IOException e) {
+                System.err.println("[GameViewController] Errore nell'impostare il timeout sulla socket: " + e.getMessage());
+            }
+
             // GAME_START:testoCifrato:shiftCesare:durataSecondi
             String encryptedWord = "???";
             if (parts.length >= 4) {
@@ -215,13 +222,41 @@ public class GameViewController implements Initializable {
         }
     }
 
+    private boolean alertGiaMostrato = false;
+
     private void handleNetworkEvent(ClientNetworkEvent event) {
         if (event == ClientNetworkEvent.SERVER_SHUTDOWN) {
             gameState.setStatus("SERVER_SHUTDOWN");
             stopGame("Il server è stato arrestato dall'amministratore", "#ff3b30", "");
+            javafx.application.Platform.runLater(() -> showErrorAndExit("Il server è stato arrestato dall'amministratore."));
         } else if (event == ClientNetworkEvent.TIMEOUT || event == ClientNetworkEvent.CONNECTION_LOST) {
             gameState.setStatus("CONNECTION_LOST");
             stopGame("Connessione al server persa, riprova più tardi", "#ff3b30", "");
+            javafx.application.Platform.runLater(() -> showErrorAndExit("Connessione al server persa, riprova più tardi."));
+        }
+    }
+
+    private void showErrorAndExit(String message) {
+        if (alertGiaMostrato) return;
+        alertGiaMostrato = true;
+
+        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
+        alert.setTitle("Errore di Connessione");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+        
+        try {
+            ServerConnection.getInstance().close();
+        } catch (IOException e) {
+            System.err.println("[GameView] Errore nella chiusura della socket: " + e.getMessage());
+        }
+
+        try {
+            Stage window = (Stage) timerLabel.getScene().getWindow();
+            guesstheword_client.utils.SceneManager.switchScene(window, "/guesstheword_client/resources/view/LoginView.fxml");
+        } catch (Exception e) {
+            System.err.println("[GameView] Errore nel ritorno alla schermata di Login: " + e.getMessage());
         }
     }
     
@@ -286,6 +321,13 @@ public class GameViewController implements Initializable {
      * @param clearWord la parola in chiaro da mostrare a fine partita
      */
     private void stopGame(String message, String colorHex, String clearWord) {
+        // Ripristina timeout a 0
+        try {
+            guesstheword_client.network.ServerConnection.getInstance().setSoTimeout(0);
+        } catch (IOException e) {
+            System.err.println("[GameViewController] Errore nel ripristinare il timeout della socket a 0: " + e.getMessage());
+        }
+
         if (countdownTimeline != null) countdownTimeline.stop();
         answerField.setDisable(true);
         guessButton.setDisable(true);

@@ -98,33 +98,8 @@ public class ClientHandler implements Runnable {
             this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             this.out = new PrintWriter(socket.getOutputStream(), true);
             System.out.println("[ClientHandler] Handler avviato per: " + socket.getInetAddress());
-            
-            // Imposta timeout fisso e breve per il polling
-            socket.setSoTimeout(2000);
-            
-            long lastActivityTimestamp = System.currentTimeMillis();
-
-            while (true) {
-                String messaggio = null;
-                try {
-                    messaggio = in.readLine();
-                } catch (java.net.SocketTimeoutException e) {
-                    // Controlla se la soglia di inattività per lo stato attuale è stata superata
-                    long elapsed = System.currentTimeMillis() - lastActivityTimestamp;
-                    if (elapsed > getInactivityThreshold()) {
-                        System.out.println("[ClientHandler] Inattività superata (" + elapsed + " ms) per " + socket.getInetAddress() + ". Disconnessione.");
-                        break;
-                    }
-                    continue;
-                }
-
-                if (messaggio == null) {
-                    System.out.println("[ClientHandler] Connessione chiusa ordinatamente dal client: " + socket.getInetAddress());
-                    break;
-                }
-
-                // Ricezione di dati con successo
-                lastActivityTimestamp = System.currentTimeMillis();
+            String messaggio;
+            while ((messaggio = in.readLine()) != null) {
                 System.out.println("[ClientHandler] Ricevuto: " + messaggio);
                 String[] parts = MessageProtocol.parse(messaggio);
                 String command = parts[0];
@@ -151,6 +126,9 @@ public class ClientHandler implements Runnable {
                 }
             }
         } 
+        catch (java.net.SocketTimeoutException e) {
+            System.out.println("[ClientHandler] Timeout di lettura superato (SoTimeout) per: " + socket.getInetAddress());
+        }
         catch (IOException e) {
             System.out.println("[ClientHandler] Client disconnesso o errore I/O: " + socket.getInetAddress() + " - " + e.getMessage());
         } 
@@ -334,21 +312,5 @@ public class ClientHandler implements Runnable {
     
     public void setCurrentSession(GameSession session) {
         this.currentSession = session;
-    }
-
-    public GameSession getCurrentSession() {
-        return currentSession;
-    }
-
-    private boolean isSessionActive() {
-        return currentSession != null && !currentSession.isFinished();
-    }
-
-    private long getInactivityThreshold() {
-        if (isSessionActive()) {
-            // (DEFAULT_TIMER_SECONDS + 30) * 1000 -> 90000 ms
-            return (GameSession.DEFAULT_TIMER_SECONDS + 30) * 1000L;
-        }
-        return Long.MAX_VALUE; // Nessun limite di inattività al di fuori della partita attiva
     }
 }

@@ -275,6 +275,9 @@ public class AdminDashboardViewController implements Initializable {
                     cacheStatusLabel.setText("Cache: Caricata (" + file.getName() + ")");
                     saveResultsBtn.setDisable(false);
                     
+                    // Ripristina il testo disponibile nel GameManager
+                    GameManager.getInstance().setTestoDisponibile(lastAnalysisResult.getSourceText());
+                    
                     showAlert(Alert.AlertType.INFORMATION, "Caricamento Cache", "Cache caricata con successo!",
                             "File caricato: " + file.getName() + "\n" +
                             "Parola chiave: '" + lastAnalysisResult.getKeyWord() + "'\n" +

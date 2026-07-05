@@ -130,6 +130,8 @@ public class WaitingRoomViewController implements Initializable {
         }
     }
 
+    private boolean alertGiaMostrato = false;
+
     private void handleNetworkEvent(ClientNetworkEvent event) {
         if (event == ClientNetworkEvent.SERVER_SHUTDOWN) {
             javafx.application.Platform.runLater(() -> showErrorAndExit("Il server è stato arrestato dall'amministratore."));
@@ -139,11 +141,20 @@ public class WaitingRoomViewController implements Initializable {
     }
 
     private void showErrorAndExit(String message) {
+        if (alertGiaMostrato) return;
+        alertGiaMostrato = true;
+        
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Errore di Connessione");
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+        
+        try {
+            ServerConnection.getInstance().close();
+        } catch (IOException e) {
+            System.err.println("[WaitingRoomView] Errore nella chiusura della socket: " + e.getMessage());
+        }
         
         try {
             Stage window = (Stage) waitingLabel.getScene().getWindow();
