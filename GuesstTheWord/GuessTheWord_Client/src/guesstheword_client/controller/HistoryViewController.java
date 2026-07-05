@@ -9,6 +9,8 @@ import guesstheword_client.network.ListenerTask;
 import guesstheword_client.network.MessageProtocol;
 import guesstheword_client.network.ServerConnection;
 import java.io.IOException;
+import guesstheword_client.network.ClientNetworkEvent;
+import javafx.scene.control.Alert;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
@@ -96,6 +98,11 @@ public class HistoryViewController implements Initializable {
         }
         
         this.listenerTask.messageProperty().addListener(messageListener);
+        this.listenerTask.networkEventProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                handleNetworkEvent(newVal);
+            }
+        });
         
         // Richiedi lo storico al server
         requestHistory();
@@ -174,6 +181,29 @@ public class HistoryViewController implements Initializable {
         } catch (IOException e) {
             e.printStackTrace();
             errorLabel.setText("Errore durante il caricamento della schermata Difficoltà.");
+        }
+    }
+
+    private void handleNetworkEvent(ClientNetworkEvent event) {
+        if (event == ClientNetworkEvent.SERVER_SHUTDOWN) {
+            javafx.application.Platform.runLater(() -> showErrorAndExit("Il server è stato arrestato dall'amministratore."));
+        } else if (event == ClientNetworkEvent.TIMEOUT || event == ClientNetworkEvent.CONNECTION_LOST) {
+            javafx.application.Platform.runLater(() -> showErrorAndExit("Connessione al server persa, riprova più tardi."));
+        }
+    }
+
+    private void showErrorAndExit(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Errore di Connessione");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+        
+        try {
+            Stage window = (Stage) errorLabel.getScene().getWindow();
+            guesstheword_client.utils.SceneManager.switchScene(window, "/guesstheword_client/resources/view/LoginView.fxml");
+        } catch (Exception e) {
+            System.err.println("[HistoryView] Errore nel ritorno alla schermata di Login: " + e.getMessage());
         }
     }
 }

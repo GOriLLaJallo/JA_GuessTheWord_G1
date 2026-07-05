@@ -18,6 +18,8 @@ import javafx.stage.Stage;
  */
 public class ServerApp extends Application {
 
+    private static GameServer gameServer;
+
     @Override
     public void start(Stage primaryStage) {
         try {
@@ -31,15 +33,19 @@ public class ServerApp extends Application {
             Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    System.out.println("[ShutdownHook] Rilevata terminazione di sistema: arresto dello scheduler...");
+                    System.out.println("[ShutdownHook] Rilevata terminazione di sistema: arresto dello scheduler e del server...");
                     guesstheword_server.game.GameSession.shutdownScheduler();
+                    if (gameServer != null) {
+                        gameServer.stopCon();
+                    }
                 }
             }));
             
             // Avvio del GameServer in un thread separato
             Thread serverThread = new Thread(() -> {
                 try {
-                    new GameServer().startCon();
+                    gameServer = new GameServer();
+                    gameServer.startCon();
                 } catch (IOException e) {
                     System.err.println("[ServerApp] Errore avvio GameServer: " + e.getMessage());
                 }
@@ -70,8 +76,11 @@ public class ServerApp extends Application {
 
     @Override
     public void stop() throws Exception {
-        System.out.println("[ServerApp] Arresto applicazione: spegnimento dello scheduler in corso...");
+        System.out.println("[ServerApp] Arresto applicazione: spegnimento dello scheduler e del server in corso...");
         guesstheword_server.game.GameSession.shutdownScheduler();
+        if (gameServer != null) {
+            gameServer.stopCon();
+        }
         super.stop();
     }
 

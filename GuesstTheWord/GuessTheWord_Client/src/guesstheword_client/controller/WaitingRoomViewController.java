@@ -3,6 +3,8 @@ package guesstheword_client.controller;
 import guesstheword_client.network.ListenerTask;
 import guesstheword_client.network.MessageProtocol;
 import guesstheword_client.network.ServerConnection;
+import guesstheword_client.network.ClientNetworkEvent;
+import javafx.scene.control.Alert;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -87,6 +89,11 @@ public class WaitingRoomViewController implements Initializable {
             }
         };
         listenerTask.messageProperty().addListener(messageListener);
+        listenerTask.networkEventProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                handleNetworkEvent(newVal);
+            }
+        });
 
         // 3. Invia la richiesta al server dopo che l'ascoltatore è configurato
         try {
@@ -120,6 +127,29 @@ public class WaitingRoomViewController implements Initializable {
         } catch (IOException e) {
             e.printStackTrace();
             waitingLabel.setText("Errore caricamento gioco.");
+        }
+    }
+
+    private void handleNetworkEvent(ClientNetworkEvent event) {
+        if (event == ClientNetworkEvent.SERVER_SHUTDOWN) {
+            javafx.application.Platform.runLater(() -> showErrorAndExit("Il server è stato arrestato dall'amministratore."));
+        } else if (event == ClientNetworkEvent.TIMEOUT || event == ClientNetworkEvent.CONNECTION_LOST) {
+            javafx.application.Platform.runLater(() -> showErrorAndExit("Connessione al server persa, riprova più tardi."));
+        }
+    }
+
+    private void showErrorAndExit(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Errore di Connessione");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+        
+        try {
+            Stage window = (Stage) waitingLabel.getScene().getWindow();
+            guesstheword_client.utils.SceneManager.switchScene(window, "/guesstheword_client/resources/view/LoginView.fxml");
+        } catch (Exception e) {
+            System.err.println("[WaitingRoomView] Errore nel ritorno alla schermata di Login: " + e.getMessage());
         }
     }
 }

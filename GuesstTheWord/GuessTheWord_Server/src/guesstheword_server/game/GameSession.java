@@ -92,6 +92,18 @@ public class GameSession {
         System.out.println("[GameSession] Partita avviata tra "
                 + player1.getUsername() + " e " + player2.getUsername() + " Parola nascosta: " + challenge.getParolaNascosta());
 
+        // Imposta il timeout dinamico per entrambi i client (timeout di gioco + 30s)
+        try {
+            if (player1.getSocket() != null) {
+                player1.getSocket().setSoTimeout((DEFAULT_TIMER_SECONDS + 30) * 1000);
+            }
+            if (player2.getSocket() != null) {
+                player2.getSocket().setSoTimeout((DEFAULT_TIMER_SECONDS + 30) * 1000);
+            }
+        } catch (java.net.SocketException e) {
+            System.err.println("[GameSession] Errore nell'impostare il timeout sulla socket per i client: " + e.getMessage());
+        }
+
         String parolaCifrata = CaesarCipher.encrypt(
             challenge.getParolaNascosta(), challenge.getShiftCesare());
 
@@ -199,6 +211,8 @@ public class GameSession {
             return;
         }
 
+        resetSocketTimeouts();
+
         finished = true;
         cancelTimeout();
 
@@ -223,6 +237,7 @@ public class GameSession {
      * @param responseTimeMs il tempo di risposta in millisecondi
      */
     private void finishWithWinner(ClientHandler winner, long responseTimeMs) {
+        resetSocketTimeouts();
         finished = true;
         cancelTimeout();
 
@@ -251,6 +266,7 @@ public class GameSession {
         if (finished) {
             return;
         }
+        resetSocketTimeouts();
         finished = true;
 
         // Salva i risultati nel database PRIMA di inviare i messaggi per evitare race condition
@@ -382,6 +398,19 @@ public class GameSession {
      */
     public ClientHandler getPlayer2() {
         return player2;
+    }
+
+    private void resetSocketTimeouts() {
+        try {
+            if (player1 != null && player1.getSocket() != null) {
+                player1.getSocket().setSoTimeout(0);
+            }
+            if (player2 != null && player2.getSocket() != null) {
+                player2.getSocket().setSoTimeout(0);
+            }
+        } catch (java.net.SocketException e) {
+            System.err.println("[GameSession] Errore nel ripristinare il timeout sulla socket: " + e.getMessage());
+        }
     }
 
     /**

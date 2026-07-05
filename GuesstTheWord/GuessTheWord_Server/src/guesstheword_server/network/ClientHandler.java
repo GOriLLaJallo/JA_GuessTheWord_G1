@@ -30,15 +30,26 @@ public class ClientHandler implements Runnable {
     private String username;
     private User user;
     private GameSession currentSession;
+    private ClientRegistry registry;
 
     /**
-     * Costruttore che prende la socket e ci apre 2 canali di comunicazione (in e out) tra client e server
+     * Costruttore che prende la socket e il registro dei client.
      * 
-     * @param socket
-     * @throws IOException 
+     * @param socket la socket del client
+     * @param registry il registro dei client connessi
      */
-    public ClientHandler(Socket socket) {
+    public ClientHandler(Socket socket, ClientRegistry registry) {
         this.socket = socket;
+        this.registry = registry;
+    }
+
+    /**
+     * Restituisce la socket associata a questo handler.
+     *
+     * @return la socket
+     */
+    public Socket getSocket() {
+        return socket;
     }
     
     /**
@@ -115,10 +126,16 @@ public class ClientHandler implements Runnable {
                 }
             }
         } 
+        catch (java.net.SocketTimeoutException e) {
+            System.out.println("[ClientHandler] Timeout di lettura superato (SoTimeout) per: " + socket.getInetAddress());
+        }
         catch (IOException e) {
             System.out.println("[ClientHandler] Client disconnesso o errore I/O: " + socket.getInetAddress() + " - " + e.getMessage());
         } 
         finally {
+            if (registry != null) {
+                registry.unregister(this);
+            }
             handleClientDisconnection();
             try {
                 if (socket != null) {

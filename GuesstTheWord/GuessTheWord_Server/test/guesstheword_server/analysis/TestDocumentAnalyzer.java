@@ -3,6 +3,7 @@ package guesstheword_server.analysis;
 import guesstheword_server.game.Difficulty;
 import guesstheword_server.game.GameSession;
 import guesstheword_server.network.ClientHandler;
+import guesstheword_server.network.ClientRegistry;
 import guesstheword_server.model.Challenge;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -128,8 +129,9 @@ public class TestDocumentAnalyzer {
         Challenge c1 = new Challenge("computer", 3, java.time.LocalDateTime.now(), null);
         java.net.Socket s1 = new java.net.Socket();
         java.net.Socket s2 = new java.net.Socket();
-        ClientHandler ch1 = new ClientHandler(s1);
-        ClientHandler ch2 = new ClientHandler(s2);
+        ClientRegistry registry = ClientRegistry.getInstance();
+        ClientHandler ch1 = new ClientHandler(s1, registry);
+        ClientHandler ch2 = new ClientHandler(s2, registry);
         
         GameSession session1 = new GameSession(ch1, ch2, c1);
         session1.start();

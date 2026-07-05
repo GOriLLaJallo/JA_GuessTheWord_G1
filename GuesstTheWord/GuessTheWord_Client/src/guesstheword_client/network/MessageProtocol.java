@@ -57,6 +57,9 @@ public class MessageProtocol {
     //messaggio inviato dal server con lo storico formattato: HISTORY_DATA
     public static final String HISTORY_DATA = "HISTORY_DATA";
 
+    // messaggio di spegnimento controllato del server
+    public static final String SERVER_SHUTDOWN = "SERVER_SHUTDOWN";
+
     /**
      * Costruisco un messaggio
      *

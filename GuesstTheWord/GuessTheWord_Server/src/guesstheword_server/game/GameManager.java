@@ -135,5 +135,22 @@ public class GameManager {
             ? challengePreparator.prepare(testoDisponibile, difficulty)
             : challengePreparator.prepareRandom(difficulty);
     }
+
+    /**
+     * Esegue la pulizia completa di tutte le sessioni attive e svuota
+     * tutte le code di attesa dei giocatori per ogni difficoltà.
+     * Questo metodo va richiamato esclusivamente durante lo spegnimento
+     * controllato del server.
+     */
+    public synchronized void shutdownAll() {
+        System.out.println("[GameManager] Esecuzione clean-up globale di sessioni e code...");
+        activeSessions.clear();
+        for (Difficulty d : Difficulty.values()) {
+            List<ClientHandler> queue = waitingPlayers.get(d);
+            if (queue != null) {
+                queue.clear();
+            }
+        }
+    }
 }
 
