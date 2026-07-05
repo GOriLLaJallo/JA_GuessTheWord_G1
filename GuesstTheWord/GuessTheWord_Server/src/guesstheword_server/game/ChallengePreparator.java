@@ -48,16 +48,35 @@ public class ChallengePreparator {
      * @return un oggetto {@link Challenge} pronto per la sessione di gioco
      */
     public Challenge prepare(String text, Difficulty difficulty) {
-        // 1. Estrai la parola chiave dal testo a seconda della difficoltà
-        String parolaNascosta = analyzer.extractKeyWord(text, difficulty);
+        if (text == null || text.trim().isEmpty()) {
+            return prepareRandom(difficulty);
+        }
 
-        int shift = CaesarCipher.randomShift(difficulty);
-        
-        Challenge c = new Challenge(parolaNascosta, shift, LocalDateTime.now(), difficulty.name());
-        String estratto = analyzer.extractExcerpt(text, parolaNascosta);
-        c.setEstratto(estratto);
-        return c;
-        
+        for (int i = 0; i < 10; i++) {
+            String parolaNascosta = analyzer.extractKeyWord(text, difficulty);
+            String estratto = analyzer.extractExcerpt(text, parolaNascosta);
+            if (estratto != null && contieneParola(estratto, parolaNascosta)) {
+                int shift = CaesarCipher.randomShift(difficulty);
+                Challenge c = new Challenge(parolaNascosta, shift, LocalDateTime.now(), difficulty.name());
+                c.setEstratto(estratto);
+                return c;
+            }
+        }
+
+        System.err.println("[WARNING] [ChallengePreparator] Impossibile generare una sfida valida dal testo dopo 10 tentativi. Fallback su sfida random.");
+        return prepareRandom(difficulty);
+    }
+
+    private boolean contieneParola(String estratto, String parola) {
+        if (estratto == null || parola == null) return false;
+        String lowerParola = parola.toLowerCase();
+        String[] tokens = estratto.toLowerCase().split("[^a-zA-Zàèìòùáéíóúâêîôûäëïöü]+");
+        for (int i = 0; i < tokens.length; i++) {
+            if (tokens[i].equals(lowerParola)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

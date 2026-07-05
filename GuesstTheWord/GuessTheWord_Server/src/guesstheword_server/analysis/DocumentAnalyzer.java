@@ -156,30 +156,40 @@ public class DocumentAnalyzer {
     * @return uno snippet di circa 20 parole attorno alla keyword
     */
     public String extractExcerpt(String text, String keyword) {
-        if (text == null || text.trim().isEmpty()) return keyword;
+        if (text == null || text.trim().isEmpty() || keyword == null || keyword.trim().isEmpty()) {
+            return null;
+        }
 
         String[] words = text.split("\\s+");
         List<Integer> matchingIndices = new ArrayList<>();
+        String lowerKeyword = keyword.toLowerCase();
 
         for (int i = 0; i < words.length; i++) {
-            if (words[i].toLowerCase().replaceAll("[^a-zA-Zàèìòùáéíóú]", "").equals(keyword)) {
-                matchingIndices.add(i);
+            String[] subTokens = words[i].toLowerCase().split("[^a-zA-Zàèìòùáéíóúâêîôûäëïöü]+");
+            for (int j = 0; j < subTokens.length; j++) {
+                if (subTokens[j].equals(lowerKeyword)) {
+                    matchingIndices.add(i);
+                    break;
+                }
             }
         }
 
-        if (matchingIndices.isEmpty()) return keyword;
+        if (matchingIndices.isEmpty()) {
+            return null;
+        }
 
-        
         int keyIndex = matchingIndices.get(new Random().nextInt(matchingIndices.size()));
 
         int from = Math.max(0, keyIndex - 15);
         int to   = Math.min(words.length, keyIndex + 15);
 
         StringBuilder sb = new StringBuilder();
-            for (int i = from; i < to; i++) {
-                sb.append(words[i]);
-                if (i < to - 1) sb.append(" ");
+        for (int i = from; i < to; i++) {
+            sb.append(words[i]);
+            if (i < to - 1) {
+                sb.append(" ");
             }
+        }
         return sb.toString();
     }
 

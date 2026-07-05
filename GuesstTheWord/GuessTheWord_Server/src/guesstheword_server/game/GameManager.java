@@ -122,5 +122,18 @@ public class GameManager {
             session.start();
         }
     }
+
+    /**
+     * Rigenera una sfida (Challenge) in modo sincronizzato e thread-safe,
+     * garantendo l'incapsulamento di testoDisponibile e challengePreparator.
+     *
+     * @param difficulty la difficoltà della sfida
+     * @return una nuova sfida generata
+     */
+    public synchronized Challenge regenerateChallenge(Difficulty difficulty) {
+        return (testoDisponibile != null)
+            ? challengePreparator.prepare(testoDisponibile, difficulty)
+            : challengePreparator.prepareRandom(difficulty);
+    }
 }
 

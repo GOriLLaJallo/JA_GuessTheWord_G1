@@ -239,9 +239,9 @@ public class LoginViewController implements Initializable {
             return;
         }
 
-        // Controllo carattere vietato ':'
-        if (username.contains(":") || password.contains(":")) {
-            errorLabel.setText("Il carattere ':' non è consentito!");
+        // Controllo caratteri vietati
+        if (username.contains(":") || password.contains(":") || username.contains("\u001F") || password.contains("\u001F")) {
+            errorLabel.setText("Caratteri speciali non consentiti!");
             return;
         }
         

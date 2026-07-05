@@ -124,10 +124,10 @@ public class HistoryViewController implements Initializable {
 
         if (command.equals(MessageProtocol.HISTORY_DATA)) {
             historyData.clear();
-            //Ricostruisce il payload dopo il primo ":" per evitare problemi con i timestamp
-            int firstColon = message.indexOf(":");
+            //Ricostruisce il payload dopo il primo delimitatore \u001F per evitare problemi con i timestamp
+            int firstColon = message.indexOf("\u001F");
             if (firstColon != -1 && firstColon < message.length() - 1) {
-                String allRecords = message.substring(firstColon + 1); //tutto quello dopo i primi ":"
+                String allRecords = message.substring(firstColon + 1); //tutto quello dopo il primo delimitatore
                 if (!allRecords.isEmpty() && !allRecords.equals("Nessuna partita giocata.")) {
                     String[] records = allRecords.split(";");
                     for (String record : records) {

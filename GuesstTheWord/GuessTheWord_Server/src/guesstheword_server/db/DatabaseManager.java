@@ -115,7 +115,8 @@ public class DatabaseManager {
                 + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + "parola_nascosta TEXT NOT NULL, "
                 + "shift_cesare INTEGER NOT NULL, "
-                + "data_sfida TEXT NOT NULL"
+                + "data_sfida TEXT NOT NULL, "
+                + "difficolta TEXT"
                 + ");";
 
         String createRisultatiTable = "CREATE TABLE IF NOT EXISTS risultati ("
@@ -135,6 +136,20 @@ public class DatabaseManager {
             stmt.execute(createUtentiTable);
             stmt.execute(createSfideTable);
             stmt.execute(createRisultatiTable);
+
+            // Migrazione incrementale e idempotente per la colonna 'difficolta'
+            boolean columnExists = false;
+            try (ResultSet columnsRs = conn.getMetaData().getColumns(null, null, "sfide", "difficolta")) {
+                if (columnsRs.next()) {
+                    columnExists = true;
+                }
+            }
+            if (!columnExists) {
+                try (Statement alterStmt = conn.createStatement()) {
+                    alterStmt.execute("ALTER TABLE sfide ADD COLUMN difficolta TEXT;");
+                    System.out.println("[DB] Migrazione: colonna 'difficolta' aggiunta con successo alla tabella 'sfide'.");
+                }
+            }
 
             // Inserimento utente admin predefinito se non è già presente
             try (ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM utenti WHERE username = 'admin';")) {

@@ -153,11 +153,11 @@ public class GameViewController implements Initializable {
             // GAME_START:testoCifrato:shiftCesare:durataSecondi
             String encryptedWord = "???";
             if (parts.length >= 4) {
-                // Ricostruisce il testo cifrato (che può contenere i due punti)
+                // Ricostruisce il testo cifrato (che può contenere il delimitatore)
                 StringBuilder sb = new StringBuilder();
                 for (int i = 1; i < parts.length - 2; i++) {
                     sb.append(parts[i]);
-                    if (i < parts.length - 3) sb.append(":");
+                    if (i < parts.length - 3) sb.append("\u001F");
                 }
                 encryptedWord = sb.toString();
         

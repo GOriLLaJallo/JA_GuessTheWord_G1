@@ -6,8 +6,11 @@ import guesstheword_server.model.Challenge;
 import guesstheword_server.model.GameResult;
 import guesstheword_server.network.ClientHandler;
 import guesstheword_server.protocol.MessageProtocol;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.regex.Pattern;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import guesstheword_server.model.User;
 
 /**
@@ -46,7 +49,12 @@ public class GameSession {
     private long startTimeMs;
 
     /** Timer per la gestione del timeout. */
-    private Timer timeoutTimer;
+    private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4, runnable -> {
+        Thread t = new Thread(runnable);
+        t.setDaemon(true);
+        return t;
+    });
+    private ScheduledFuture<?> timeoutFuture;
 
     /** Tentativi rimasti per il primo giocatore. */
     private int player1Attempts = 3;
@@ -82,17 +90,34 @@ public class GameSession {
     public void start() {
         
         System.out.println("[GameSession] Partita avviata tra "
-                + player1.getUsername() + " e " + player2.getUsername() + "Parola nascosta: " + challenge.getParolaNascosta());
+                + player1.getUsername() + " e " + player2.getUsername() + " Parola nascosta: " + challenge.getParolaNascosta());
 
         String parolaCifrata = CaesarCipher.encrypt(
             challenge.getParolaNascosta(), challenge.getShiftCesare());
 
-        String estratto = challenge.getEstratto() != null
-                ? challenge.getEstratto()
-                : challenge.getParolaNascosta();
+        String estratto = challenge.getEstratto();
+
+        // Controllo se l'estratto contiene la parola nascosta
+        if (estratto == null || !contieneParola(estratto, challenge.getParolaNascosta())) {
+            System.err.println("[WARNING] [GameSession] L'estratto e nullo o non contiene la parola nascosta '" + challenge.getParolaNascosta() + "'. Rigenerazione sfida...");
+            Challenge newChallenge = GameManager.getInstance().regenerateChallenge(Difficulty.valueOf(challenge.getDifficolta().toUpperCase()));
+            
+            challenge.setParolaNascosta(newChallenge.getParolaNascosta());
+            challenge.setShiftCesare(newChallenge.getShiftCesare());
+            challenge.setEstratto(newChallenge.getEstratto());
+            challenge.setDataSfida(newChallenge.getDataSfida());
+            challenge.setDifficolta(newChallenge.getDifficolta());
+            
+            parolaCifrata = CaesarCipher.encrypt(challenge.getParolaNascosta(), challenge.getShiftCesare());
+            estratto = challenge.getEstratto();
+        }
+
+        if (estratto == null) {
+            estratto = challenge.getParolaNascosta();
+        }
 
         String testoCifrato = estratto.replaceAll(
-            "(?i)" + challenge.getParolaNascosta(), "**" + parolaCifrata + "**"); 
+            "(?i)" + Pattern.quote(challenge.getParolaNascosta()), "**" + parolaCifrata + "**"); 
 
         String gameStartMsg = MessageProtocol.build(
                 MessageProtocol.GAME_START,
@@ -106,6 +131,18 @@ public class GameSession {
 
         startTimeMs = System.currentTimeMillis();
         scheduleTimeout();
+    }
+
+    private boolean contieneParola(String estratto, String parola) {
+        if (estratto == null || parola == null) return false;
+        String lowerParola = parola.toLowerCase();
+        String[] tokens = estratto.toLowerCase().split("[^a-zA-Zàèìòùáéíóúâêîôûäëïöü]+");
+        for (int i = 0; i < tokens.length; i++) {
+            if (tokens[i].equals(lowerParola)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // --- Gestione risposte e disconnessioni ---
@@ -229,22 +266,21 @@ public class GameSession {
      * Pianifica il timer di timeout per la sessione corrente.
      */
     private void scheduleTimeout() {
-        timeoutTimer = new Timer(true);
-        timeoutTimer.schedule(new TimerTask() {
+        timeoutFuture = scheduler.schedule(new Runnable() {
             @Override
             public void run() {
                 handleTimeout();
             }
-        }, DEFAULT_TIMER_SECONDS * 1000L);
+        }, DEFAULT_TIMER_SECONDS, TimeUnit.SECONDS);
     }
 
     /**
      * Annulla il timer di timeout, se attivo.
      */
     private void cancelTimeout() {
-        if (timeoutTimer != null) {
-            timeoutTimer.cancel();
-            timeoutTimer = null;
+        if (timeoutFuture != null) {
+            timeoutFuture.cancel(false);
+            timeoutFuture = null;
         }
     }
 
@@ -268,42 +304,43 @@ public class GameSession {
      * @param responseTimeMs tempo di risposta del vincitore in millisecondi
      */
     private void persistResults(ClientHandler winner, ClientHandler loser, long responseTimeMs) {
-        ChallengeDAO challengeDAO = new ChallengeDAO();
-        ResultDAO    resultDAO    = new ResultDAO();
+        guesstheword_server.service.MatchPersistenceService matchService = 
+                new guesstheword_server.service.MatchPersistenceService();
 
-        challengeDAO.save(challenge);
-
+        GameResult winResult = null;
         if (winner.getUser() != null) {
-            GameResult winResult = new GameResult(
+            winResult = new GameResult(
                     winner.getUser(), challenge, "WIN",
                     challenge.getParolaNascosta(), (int) responseTimeMs);
-            resultDAO.save(winResult);
         }
 
+        GameResult loseResult = null;
         if (loser != null && loser.getUser() != null) {
-            GameResult loseResult = new GameResult(
+            loseResult = new GameResult(
                     loser.getUser(), challenge, "LOSE", null, null);
-            resultDAO.save(loseResult);
         }
+
+        matchService.saveMatch(challenge, winResult, loseResult);
     }
 
     /**
      * Persiste nel database i risultati di tipo TIMEOUT per entrambi i giocatori.
      */
     private void persistTimeoutResults() {
-        ChallengeDAO challengeDAO = new ChallengeDAO();
-        ResultDAO    resultDAO    = new ResultDAO();
+        guesstheword_server.service.MatchPersistenceService matchService = 
+                new guesstheword_server.service.MatchPersistenceService();
 
-        if (challenge.getId() == 0) {
-            challengeDAO.save(challenge);
-        }
-
+        GameResult r1 = null;
         if (player1.getUser() != null) {
-            resultDAO.save(new GameResult(player1.getUser(), challenge, "TIMEOUT", null, null));
+            r1 = new GameResult(player1.getUser(), challenge, "TIMEOUT", null, null);
         }
+
+        GameResult r2 = null;
         if (player2.getUser() != null) {
-            resultDAO.save(new GameResult(player2.getUser(), challenge, "TIMEOUT", null, null));
+            r2 = new GameResult(player2.getUser(), challenge, "TIMEOUT", null, null);
         }
+
+        matchService.saveMatch(challenge, r1, r2);
     }
 
     // --- Getter ---

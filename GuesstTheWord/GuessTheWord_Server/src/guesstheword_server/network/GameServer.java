@@ -32,10 +32,13 @@ public class GameServer {
         port = Integer.parseInt(props.getProperty("server.port"));
     }
     
+    private final java.util.concurrent.ExecutorService executorService = 
+        java.util.concurrent.Executors.newFixedThreadPool(50);
+
     /**
      * Questo metodo: 
      * 1) apre il ServerSocket (da questo momento i client possono connettersi)
-     * 2) entra in un loop infinito che aspetta che un client si connette, crea un clientHandler e lo avvia in un thread separato per essere in grado di gestire il client successivo
+     * 2) entra in un loop infinito che aspetta che un client si connette, crea un clientHandler e lo avvia in un thread pool per essere in grado di gestire il client successivo
      * 
      * @throws IOException 
      */
@@ -47,8 +50,7 @@ public class GameServer {
             Socket clientSocket = serverSocket.accept(); // bloccante
             System.out.println("Client connesso: " + clientSocket.getInetAddress());
 
-            Thread t = new Thread(new ClientHandler(clientSocket));
-            t.start();
+            executorService.submit(new ClientHandler(clientSocket));
         }
     }
 
