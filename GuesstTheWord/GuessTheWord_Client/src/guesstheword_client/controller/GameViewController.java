@@ -156,13 +156,6 @@ public class GameViewController implements Initializable {
         String command = parts[0];
 
         if (command.equals(MessageProtocol.GAME_START)) {
-            // Imposta timeout dinamico di 90 secondi (60s + 30s)
-            try {
-                guesstheword_client.network.ServerConnection.getInstance().setSoTimeout(90000);
-            } catch (IOException e) {
-                System.err.println("[GameViewController] Errore nell'impostare il timeout sulla socket: " + e.getMessage());
-            }
-
             // GAME_START:testoCifrato:shiftCesare:durataSecondi
             String encryptedWord = "???";
             if (parts.length >= 4) {
@@ -293,13 +286,6 @@ public class GameViewController implements Initializable {
      * @param clearWord la parola in chiaro da mostrare a fine partita
      */
     private void stopGame(String message, String colorHex, String clearWord) {
-        // Ripristina timeout a 0
-        try {
-            guesstheword_client.network.ServerConnection.getInstance().setSoTimeout(0);
-        } catch (IOException e) {
-            System.err.println("[GameViewController] Errore nel ripristinare il timeout della socket a 0: " + e.getMessage());
-        }
-
         if (countdownTimeline != null) countdownTimeline.stop();
         answerField.setDisable(true);
         guessButton.setDisable(true);
