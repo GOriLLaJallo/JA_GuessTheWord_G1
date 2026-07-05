@@ -21,7 +21,6 @@ public class GameManager {
     private final Map<Difficulty, List<ClientHandler>> waitingPlayers = new HashMap<>(); //coda dei giocatori in attesa accoppiati alla difficoltà scelta
     private final ChallengePreparator challengePreparator = new ChallengePreparator(); //oggetto per generare la Challenge
     private String testoDisponibile = null;
-    private OnSessionStartedListener sessionListener; //il qualcuno che deve essere notificato
 
     /**
      * Unico scopo inizializzazione della Map con una cosa vuota per ogni difficoltà
@@ -33,23 +32,7 @@ public class GameManager {
         }
     }
     
-    //Interfaccia per notificare qualcuno che la partita sta iniziando (AdminDashboardViewController)
-    public interface OnSessionStartedListener {
-        void onSessionStarted(String parola, String difficolta);
-    }
-
-    //Setter
-    public void setOnSessionStartedListener(OnSessionStartedListener listener) {
-        this.sessionListener = listener;
-    }
-
-    //Metodo invocato all'inizio della partita, pubblico perchè fa da ponte tra il notificante e il notificato
-    public void notifySessionStarted(String parola, String difficolta) {
-        if (sessionListener != null) {
-            sessionListener.onSessionStarted(parola, difficolta);
-        }
-    }
-
+    
     /**
      * Restituisce l'unica istanza di GameManager.
      *

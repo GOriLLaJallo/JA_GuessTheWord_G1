@@ -249,27 +249,15 @@ public class ClientHandler implements Runnable {
         }
     
         StringBuilder sb = new StringBuilder();
-        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH.mm");
         history.forEach(result -> {
-            String formattedDate = "";
-            if (result.getSfida() != null && result.getSfida().getDataSfida() != null) {
-                formattedDate = result.getSfida().getDataSfida().format(formatter);
-            }
-            String difficulty = "N/D";
-            if (result.getSfida() != null && result.getSfida().getDifficolta() != null) {
-                difficulty = result.getSfida().getDifficolta();
-            }
-            String secretWord = "";
-            if (result.getSfida() != null && result.getSfida().getParolaNascosta() != null) {
-                secretWord = result.getSfida().getParolaNascosta();
-            }
-            sb.append(formattedDate)
+            sb.append(result.getSfida().getDataSfida())
                 .append(",")
-                .append(result.getEsito() != null ? result.getEsito() : "")
+                .append(result.getEsito())
                 .append(",")
-                .append(secretWord)
+                .append(result.getSfida().getParolaNascosta())
                 .append(",")
-                .append(difficulty)
+                .append(result.getSfida().getDifficolta() != null 
+                    ? result.getSfida().getDifficolta() : "N/D")
                 .append(";");
         });
         sendMessage(MessageProtocol.build(MessageProtocol.HISTORY_DATA, sb.toString()));

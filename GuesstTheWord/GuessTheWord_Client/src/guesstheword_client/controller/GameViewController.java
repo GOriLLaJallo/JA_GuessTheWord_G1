@@ -19,10 +19,11 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 
 /**
  * Controller per la schermata principale di Gioco (GameView.fxml).
@@ -44,7 +45,8 @@ public class GameViewController implements Initializable {
     private Label infoLabel;
 
     @FXML
-    private TextArea encryptedWordLabel;
+    private TextFlow encryptedWordLabel;
+    
     @FXML
     private TextField answerField;
     @FXML
@@ -62,6 +64,8 @@ public class GameViewController implements Initializable {
     private GameState gameState;
     private guesstheword_client.service.GameService gameService;
     private javafx.beans.value.ChangeListener<String> messageListener;
+    private static final String NORMAL_STYLE = "-fx-font-family: 'Monospaced'; -fx-font-size: 18; -fx-fill: #6747cd;";
+    private static final String BOLD_STYLE = "-fx-font-family: 'Monospaced'; -fx-font-size: 18; -fx-fill: #6747cd; -fx-font-weight: bold;";
 
     /**
      * Inizializzazione base del controller. Chiamata automaticamente da JavaFX.
@@ -102,6 +106,38 @@ public class GameViewController implements Initializable {
         
         this.listenerTask.messageProperty().addListener(messageListener);
     }
+    
+    
+    /**
+     * Popola il TextFlow spezzando il testo sui delimitatori "**" e applicando
+    * lo stile grassetto solo alla porzione centrale (la parola cifrata).
+    * 
+    * @param text
+    */
+    private void setEncryptedText(String text) {
+        encryptedWordLabel.getChildren().clear();
+        if (text == null) return;
+
+        int boldStart = text.indexOf("**");
+        int boldEnd = boldStart != -1 ? text.indexOf("**", boldStart + 2) : -1;
+
+        if (boldStart != -1 && boldEnd != -1) {
+            Text before = new Text(text.substring(0, boldStart));
+            before.setStyle(NORMAL_STYLE);
+
+            Text bold = new Text(text.substring(boldStart + 2, boldEnd));
+            bold.setStyle(BOLD_STYLE);
+
+            Text after = new Text(text.substring(boldEnd + 2));
+            after.setStyle(NORMAL_STYLE);
+
+            encryptedWordLabel.getChildren().addAll(before, bold, after);
+        } else {
+            Text plain = new Text(text);
+            plain.setStyle(NORMAL_STYLE);
+            encryptedWordLabel.getChildren().add(plain);
+        }
+    }
 
     /**
      * Analizza ed elabora un messaggio in arrivo dal server.
@@ -124,25 +160,21 @@ public class GameViewController implements Initializable {
                     if (i < parts.length - 3) sb.append(":");
                 }
                 encryptedWord = sb.toString();
-                
+        
                 try {
                     int shift = Integer.parseInt(parts[parts.length - 2]);
                     gameState.setCaesarShift(shift);
                 } catch (NumberFormatException e) {
                     gameState.setCaesarShift(0);
                 }
-                
-                try {
-                    secondsRemaining = Integer.parseInt(parts[parts.length - 1]);
-                } catch (NumberFormatException e) {
-                    secondsRemaining = 60;
-                }
             } else {
                 encryptedWord = parts.length > 1 ? parts[1] : "???";
                 gameState.setCaesarShift(0);
-                secondsRemaining = 60;
             }
-            
+    
+            // Il timer parte sempre da 60 secondi, indipendentemente da quanto manda il server
+            secondsRemaining = 60;
+    
             // Inizializza lo stato del gioco con i valori base o ipotizzati
             gameState.setStatus("PLAYING");
             gameState.setWordPattern(encryptedWord);
@@ -150,7 +182,6 @@ public class GameViewController implements Initializable {
 
             updateUIFromState();
             startCountdown();
-
         } else if (command.equals(MessageProtocol.GAME_WIN)) {
             gameState.setStatus("WON");
             String clearWord = parts.length > 2 ? parts[2] : "";
@@ -182,7 +213,7 @@ public class GameViewController implements Initializable {
      * Aggiorna le etichette dell'interfaccia basandosi su GameState
      */
     private void updateUIFromState() {
-        encryptedWordLabel.setText(gameState.getWordPattern());
+        setEncryptedText(gameState.getWordPattern());
         attemptsLabel.setText("Tentativi: " + gameState.getAttemptsLeft());
         
         if (gameState.getAttemptsLeft() > 0) {
@@ -247,8 +278,10 @@ public class GameViewController implements Initializable {
         
         //Mostra ai giocatori la parola in chiaro a fine partita
         if (clearWord != null && !clearWord.isEmpty()) {
-            encryptedWordLabel.setText(clearWord);
-            encryptedWordLabel.setStyle("-fx-text-fill: #34c759; -fx-font-family: 'Monospaced'; -fx-font-size: 18;");
+            encryptedWordLabel.getChildren().clear();
+            Text clear = new Text(clearWord);
+            clear.setStyle("-fx-fill: #34c759; -fx-font-family: 'Monospaced'; -fx-font-size: 18;");
+            encryptedWordLabel.getChildren().add(clear);
         }
         
         // Mostra i bottoni di navigazione a fine partita

@@ -118,15 +118,7 @@ public class AdminDashboardViewController implements Initializable {
 
         saveResultsBtn.setDisable(true);
         
-        //Registrazione come notificato (setOnSessionStartedListener) per capire quando la partita inizia ed eseguire il codice
-        GameManager.getInstance().setOnSessionStartedListener((parola, difficolta) -> {
-            Platform.runLater(() -> {
-                showAlert(Alert.AlertType.INFORMATION, "Partita Iniziata!",
-                    "Una nuova sfida è iniziata",
-                    "Difficoltà: " + difficolta + "\n" +
-                    "Parola nascosta: " + parola);
-            });
-        });
+        
     }
 
     /**

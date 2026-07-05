@@ -90,7 +90,7 @@ public class DocumentAnalyzer {
     }
     
     /**
-     * Analizza il testo fornito ed estrae la parola più significativa a seconda della difficoltà
+     * Analizza il testo fornito e salva un insieme di parole a seconda dei criteri stabiliti per ogni singola difficoltà, tra cui randomicamente sceglie la parola da cifrare
      * Assegna la coppia parola-frequenza, filtrando stopword e parole troppo corte
      * 
      * @param text
@@ -119,9 +119,7 @@ public class DocumentAnalyzer {
         switch (difficulty) {
             case EASY:
                 List<String> easyPool = freqMap.entrySet().stream()
-                    .filter(e -> e.getKey().length() <= 6)
-                    .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
-                    .limit(5)
+                    .filter(e -> e.getKey().length() < 6)
                     .map(Map.Entry::getKey)
                     .collect(java.util.stream.Collectors.toList());
                 if (easyPool.isEmpty()) easyPool = new ArrayList<>(freqMap.keySet());
@@ -130,8 +128,6 @@ public class DocumentAnalyzer {
             case HARD:
                 List<String> hardPool = freqMap.entrySet().stream()
                     .filter(e -> e.getKey().length() >= 9)
-                    .sorted(Map.Entry.comparingByValue())
-                    .limit(5)
                     .map(Map.Entry::getKey)
                     .collect(java.util.stream.Collectors.toList());
                 if (hardPool.isEmpty()) hardPool = new ArrayList<>(freqMap.keySet());
@@ -141,8 +137,6 @@ public class DocumentAnalyzer {
             default:
                 List<String> mediumPool = freqMap.entrySet().stream()
                     .filter(e -> e.getKey().length() >= 6 && e.getKey().length() <= 8)
-                    .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
-                    .limit(5)
                     .map(Map.Entry::getKey)
                     .collect(java.util.stream.Collectors.toList());
                 if (mediumPool.isEmpty()) mediumPool = new ArrayList<>(freqMap.keySet());
@@ -153,7 +147,7 @@ public class DocumentAnalyzer {
     * Estrae uno snippet di testo attorno alla parola chiave.
     * Principio di funzionamento
     * 1) Divide in testo in un array di String (split)
-    * 2) Cerca l'indice della keyword (ciclo for)
+    * 2) Cerca tutti gli indici della keyword (ciclo for) e poi ne sceglie uno casuale da cui calcolare l'estratto di testo
     * 3) Calcola una finestra di 30 parole prima e dopo della keyword (se ci sono) da mostrare all'utente
     * 4) Costruisce l'estratto di testo
     *
@@ -165,19 +159,21 @@ public class DocumentAnalyzer {
         if (text == null || text.trim().isEmpty()) return keyword;
 
         String[] words = text.split("\\s+");
-        int keyIndex = -1;
+        List<Integer> matchingIndices = new ArrayList<>();
 
         for (int i = 0; i < words.length; i++) {
             if (words[i].toLowerCase().replaceAll("[^a-zA-Zàèìòùáéíóú]", "").equals(keyword)) {
-                keyIndex = i;
-                break;
+                matchingIndices.add(i);
             }
         }
 
-        if (keyIndex == -1) return keyword;
+        if (matchingIndices.isEmpty()) return keyword;
 
-        int from = Math.max(0, keyIndex - 30);
-        int to   = Math.min(words.length, keyIndex + 30);
+        
+        int keyIndex = matchingIndices.get(new Random().nextInt(matchingIndices.size()));
+
+        int from = Math.max(0, keyIndex - 15);
+        int to   = Math.min(words.length, keyIndex + 15);
 
         StringBuilder sb = new StringBuilder();
             for (int i = from; i < to; i++) {
