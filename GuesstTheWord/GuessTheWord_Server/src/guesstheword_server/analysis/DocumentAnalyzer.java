@@ -201,5 +201,24 @@ public class DocumentAnalyzer {
     private String randomFallback() {
         return FALLBACK_WORDS.get(new Random().nextInt(FALLBACK_WORDS.size()));
     }
+
+    /**
+     * Verifica se un estratto contiene la parola segreta in modo esatto (parola intera, case-insensitive).
+     *
+     * @param estratto l'estratto di testo
+     * @param parola la parola da cercare
+     * @return true se l'estratto contiene la parola, false altrimenti
+     */
+    public static boolean contieneParola(String estratto, String parola) {
+        if (estratto == null || parola == null) return false;
+        String lowerParola = parola.toLowerCase();
+        String[] tokens = estratto.toLowerCase().split("[^a-zA-Zàèìòùáéíóúâêîôûäëïöü]+");
+        for (int i = 0; i < tokens.length; i++) {
+            if (tokens[i].equals(lowerParola)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 

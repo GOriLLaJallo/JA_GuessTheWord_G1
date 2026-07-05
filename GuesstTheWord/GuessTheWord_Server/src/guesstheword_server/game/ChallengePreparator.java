@@ -48,35 +48,33 @@ public class ChallengePreparator {
      * @return un oggetto {@link Challenge} pronto per la sessione di gioco
      */
     public Challenge prepare(String text, Difficulty difficulty) {
-        if (text == null || text.trim().isEmpty()) {
-            return prepareRandom(difficulty);
-        }
+        boolean isFallbackMode = (text == null || text.trim().isEmpty());
 
         for (int i = 0; i < 10; i++) {
             String parolaNascosta = analyzer.extractKeyWord(text, difficulty);
             String estratto = analyzer.extractExcerpt(text, parolaNascosta);
-            if (estratto != null && contieneParola(estratto, parolaNascosta)) {
+            
+            if (isFallbackMode) {
                 int shift = CaesarCipher.randomShift(difficulty);
-                Challenge c = new Challenge(parolaNascosta, shift, LocalDateTime.now(), difficulty.name());
+                Challenge c = new Challenge(parolaNascosta, shift, java.time.LocalDateTime.now(), difficulty.name());
+                c.setEstratto(parolaNascosta);
+                return c;
+            }
+
+            if (estratto != null && DocumentAnalyzer.contieneParola(estratto, parolaNascosta)) {
+                int shift = CaesarCipher.randomShift(difficulty);
+                Challenge c = new Challenge(parolaNascosta, shift, java.time.LocalDateTime.now(), difficulty.name());
                 c.setEstratto(estratto);
                 return c;
             }
         }
 
         System.err.println("[WARNING] [ChallengePreparator] Impossibile generare una sfida valida dal testo dopo 10 tentativi. Fallback su sfida random.");
-        return prepareRandom(difficulty);
-    }
-
-    private boolean contieneParola(String estratto, String parola) {
-        if (estratto == null || parola == null) return false;
-        String lowerParola = parola.toLowerCase();
-        String[] tokens = estratto.toLowerCase().split("[^a-zA-Zàèìòùáéíóúâêîôûäëïöü]+");
-        for (int i = 0; i < tokens.length; i++) {
-            if (tokens[i].equals(lowerParola)) {
-                return true;
-            }
-        }
-        return false;
+        String parolaNascosta = analyzer.extractKeyWord(null, difficulty);
+        int shift = CaesarCipher.randomShift(difficulty);
+        Challenge c = new Challenge(parolaNascosta, shift, java.time.LocalDateTime.now(), difficulty.name());
+        c.setEstratto(parolaNascosta);
+        return c;
     }
 
     /**

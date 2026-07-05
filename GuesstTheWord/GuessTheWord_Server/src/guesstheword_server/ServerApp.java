@@ -57,6 +57,13 @@ public class ServerApp extends Application {
             }
     }
 
+    @Override
+    public void stop() throws Exception {
+        System.out.println("[ServerApp] Arresto applicazione: spegnimento dello scheduler in corso...");
+        guesstheword_server.game.GameSession.shutdownScheduler();
+        super.stop();
+    }
+
     /**
      * Metodo main per l'avvio manuale dell'applicazione.
      *

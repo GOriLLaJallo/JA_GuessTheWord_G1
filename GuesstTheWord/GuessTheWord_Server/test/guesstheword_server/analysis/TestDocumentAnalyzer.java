@@ -23,6 +23,7 @@ public class TestDocumentAnalyzer {
             testFallbackEmptyText();
             testFallbackOnlyStopwords();
             testExtractExcerptHardMode();
+            testPrepareRandomNoStackOverflow();
 
             System.out.println("==================================================");
             System.out.println("TUTTI I TEST SONO PASSATI CON SUCCESSO!");
@@ -155,5 +156,26 @@ public class TestDocumentAnalyzer {
             }
         }
         System.out.println("PASSATO (Verificati 20 campioni HARD estratti correttamente)");
+    }
+
+    /**
+     * Test 7: Verifica che prepareRandom() non causi StackOverflowError e restituisca una Challenge valida.
+     */
+    private static void testPrepareRandomNoStackOverflow() {
+        System.out.print("Test 7: Verifica prepareRandom senza StackOverflow... ");
+        guesstheword_server.game.ChallengePreparator preparator = new guesstheword_server.game.ChallengePreparator();
+        
+        guesstheword_server.model.Challenge c = preparator.prepareRandom(Difficulty.HARD);
+        
+        if (c == null) {
+            throw new RuntimeException("Challenge di fallback nulla!");
+        }
+        if (c.getParolaNascosta() == null || c.getParolaNascosta().isEmpty()) {
+            throw new RuntimeException("La parola nascosta della Challenge di fallback e nulla o vuota!");
+        }
+        if (c.getEstratto() == null || c.getEstratto().isEmpty()) {
+            throw new RuntimeException("L'estratto della Challenge di fallback e nullo o vuoto!");
+        }
+        System.out.println("PASSATO (Parola: '" + c.getParolaNascosta() + "', Estratto: '" + c.getEstratto() + "')");
     }
 }

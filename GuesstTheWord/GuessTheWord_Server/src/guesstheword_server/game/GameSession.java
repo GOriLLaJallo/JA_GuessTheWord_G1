@@ -98,9 +98,22 @@ public class GameSession {
         String estratto = challenge.getEstratto();
 
         // Controllo se l'estratto contiene la parola nascosta
-        if (estratto == null || !contieneParola(estratto, challenge.getParolaNascosta())) {
+        if (estratto == null || !guesstheword_server.analysis.DocumentAnalyzer.contieneParola(estratto, challenge.getParolaNascosta())) {
             System.err.println("[WARNING] [GameSession] L'estratto e nullo o non contiene la parola nascosta '" + challenge.getParolaNascosta() + "'. Rigenerazione sfida...");
-            Challenge newChallenge = GameManager.getInstance().regenerateChallenge(Difficulty.valueOf(challenge.getDifficolta().toUpperCase()));
+            
+            String diffStr = challenge.getDifficolta();
+            Difficulty diffVal = Difficulty.MEDIUM;
+            if (diffStr != null) {
+                try {
+                    diffVal = Difficulty.valueOf(diffStr.toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    System.err.println("[WARNING] [GameSession] Difficolta sconosciuta '" + diffStr + "', fallback su MEDIUM.");
+                }
+            } else {
+                System.err.println("[WARNING] [GameSession] Difficolta nulla, fallback su MEDIUM.");
+            }
+
+            Challenge newChallenge = GameManager.getInstance().regenerateChallenge(diffVal);
             
             challenge.setParolaNascosta(newChallenge.getParolaNascosta());
             challenge.setShiftCesare(newChallenge.getShiftCesare());
@@ -133,17 +146,7 @@ public class GameSession {
         scheduleTimeout();
     }
 
-    private boolean contieneParola(String estratto, String parola) {
-        if (estratto == null || parola == null) return false;
-        String lowerParola = parola.toLowerCase();
-        String[] tokens = estratto.toLowerCase().split("[^a-zA-Zàèìòùáéíóúâêîôûäëïöü]+");
-        for (int i = 0; i < tokens.length; i++) {
-            if (tokens[i].equals(lowerParola)) {
-                return true;
-            }
-        }
-        return false;
-    }
+
 
     // --- Gestione risposte e disconnessioni ---
 
@@ -379,5 +382,22 @@ public class GameSession {
      */
     public ClientHandler getPlayer2() {
         return player2;
+    }
+
+    /**
+     * Termina lo scheduler in modo corretto durante lo spegnimento del server.
+     */
+    public static void shutdownScheduler() {
+        if (scheduler != null) {
+            scheduler.shutdown();
+            try {
+                if (!scheduler.awaitTermination(5, TimeUnit.SECONDS)) {
+                    scheduler.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                scheduler.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 }
