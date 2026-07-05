@@ -1,101 +1,58 @@
 package guesstheword_server.controller;
 
-import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
-import javafx.stage.Stage;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
- * Test di integrazione per verificare il corretto caricamento di tutti i controller
+ * Test unitari JUnit per verificare il corretto caricamento di tutti i controller
  * e delle relative viste FXML della console di amministrazione del Server.
- * Garantisce l'assenza di eccezioni causate da fx:id errati o classi controller incongruenti.
  * 
  * @author Carmine Muollo
  */
-public class TestControllersLoading extends Application {
+public class TestControllersLoading {
 
-    public static void main(String[] args) {
-        // Avvia l'applicazione JavaFX per abilitare il toolkit grafico ed eseguire i test nel thread start()
-        launch(args);
+    @BeforeClass
+    public static void initJavaFX() {
+        // Inizializza implicitamente il JavaFX Toolkit in modo che FXMLLoader possa essere eseguito
+        new javafx.embed.swing.JFXPanel();
     }
 
-    @Override
-    public void start(Stage primaryStage) throws Exception {
-        System.out.println("==================================================");
-        System.out.println("AVVIO TEST CARICAMENTO CONTROLLER E VISTE FXML");
-        System.out.println("==================================================");
+    @Test
+    public void testAdminLoginViewLoading() throws Exception {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/guesstheword_server/resources/view/AdminLoginView.fxml"));
+        Parent root = loader.load();
+        assertNotNull("Il caricamento di AdminLoginView FXML non deve restituire null", root);
+        Object controller = loader.getController();
+        assertTrue("Il controller deve essere istanza di AdminLoginViewController", controller instanceof AdminLoginViewController);
+    }
 
-        // Test 1: Caricamento AdminLoginView.fxml
-        try {
-            System.out.print("Test 1: Caricamento AdminLoginView... ");
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/guesstheword_server/resources/view/AdminLoginView.fxml"));
-            Parent root = loader.load();
-            Object controller = loader.getController();
-            
-            if (!(controller instanceof AdminLoginViewController)) {
-                throw new RuntimeException("Atteso controller di tipo AdminLoginViewController, trovato: " + (controller != null ? controller.getClass().getName() : "null"));
-            }
-            System.out.println("PASSATO");
-        } catch (Exception e) {
-            System.err.println("FALLITO con errore di caricamento:");
-            e.printStackTrace();
-            System.exit(1);
-        }
+    @Test
+    public void testAdminDashboardViewLoading() throws Exception {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/guesstheword_server/resources/view/AdminDashboardView.fxml"));
+        Parent root = loader.load();
+        assertNotNull("Il caricamento di AdminDashboardView FXML non deve restituire null", root);
+        Object controller = loader.getController();
+        assertTrue("Il controller deve essere istanza di AdminDashboardViewController", controller instanceof AdminDashboardViewController);
+    }
 
-        // Test 2: Caricamento AdminDashboardView.fxml
-        try {
-            System.out.print("Test 2: Caricamento AdminDashboardView... ");
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/guesstheword_server/resources/view/AdminDashboardView.fxml"));
-            Parent root = loader.load();
-            Object controller = loader.getController();
-            
-            if (!(controller instanceof AdminDashboardViewController)) {
-                throw new RuntimeException("Atteso controller di tipo AdminDashboardViewController, trovato: " + (controller != null ? controller.getClass().getName() : "null"));
-            }
-            System.out.println("PASSATO");
-        } catch (Exception e) {
-            System.err.println("FALLITO con errore di caricamento:");
-            e.printStackTrace();
-            System.exit(1);
-        }
+    @Test
+    public void testLeaderBoardViewLoading() throws Exception {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/guesstheword_server/resources/view/LeaderBoardView.fxml"));
+        Parent root = loader.load();
+        assertNotNull("Il caricamento di LeaderBoardView FXML non deve restituire null", root);
+        Object controller = loader.getController();
+        assertTrue("Il controller deve essere istanza di LeaderBoardViewController", controller instanceof LeaderBoardViewController);
+    }
 
-        // Test 3: Caricamento LeaderBoardView.fxml
-        try {
-            System.out.print("Test 3: Caricamento LeaderBoardView... ");
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/guesstheword_server/resources/view/LeaderBoardView.fxml"));
-            Parent root = loader.load();
-            Object controller = loader.getController();
-            
-            if (!(controller instanceof LeaderBoardViewController)) {
-                throw new RuntimeException("Atteso controller di tipo LeaderBoardViewController, trovato: " + (controller != null ? controller.getClass().getName() : "null"));
-            }
-            System.out.println("PASSATO");
-        } catch (Exception e) {
-            System.err.println("FALLITO con errore di caricamento:");
-            e.printStackTrace();
-            System.exit(1);
-        }
-
-        // Test 4: Caricamento AdminMainView.fxml (Contenitore principale)
-        try {
-            System.out.print("Test 4: Caricamento AdminMainView... ");
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/guesstheword_server/resources/view/AdminMainView.fxml"));
-            Parent root = loader.load();
-            Object controller = loader.getController();
-            
-            if (!(controller instanceof AdminMainViewController)) {
-                throw new RuntimeException("Atteso controller di tipo AdminMainViewController, trovato: " + (controller != null ? controller.getClass().getName() : "null"));
-            }
-            System.out.println("PASSATO");
-        } catch (Exception e) {
-            System.err.println("FALLITO con errore di caricamento:");
-            e.printStackTrace();
-            System.exit(1);
-        }
-
-        System.out.println("==================================================");
-        System.out.println("TUTTE LE VISTE E I CONTROLLER SONO STATI CARICATI CORRETTAMENTE!");
-        System.out.println("==================================================");
-        System.exit(0);
+    @Test
+    public void testAdminMainViewLoading() throws Exception {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/guesstheword_server/resources/view/AdminMainView.fxml"));
+        Parent root = loader.load();
+        assertNotNull("Il caricamento di AdminMainView FXML non deve restituire null", root);
+        Object controller = loader.getController();
+        assertTrue("Il controller deve essere istanza di AdminMainViewController", controller instanceof AdminMainViewController);
     }
 }

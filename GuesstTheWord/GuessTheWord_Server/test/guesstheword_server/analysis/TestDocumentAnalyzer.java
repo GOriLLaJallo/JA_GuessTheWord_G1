@@ -1,126 +1,80 @@
 package guesstheword_server.analysis;
 
 import guesstheword_server.game.Difficulty;
+import guesstheword_server.game.GameSession;
+import guesstheword_server.network.ClientHandler;
+import guesstheword_server.model.Challenge;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
- * Test standalone per la classe DocumentAnalyzer.
- * Verifica la logica di estrazione della parola chiave,
- * escludendo stopword, parole corte ed applicando il fallback.
+ * Test unitari e di integrazione JUnit per DocumentAnalyzer, ChallengePreparator e GameSession.
  * 
  * @author Carmine Muollo
  */
 public class TestDocumentAnalyzer {
 
-    public static void main(String[] args) {
-        System.out.println("==================================================");
-        System.out.println("AVVIO TEST UNITARI SU DOCUMENTANALYZER");
-        System.out.println("==================================================");
-
-        try {
-            testMostFrequentWord();
-            testStopwordsFiltering();
-            testShortWordsFiltering();
-            testFallbackEmptyText();
-            testFallbackOnlyStopwords();
-            testExtractExcerptHardMode();
-            testPrepareRandomNoStackOverflow();
-
-            System.out.println("==================================================");
-            System.out.println("TUTTI I TEST SONO PASSATI CON SUCCESSO!");
-            System.out.println("==================================================");
-        } catch (Throwable t) {
-            System.err.println("==================================================");
-            System.err.println("FALLIMENTO TEST: " + t.getMessage());
-            t.printStackTrace();
-            System.err.println("==================================================");
-            System.exit(1);
-        }
-    }
-
     /**
      * Test 1: Estrazione della parola più frequente.
      */
-    private static void testMostFrequentWord() {
-        System.out.print("Test 1: Estrazione parola frequente... ");
+    @Test
+    public void testMostFrequentWord() {
         DocumentAnalyzer analyzer = new DocumentAnalyzer();
         String text = "computer software computer hardware program computer internet network";
-        // 'computer' appare 3 volte, le altre 1.
         String keyword = analyzer.extractKeyWord(text);
-        
-        if (!"computer".equals(keyword)) {
-            throw new RuntimeException("Atteso 'computer', ma ricevuto '" + keyword + "'");
-        }
-        System.out.println("PASSATO (risultato: '" + keyword + "')");
+        assertEquals("Atteso 'computer' come parola più frequente", "computer", keyword);
     }
 
     /**
      * Test 2: Verifica il filtraggio delle stopwords.
      */
-    private static void testStopwordsFiltering() {
-        System.out.print("Test 2: Filtraggio delle stopwords... ");
+    @Test
+    public void testStopwordsFiltering() {
         DocumentAnalyzer analyzer = new DocumentAnalyzer();
-        // 'perche' (stopword) ripetuto 4 volte, 'musica' (valido) ripetuto 2 volte.
-        // Ci si aspetta che 'perche' venga ignorata e venga estratta 'musica'.
         String text = "perche perche perche perche musica musica";
         String keyword = analyzer.extractKeyWord(text);
-        
-        if (!"musica".equals(keyword)) {
-            throw new RuntimeException("Atteso 'musica', ma ricevuto '" + keyword + "'");
-        }
-        System.out.println("PASSATO (risultato: '" + keyword + "')");
+        assertEquals("Atteso 'musica' (le stopword devono essere ignorate)", "musica", keyword);
     }
 
     /**
      * Test 3: Verifica il filtraggio di parole troppo corte (< 4 caratteri).
      */
-    private static void testShortWordsFiltering() {
-        System.out.print("Test 3: Filtraggio parole corte... ");
+    @Test
+    public void testShortWordsFiltering() {
         DocumentAnalyzer analyzer = new DocumentAnalyzer();
-        // 'abc' (lunghezza 3) ripetuto 5 volte, 'programma' (lunghezza 9) 2 volte.
-        // 'abc' deve essere ignorato perché corto.
         String text = "abc abc abc abc abc programma programma";
         String keyword = analyzer.extractKeyWord(text);
-        
-        if (!"programma".equals(keyword)) {
-            throw new RuntimeException("Atteso 'programma', ma ricevuto '" + keyword + "'");
-        }
-        System.out.println("PASSATO (risultato: '" + keyword + "')");
+        assertEquals("Atteso 'programma' (le parole corte devono essere ignorate)", "programma", keyword);
     }
 
     /**
      * Test 4: Caso di testo vuoto (deve attivare il fallback).
      */
-    private static void testFallbackEmptyText() {
-        System.out.print("Test 4: Fallback su testo vuoto... ");
+    @Test
+    public void testFallbackEmptyText() {
         DocumentAnalyzer analyzer = new DocumentAnalyzer();
         String keyword = analyzer.extractKeyWord("   ");
-        
-        if (keyword == null || keyword.isEmpty()) {
-            throw new RuntimeException("Attesa una parola di fallback valida, ma ricevuto vuoto/null");
-        }
-        System.out.println("PASSATO (risultato di fallback: '" + keyword + "')");
+        assertNotNull("La parola di fallback non deve essere null", keyword);
+        assertFalse("La parola di fallback non deve essere vuota", keyword.isEmpty());
     }
 
     /**
      * Test 5: Caso di testo contenente solo stopword (deve attivare il fallback).
      */
-    private static void testFallbackOnlyStopwords() {
-        System.out.print("Test 5: Fallback su sole stopword... ");
+    @Test
+    public void testFallbackOnlyStopwords() {
         DocumentAnalyzer analyzer = new DocumentAnalyzer();
         String text = "che con del della per tra fra";
         String keyword = analyzer.extractKeyWord(text);
-        
-        if (keyword == null || keyword.isEmpty()) {
-            throw new RuntimeException("Attesa una parola di fallback valida, ma ricevuto vuoto/null");
-        }
-        System.out.println("PASSATO (risultato di fallback: '" + keyword + "')");
+        assertNotNull("La parola di fallback non deve essere null", keyword);
+        assertFalse("La parola di fallback non deve essere vuota", keyword.isEmpty());
     }
 
     /**
      * Test 6: Verifica che extractExcerpt() restituisca sempre un estratto valido contenente la keyword in modalità HARD.
      */
-    private static void testExtractExcerptHardMode() {
-        System.out.print("Test 6: Estrazione estratto in modalita HARD... ");
+    @Test
+    public void testExtractExcerptHardMode() {
         DocumentAnalyzer analyzer = new DocumentAnalyzer();
         String text = "STORIA DI FANTASIA \n\n" +
             "Il villaggio di Valverde sorgeva vicino a un bosco lucente. In quel luogo viveva un giovane artigiano di nome Leo. Ogni giorno egli creava piccoli oggetti di legno. Un mattino d'estate, Leo decise di cercare un albero speciale. Camminò a lungo lungo un sentiero stretto e isolato.\n\n" +
@@ -134,13 +88,9 @@ public class TestDocumentAnalyzer {
 
         for (int i = 0; i < 20; i++) {
             String keyword = analyzer.extractKeyWord(text, Difficulty.HARD);
-            if (keyword == null) {
-                throw new RuntimeException("Keyword estratta nulla in modalita HARD");
-            }
+            assertNotNull("Keyword estratta nulla in modalita HARD", keyword);
             String excerpt = analyzer.extractExcerpt(text, keyword);
-            if (excerpt == null) {
-                throw new RuntimeException("Estratto nullo per la keyword '" + keyword + "'");
-            }
+            assertNotNull("Estratto nullo per la keyword '" + keyword + "'", excerpt);
             
             String lowerKeyword = keyword.toLowerCase();
             String[] tokens = excerpt.toLowerCase().split("[^a-zA-Zàèìòùáéíóúâêîôûäëïöü]+");
@@ -151,31 +101,57 @@ public class TestDocumentAnalyzer {
                     break;
                 }
             }
-            if (!found) {
-                throw new RuntimeException("L'estratto non contiene la parola chiave '" + keyword + "'. Estratto: " + excerpt);
-            }
+            assertTrue("L'estratto deve contenere la parola chiave '" + keyword + "'", found);
         }
-        System.out.println("PASSATO (Verificati 20 campioni HARD estratti correttamente)");
     }
 
     /**
      * Test 7: Verifica che prepareRandom() non causi StackOverflowError e restituisca una Challenge valida.
      */
-    private static void testPrepareRandomNoStackOverflow() {
-        System.out.print("Test 7: Verifica prepareRandom senza StackOverflow... ");
+    @Test
+    public void testPrepareRandomNoStackOverflow() {
         guesstheword_server.game.ChallengePreparator preparator = new guesstheword_server.game.ChallengePreparator();
+        Challenge c = preparator.prepareRandom(Difficulty.HARD);
         
-        guesstheword_server.model.Challenge c = preparator.prepareRandom(Difficulty.HARD);
+        assertNotNull("Challenge di fallback nulla!", c);
+        assertNotNull("La parola nascosta della Challenge di fallback e nulla o vuota!", c.getParolaNascosta());
+        assertFalse("La parola nascosta non deve essere vuota", c.getParolaNascosta().isEmpty());
+        assertNotNull("L'estratto della Challenge di fallback e nullo o vuoto!", c.getEstratto());
+        assertFalse("L'estratto non deve essere vuoto", c.getEstratto().isEmpty());
+    }
+
+    /**
+     * Test 8: Verifica il fallback della difficoltà nulla o invalida in GameSession.
+     */
+    @Test
+    public void testGameSessionDifficultyFallback() {
+        Challenge c1 = new Challenge("computer", 3, java.time.LocalDateTime.now(), null);
+        java.net.Socket s1 = new java.net.Socket();
+        java.net.Socket s2 = new java.net.Socket();
+        ClientHandler ch1 = new ClientHandler(s1);
+        ClientHandler ch2 = new ClientHandler(s2);
         
-        if (c == null) {
-            throw new RuntimeException("Challenge di fallback nulla!");
-        }
-        if (c.getParolaNascosta() == null || c.getParolaNascosta().isEmpty()) {
-            throw new RuntimeException("La parola nascosta della Challenge di fallback e nulla o vuota!");
-        }
-        if (c.getEstratto() == null || c.getEstratto().isEmpty()) {
-            throw new RuntimeException("L'estratto della Challenge di fallback e nullo o vuoto!");
-        }
-        System.out.println("PASSATO (Parola: '" + c.getParolaNascosta() + "', Estratto: '" + c.getEstratto() + "')");
+        GameSession session1 = new GameSession(ch1, ch2, c1);
+        session1.start();
+        
+        assertNotNull("Difficolta rimasta nulla dopo start()", session1.getChallenge().getDifficolta());
+        
+        Challenge c2 = new Challenge("schermo", 4, java.time.LocalDateTime.now(), "INVALID_DIFF");
+        GameSession session2 = new GameSession(ch1, ch2, c2);
+        session2.start();
+        
+        assertNotNull("Difficolta rimasta non valida dopo start()", session2.getChallenge().getDifficolta());
+    }
+
+    /**
+     * Test 9: Verifica la correttezza del metodo contieneParola in diversi contesti (accenti, apostrofi, punteggiatura).
+     */
+    @Test
+    public void testContieneParolaCases() {
+        assertTrue("Fallita ricerca parola presente", DocumentAnalyzer.contieneParola("il computer sorgeva vicino", "computer"));
+        assertFalse("Fallita ricerca parola assente", DocumentAnalyzer.contieneParola("il computer sorgeva vicino", "tastiera"));
+        assertTrue("Fallita ricerca parola con accento", DocumentAnalyzer.contieneParola("questa è libertà pura", "libertà"));
+        assertTrue("Fallita ricerca parola con apostrofo e virgola", DocumentAnalyzer.contieneParola("all'improvviso, la scatola emanò", "improvviso"));
+        assertFalse("Trovata parola inesatta", DocumentAnalyzer.contieneParola("il sentiero era stretto", "era_"));
     }
 }

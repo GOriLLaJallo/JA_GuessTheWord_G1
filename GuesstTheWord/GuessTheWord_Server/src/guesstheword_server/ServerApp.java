@@ -25,6 +25,17 @@ public class ServerApp extends Application {
             System.out.println("[ServerApp] Connessione ed inizializzazione del database in corso...");
             DatabaseManager.getInstance();
             
+            // Shutdown hook per garantire la chiusura ordinata del pool di thread (ScheduledExecutorService)
+            // in caso di terminazione forzata (es. Ctrl+C o segnali di arresto del sistema operativo).
+            // Questo assicura che il server rilasci i descrittori di thread e file in modo appropriato.
+            Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    System.out.println("[ShutdownHook] Rilevata terminazione di sistema: arresto dello scheduler...");
+                    guesstheword_server.game.GameSession.shutdownScheduler();
+                }
+            }));
+            
             // Avvio del GameServer in un thread separato
             Thread serverThread = new Thread(() -> {
                 try {
