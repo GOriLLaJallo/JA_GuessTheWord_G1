@@ -41,7 +41,18 @@ public class LeaderBoardViewController implements Initializable {
     private LeaderboardService leaderboardService;
 
     /**
-     * Inizializza il controller. Configura le associazioni delle colonne e carica i dati dal database.
+     * Costruttore di default esplicito per la classe LeaderBoardViewController.
+     */
+    public LeaderBoardViewController() {
+        // Costruttore vuoto di default
+    }
+
+    /**
+     * Inizializza il controller. Configura le associazioni delle colonne e lega la tabella
+     * alla classifica reattiva globale condivisa.
+     *
+     * @param url il percorso della risorsa FXML
+     * @param rb le risorse localizzate per il caricamento
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -65,18 +76,20 @@ public class LeaderBoardViewController implements Initializable {
             }
         });
 
-        // Caricamento dei dati dalla classifica
+        // Binding reattivo: lega la TableView direttamente alla lista osservabile globale
+        leaderboardTable.setItems(LeaderboardService.getObservableLeaderboard());
+
+        // Caricamento dei dati della classifica
         loadLeaderboardData();
     }
 
     /**
-     * Carica i dati della classifica globale dal database e li imposta nella TableView.
+     * Carica i dati della classifica globale dal database aggiornando la lista condivisa.
      */
     public void loadLeaderboardData() {
         try {
-            ObservableList<LeaderboardEntry> data = FXCollections.observableArrayList(leaderboardService.getLeaderboard());
-            leaderboardTable.setItems(data);
-            System.out.println("[Leaderboard] Dati della classifica caricati con successo: " + data.size() + " record.");
+            leaderboardService.refreshSharedLeaderboard();
+            System.out.println("[Leaderboard] Dati della classifica aggiornati con successo.");
         } catch (Exception e) {
             System.err.println("[Leaderboard] Errore nel caricamento dei dati: " + e.getMessage());
             e.printStackTrace();

@@ -12,6 +12,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import guesstheword_server.model.User;
+import javafx.application.Platform;
+import guesstheword_server.service.LeaderboardService;
 
 /**
  * Rappresenta lo stato condiviso di una singola partita tra due giocatori connessi.
@@ -245,6 +247,14 @@ public class GameSession {
 
         // Salva i risultati nel database PRIMA di inviare i messaggi per evitare race condition
         persistResults(winner, loser, responseTimeMs);
+
+        // Aggiorna in modo reattivo e thread-safe la classifica condivisa sul thread di JavaFX
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                new LeaderboardService().refreshSharedLeaderboard();
+            }
+        });
 
         String clearWord = challenge.getParolaNascosta();
         winner.sendMessage(MessageProtocol.build(MessageProtocol.GAME_WIN, String.valueOf(responseTimeMs), clearWord));

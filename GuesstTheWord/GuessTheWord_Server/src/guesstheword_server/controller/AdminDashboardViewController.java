@@ -77,6 +77,9 @@ public class AdminDashboardViewController implements Initializable {
     /** Riferimento all'ultimo risultato calcolato dell'analisi testuale. */
     private AnalysisResult lastAnalysisResult;
 
+    /** Flag di prevenzione per evitare la visualizzazione di molteplici alert di errore in sequenza rapida. */
+    private boolean alertMostrato = false;
+
     /**
      * Costruttore di default esplicito per la classe AdminDashboardViewController.
      */
@@ -151,6 +154,15 @@ public class AdminDashboardViewController implements Initializable {
      * @param content il testo descrittivo del corpo del messaggio
      */
     private void showAlert(Alert.AlertType type, String title, String header, String content) {
+        if (type == Alert.AlertType.ERROR) {
+            if (alertMostrato) {
+                // Aggiorna semplicemente lo stato testuale a schermo per evitare il freeze e la sovrapposizione di popup
+                statusLabel.setText("Errore: " + header + " - " + content);
+                return;
+            }
+            alertMostrato = true;
+        }
+
         Alert alert = new Alert(type);
         alert.setTitle(title);
         alert.setHeaderText(header);
@@ -164,7 +176,14 @@ public class AdminDashboardViewController implements Initializable {
             System.err.println("[Dashboard] Errore nell'applicazione dello stile all'Alert: " + e.getMessage());
         }
 
-        alert.showAndWait();
+        alert.setOnHidden(e -> {
+            if (type == Alert.AlertType.ERROR) {
+                alertMostrato = false;
+            }
+        });
+
+        // Usa show() anziché showAndWait() per non bloccare (freeze) il thread grafico di JavaFX
+        alert.show();
     }
 
     /**
