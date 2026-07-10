@@ -8,7 +8,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * Registro thread-safe (singleton) dei ClientHandler attivi connessi al Server.
  * Consente la gestione centralizzata delle connessioni e delle notifiche di spegnimento.
  *
- * @author Carmine Muollo
+ * @author Sabrina Soriano
  */
 public class ClientRegistry {
 

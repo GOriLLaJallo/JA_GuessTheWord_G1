@@ -28,7 +28,7 @@ import guesstheword_server.service.LeaderboardService;
  * correttezza in un contesto multi-thread, in cui ogni ClientHandler gira su un
  * thread separato.
  *
- * @author Davide Andrea Odierna
+ * @author Sabrina Soriano, Davide Andrea Odierna
  */
 public class GameSession {
 

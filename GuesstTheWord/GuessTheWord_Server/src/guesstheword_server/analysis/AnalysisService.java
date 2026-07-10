@@ -16,7 +16,7 @@ import java.util.ArrayList;
  * in un thread separato in background, mantenendo la GUI dell'amministratore reattiva.
  * Garantisce l'isolamento del thread grafico JavaFX e l'interruzione pulita delle risorse.
  * 
- * @author Carmine Muollo
+ * @author Davide Andrea Odierna
  */
 public class AnalysisService extends Service<AnalysisResult> {
 

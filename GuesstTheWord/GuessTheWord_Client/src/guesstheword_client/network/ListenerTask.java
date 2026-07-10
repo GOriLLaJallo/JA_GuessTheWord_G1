@@ -1,5 +1,6 @@
 package guesstheword_client.network;
 
+import guesstheword_client.protocol.MessageProtocol;
 import javafx.concurrent.Task;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;

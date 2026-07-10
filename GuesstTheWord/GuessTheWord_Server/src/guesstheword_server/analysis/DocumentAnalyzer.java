@@ -26,7 +26,7 @@ import java.util.Set;
  * Se il testo è vuoto o non contiene parole valide, viene restituita
  * una parola estratta casualmente dal vocabolario di fallback interno.
  *
- * @author Carmine Muollo
+ * @author Davide Andrea Odierna
  */
 public class DocumentAnalyzer {
 

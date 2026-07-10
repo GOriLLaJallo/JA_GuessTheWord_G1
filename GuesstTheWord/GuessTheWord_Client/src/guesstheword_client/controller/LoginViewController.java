@@ -276,10 +276,10 @@ public class LoginViewController implements Initializable {
             }
 
             if (response != null) {
-                String[] parts = guesstheword_client.network.MessageProtocol.parse(response);
+                String[] parts = guesstheword_client.protocol.MessageProtocol.parse(response);
                 String command = parts[0];
 
-                if (command.equals(guesstheword_client.network.MessageProtocol.AUTH_OK)) {
+                if (command.equals(guesstheword_client.protocol.MessageProtocol.AUTH_OK)) {
                     System.out.println("[Client] Successo! Benvenuto: " + parts[1]);
                     
                     try {
@@ -289,7 +289,7 @@ public class LoginViewController implements Initializable {
                         e.printStackTrace();
                         ServerConnection.getInstance().close();
                     }
-                } else if (command.equals(guesstheword_client.network.MessageProtocol.AUTH_FAIL)) {
+                } else if (command.equals(guesstheword_client.protocol.MessageProtocol.AUTH_FAIL)) {
                     String reason = parts.length > 1 ? parts[1] : "Errore sconosciuto.";
                     errorLabel.setText(reason);
                     ServerConnection.getInstance().close(); // Chiudiamo solo se fallisce

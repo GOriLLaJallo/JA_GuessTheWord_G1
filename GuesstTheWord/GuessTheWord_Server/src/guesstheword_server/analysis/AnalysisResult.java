@@ -9,7 +9,7 @@ import java.util.List;
  * elaborate ed il tempo impiegato per l'analisi.
  * Implementa Serializable per consentire il salvataggio in cache (.ser).
  * 
- * @author Carmine Muollo
+ * @author Davide Andrea Odierna
  */
 public class AnalysisResult implements Serializable {
     

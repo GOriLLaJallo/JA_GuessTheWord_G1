@@ -8,65 +8,62 @@ GuessTheWord_G1 e' un'applicazione client-server scritta in Java 8 che si basa s
 
 Nota: Ciascun autore di un Controller si e' occupato anche dello sviluppo e del design della rispettiva vista FXML (es. l'autore di AdminDashboardViewController e' autore anche di AdminDashboardView.fxml e così via).
 
-### Carmine Muollo
-* guesstheword_client.network.ClientNetworkEvent
-* guesstheword_server.ServerApp
-* guesstheword_server.analysis.AnalysisResult
-* guesstheword_server.analysis.AnalysisService
-* guesstheword_server.analysis.DocumentAnalyzer
-* guesstheword_server.controller.AdminDashboardViewController (con relativa View: AdminDashboardView.fxml)
-* guesstheword_server.controller.AdminLoginViewController (con relativa View: AdminLoginView.fxml)
-* guesstheword_server.controller.AdminMainViewController (con relativa View: AdminMainView.fxml)
-* guesstheword_server.controller.LeaderBoardViewController (con relativa View: LeaderBoardView.fxml)
-* guesstheword_server.db.ChallengeDAO
-* guesstheword_server.db.DatabaseManager
-* guesstheword_server.db.ResultDAO
-* guesstheword_server.db.UserDAO
-* guesstheword_server.exception.DataAccessException
-* guesstheword_server.model.Challenge
-* guesstheword_server.model.GameResult
-* guesstheword_server.model.LeaderboardEntry
-* guesstheword_server.model.User
-* guesstheword_server.model.UserStatsDTO
-* guesstheword_server.network.ClientRegistry
-* guesstheword_server.service.AuthService
-* guesstheword_server.service.HistoryService
-* guesstheword_server.service.LeaderboardService
-* guesstheword_server.service.MatchPersistenceService
-* guesstheword_server.analysis.TestDocumentAnalyzer (Test)
-* guesstheword_server.controller.TestControllersLoading (Test)
+### William Menza (13 classi)
+* ClientApp.java
+* DifficultyViewController.java (con relativa vista: DifficultyView.fxml)
+* GameViewController.java (con relativa vista: GameView.fxml)
+* HistoryViewController.java (con relativa vista: HistoryView.fxml)
+* LoginViewController.java (con relativa vista: LoginView.fxml)
+* WaitingRoomViewController.java (con relativa vista: WaitingRoomView.fxml)
+* GameState.java
+* MatchRecord.java
+* AuthService.java (Client)
+* GameService.java
+* HistoryService.java (Client)
+* HashUtil.java (Client)
+* SceneManager.java
 
-### William Menza
-* guesstheword_client.ClientApp
-* guesstheword_client.controller.DifficultyViewController (con relativa View: DifficultyView.fxml)
-* guesstheword_client.controller.GameViewController (con relativa View: GameView.fxml)
-* guesstheword_client.controller.HistoryViewController (con relativa View: HistoryView.fxml)
-* guesstheword_client.controller.LoginViewController (con relativa View: LoginView.fxml)
-* guesstheword_client.controller.WaitingRoomViewController (con relativa View: WaitingRoomView.fxml)
-* guesstheword_client.model.GameState
-* guesstheword_client.model.MatchRecord
-* guesstheword_client.service.AuthService
-* guesstheword_client.service.GameService
-* guesstheword_client.service.HistoryService
-* guesstheword_client.utils.HashUtil
-* guesstheword_client.utils.SceneManager
-* guesstheword_server.utils.HashUtil
+### Davide Andrea Odierna (6 classi)
+* AnalysisResult.java
+* AnalysisService.java
+* DocumentAnalyzer.java
+* GameManager.java (in collaborazione con Sabrina Soriano)
+* GameSession.java (in collaborazione con Sabrina Soriano)
+* ChallengePreparator.java
 
-### Sabrina Soriano
-* guesstheword_client.network.ListenerTask
-* guesstheword_client.network.MessageProtocol
-* guesstheword_client.network.ServerConnection
-* guesstheword_server.game.CaesarCipher
-* guesstheword_server.game.ChallengePreparator
-* guesstheword_server.game.Difficulty
-* guesstheword_server.game.GameManager (in collaborazione)
-* guesstheword_server.network.ClientHandler
-* guesstheword_server.network.GameServer
-* guesstheword_server.protocol.MessageProtocol
+### Sabrina Soriano (9 classi)
+* ClientNetworkEvent.java
+* ListenerTask.java
+* MessageProtocol.java
+* ServerConnection.java
+* CaesarCipher.java
+* Difficulty.java
+* ClientRegistry.java
+* GameServer.java
+* ClientHandler.java
 
-### Davide Andrea Odierna
-* guesstheword_server.game.GameSession
-* guesstheword_server.game.GameManager (in collaborazione)
+### Carmine Muollo (21 classi)
+* ServerApp.java
+* AdminDashboardViewController.java (con relativa vista: AdminDashboardView.fxml)
+* AdminLoginViewController.java (con relativa vista: AdminLoginView.fxml)
+* AdminMainViewController.java (con relativa vista: AdminMainView.fxml)
+* LeaderBoardViewController.java (con relativa vista: LeaderBoardView.fxml)
+* ChallengeDAO.java
+* ResultDAO.java
+* UserDAO.java
+* DatabaseManager.java
+* DataAccessException.java
+* Challenge.java
+* GameResult.java
+* User.java
+* LeaderboardEntry.java
+* UserStatsDTO.java
+* AuthService.java (Server)
+* HistoryService.java (Server)
+* LeaderboardService.java
+* MatchPersistenceService.java
+* TestDocumentAnalyzer.java (Test)
+* TestControllersLoading.java (Test)
 
 ---
 

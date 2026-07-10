@@ -6,7 +6,7 @@ package guesstheword_client.controller;
 
 import guesstheword_client.model.MatchRecord;
 import guesstheword_client.network.ListenerTask;
-import guesstheword_client.network.MessageProtocol;
+import guesstheword_client.protocol.MessageProtocol;
 import guesstheword_client.network.ServerConnection;
 import java.io.IOException;
 import guesstheword_client.network.ClientNetworkEvent;

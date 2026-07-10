@@ -1,7 +1,7 @@
 package guesstheword_client.controller;
 
 import guesstheword_client.network.ListenerTask;
-import guesstheword_client.network.MessageProtocol;
+import guesstheword_client.protocol.MessageProtocol;
 import guesstheword_client.network.ServerConnection;
 import guesstheword_client.network.ClientNetworkEvent;
 import javafx.scene.control.Alert;
