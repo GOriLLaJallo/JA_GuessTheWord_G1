@@ -14,3 +14,6 @@ GuesstTheWord/GuessTheWord_Server/nbproject/genfiles.properties
 GuesstTheWord/GuessTheWord_Server/nbproject/project.properties
 GuesstTheWord/GuessTheWord_Client/build/
 GuesstTheWord/GuessTheWord_Client/dist/
+/javadoc/package-list
+/javadoc/stylesheet.css
+/javadoc/script.js

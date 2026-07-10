@@ -6,17 +6,18 @@ GuessTheWord_G1 e' un'applicazione client-server scritta in Java 8 che si basa s
 
 ## Autori e Classi Associate
 
+Nota: Ciascun autore di un Controller si e' occupato anche dello sviluppo e del design della rispettiva vista FXML (es. l'autore di AdminDashboardViewController e' autore anche di AdminDashboardView.fxml e così via).
+
 ### Carmine Muollo
-* guesstheword_client.model.GameState
-* guesstheword_client.model.MatchRecord
 * guesstheword_client.network.ClientNetworkEvent
 * guesstheword_server.ServerApp
 * guesstheword_server.analysis.AnalysisResult
 * guesstheword_server.analysis.AnalysisService
-* guesstheword_server.controller.AdminDashboardViewController
-* guesstheword_server.controller.AdminLoginViewController
-* guesstheword_server.controller.AdminMainViewController
-* guesstheword_server.controller.LeaderBoardViewController
+* guesstheword_server.analysis.DocumentAnalyzer
+* guesstheword_server.controller.AdminDashboardViewController (con relativa View: AdminDashboardView.fxml)
+* guesstheword_server.controller.AdminLoginViewController (con relativa View: AdminLoginView.fxml)
+* guesstheword_server.controller.AdminMainViewController (con relativa View: AdminMainView.fxml)
+* guesstheword_server.controller.LeaderBoardViewController (con relativa View: LeaderBoardView.fxml)
 * guesstheword_server.db.ChallengeDAO
 * guesstheword_server.db.DatabaseManager
 * guesstheword_server.db.ResultDAO
@@ -32,26 +33,31 @@ GuessTheWord_G1 e' un'applicazione client-server scritta in Java 8 che si basa s
 * guesstheword_server.service.HistoryService
 * guesstheword_server.service.LeaderboardService
 * guesstheword_server.service.MatchPersistenceService
-* guesstheword_server.utils.HashUtil
 * guesstheword_server.analysis.TestDocumentAnalyzer (Test)
 * guesstheword_server.controller.TestControllersLoading (Test)
 
 ### William Menza
 * guesstheword_client.ClientApp
-* guesstheword_client.controller.DifficultyViewController
-* guesstheword_client.controller.GameViewController
-* guesstheword_client.controller.HistoryViewController
-* guesstheword_client.controller.LoginViewController
-* guesstheword_client.controller.WaitingRoomViewController
+* guesstheword_client.controller.DifficultyViewController (con relativa View: DifficultyView.fxml)
+* guesstheword_client.controller.GameViewController (con relativa View: GameView.fxml)
+* guesstheword_client.controller.HistoryViewController (con relativa View: HistoryView.fxml)
+* guesstheword_client.controller.LoginViewController (con relativa View: LoginView.fxml)
+* guesstheword_client.controller.WaitingRoomViewController (con relativa View: WaitingRoomView.fxml)
+* guesstheword_client.model.GameState
+* guesstheword_client.model.MatchRecord
 * guesstheword_client.service.AuthService
 * guesstheword_client.service.GameService
 * guesstheword_client.service.HistoryService
 * guesstheword_client.utils.HashUtil
 * guesstheword_client.utils.SceneManager
+* guesstheword_server.utils.HashUtil
 
 ### Sabrina Soriano
 * guesstheword_client.network.ListenerTask
+* guesstheword_client.network.MessageProtocol
 * guesstheword_client.network.ServerConnection
+* guesstheword_server.game.CaesarCipher
+* guesstheword_server.game.ChallengePreparator
 * guesstheword_server.game.Difficulty
 * guesstheword_server.game.GameManager (in collaborazione)
 * guesstheword_server.network.ClientHandler

@@ -9,9 +9,9 @@ package guesstheword_client.network;
  * I messaggi sono stati implementati seguendo delle convenzioni per i protocolli testuali
  * Es:
  * AUTH LOGIN -> SMTP
- * Usando il separatore ":" per semplicità di implementazione (split(":"))
+ * Usando il separatore "\u001F" per evitare di confondersi con la punteggiatura (split("\u001F"))
  * 
- * @author Pc
+ * @author Sabrina Soriano
  */
 public class MessageProtocol {
     
@@ -82,7 +82,7 @@ public class MessageProtocol {
         return message.split("\u001F");
     }
 
-    // Classe di utilità, non istanziabile, non so se lasciarlo o meno, serve solo a impedire l'istanza di un oggetto MessageProtocol
+    // Classe di utilità, non istanziabile, serve solo a impedire l'istanza di un oggetto MessageProtocol
     private MessageProtocol() {
         throw new UnsupportedOperationException("Utility class");
     }

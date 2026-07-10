@@ -7,7 +7,7 @@ import java.io.Serializable;
  * Traccia lo stato della parola nascosta, i tentativi rimasti, il turno di gioco,
  * gli indizi cifrati e le statistiche temporanee.
  * 
- * @author Carmine Muollo
+ * @author William Menza
  */
 public class GameState implements Serializable {
     

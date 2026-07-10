@@ -15,13 +15,13 @@ import java.time.LocalDateTime;
  * 1. Analizza il testo del documento con {@link DocumentAnalyzer} ed estrae
  *    la parola chiave più significativa.
  * 2. Genera uno shift di Cesare casuale in base alla {@link Difficulty} richiesta.
- * 3. Costruisce e restituisce un oggetto {@link Challenge} con la parola estratta,
- *    lo shift scelto e il timestamp corrente.
+ * 3. Costruisce e restituisce un oggetto {@link Challenge} con il testo estratto,
+ *    la parola cifrata, lo shift scelto e il timestamp corrente.
  *
  * Se non viene fornito alcun testo, la parola viene scelta dal vocabolario
  * di fallback interno a {@link DocumentAnalyzer}.
  *
- * @author Pc
+ * @author Sabrina Soriano
  */
 public class ChallengePreparator {
 

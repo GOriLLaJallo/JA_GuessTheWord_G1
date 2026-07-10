@@ -9,11 +9,10 @@ package guesstheword_server.protocol;
  * I messaggi sono stati implementati seguendo delle convenzioni per i protocolli testuali
  * Es:
  * AUTH LOGIN -> SMTP
- * Usando il separatore ":" per semplicità di implementazione (split(":"))
+ * Usando il separatore "\u001F" per evitare di confondersi con la punteggiatura (split("\u001F"))
  * 
  * @author Sabrina Soriano
  */
-
 public class MessageProtocol {
     
     // messaggio di login: AUTH_LOGIN:username:password
@@ -28,7 +27,7 @@ public class MessageProtocol {
     //messaggio di autenticazione fallita: AUTH_FAIL:motivo
     public static final String AUTH_FAIL = "AUTH_FAIL";
 
-    // messaggio client in attesa dell'avversario + difficoltà: WAITING:difficulty (es. WAITING:EASY, WAITING:MEDIUM, WAITING:HARD)
+    // messaggio client in attesa dell'avversario
     public static final String WAITING = "WAITING";
 
     //messaggio avversario trovato, la partita sta per iniziare
@@ -83,7 +82,7 @@ public class MessageProtocol {
         return message.split("\u001F");
     }
 
-    // Classe di utilità, non istanziabile, non so se lasciarlo o meno, serve solo a impedire l'istanza di un oggetto MessageProtocol
+    // Classe di utilità, non istanziabile, serve solo a impedire l'istanza di un oggetto MessageProtocol
     private MessageProtocol() {
         throw new UnsupportedOperationException("Utility class");
     }
