@@ -98,12 +98,27 @@ Per effettuare il test del progetto da parte del docente, utilizzare le seguenti
 
 ## Istruzioni per la Compilazione e l'Esecuzione
 
-### Compilazione Server
+### NOTA SULLA COMPATIBILITA' JAVAFX (Java 11+ / Java 25)
+Questo progetto utilizza JavaFX per la sua interfaccia grafica. Poiche' JavaFX e' stato rimosso dai JDK standard a partire dalla versione 11, l'esecuzione con versioni successive di Java (come Java 25) lancera' l'errore:
+`java.lang.NoClassDefFoundError: javafx/application/Application`
+
+Per eseguire correttamente il software, utilizzare il JDK 1.8 installato localmente sul sistema in:
+`C:\Program Files\Java\jdk-1.8`
+
+Sono stati forniti a questo scopo due file batch all'interno della cartella degli eseguibili:
+- `run_server.bat` (avvia il Server usando il runtime JDK 1.8)
+- `run_client.bat` (avvia il Client usando il runtime JDK 1.8)
+
+In alternativa, da terminale, e' possibile specificare il percorso assoluto:
+- **Server**: `"C:\Program Files\Java\jdk-1.8\bin\java.exe" -jar server.jar`
+- **Client**: `"C:\Program Files\Java\jdk-1.8\bin\java.exe" -jar client.jar`
+
+### Compilazione Server (Manuale)
 ```powershell
 powershell -Command "& 'C:\Program Files\Java\jdk-1.8\bin\javac' -encoding UTF-8 -cp 'lib/*' -d build (Get-ChildItem -Path src, test -Filter *.java -Recurse | ForEach-Object { $_.FullName })"
 ```
 
-### Compilazione Client
+### Compilazione Client (Manuale)
 ```powershell
 powershell -Command "& 'C:\Program Files\Java\jdk-1.8\bin\javac' -encoding UTF-8 -cp 'lib/*' -d build (Get-ChildItem -Path src -Filter *.java -Recurse | ForEach-Object { $_.FullName })"
 ```
