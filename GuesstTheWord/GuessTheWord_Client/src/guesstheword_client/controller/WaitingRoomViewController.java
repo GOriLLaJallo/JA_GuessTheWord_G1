@@ -144,25 +144,18 @@ public class WaitingRoomViewController implements Initializable {
         if (alertGiaMostrato) return;
         alertGiaMostrato = true;
         
-        // Visualizza il messaggio di errore nella label della waiting room
-        waitingLabel.setText(message);
+        try {
+            ServerConnection.getInstance().close();
+        } catch (IOException e) {
+            System.err.println("[WaitingRoomView] Errore nella chiusura della socket: " + e.getMessage());
+        }
         
-        javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(2));
-        pause.setOnFinished(event -> {
-            try {
-                ServerConnection.getInstance().close();
-            } catch (IOException e) {
-                System.err.println("[WaitingRoomView] Errore nella chiusura della socket: " + e.getMessage());
-            }
-            
-            try {
-                Stage window = (Stage) waitingLabel.getScene().getWindow();
-                LoginViewController loginController = guesstheword_client.utils.SceneManager.switchScene(window, "/guesstheword_client/resources/view/LoginView.fxml");
-                loginController.setErrorText("Attenzione. Server disconnesso al momento, attendere il ripristino da parte dell'amministratore.");
-            } catch (Exception e) {
-                System.err.println("[WaitingRoomView] Errore nel ritorno alla schermata di Login: " + e.getMessage());
-            }
-        });
-        pause.play();
+        try {
+            Stage window = (Stage) waitingLabel.getScene().getWindow();
+            LoginViewController loginController = guesstheword_client.utils.SceneManager.switchScene(window, "/guesstheword_client/resources/view/LoginView.fxml");
+            loginController.setErrorText("Attenzione. Server disconnesso al momento, attendere il ripristino da parte dell'amministratore.");
+        } catch (Exception e) {
+            System.err.println("[WaitingRoomView] Errore nel ritorno alla schermata di Login: " + e.getMessage());
+        }
     }
 }
