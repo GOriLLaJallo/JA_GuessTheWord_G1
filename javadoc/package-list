@@ -1,0 +1,17 @@
+guesstheword_client
+guesstheword_client.controller
+guesstheword_client.model
+guesstheword_client.network
+guesstheword_client.service
+guesstheword_client.utils
+guesstheword_server
+guesstheword_server.analysis
+guesstheword_server.controller
+guesstheword_server.db
+guesstheword_server.exception
+guesstheword_server.game
+guesstheword_server.model
+guesstheword_server.network
+guesstheword_server.protocol
+guesstheword_server.service
+guesstheword_server.utils
