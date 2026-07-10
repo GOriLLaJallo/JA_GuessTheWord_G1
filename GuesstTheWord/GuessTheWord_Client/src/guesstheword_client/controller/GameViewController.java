@@ -240,24 +240,27 @@ public class GameViewController implements Initializable {
         if (alertGiaMostrato) return;
         alertGiaMostrato = true;
 
-        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
-        alert.setTitle("Errore di Connessione");
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
-        
-        try {
-            ServerConnection.getInstance().close();
-        } catch (IOException e) {
-            System.err.println("[GameView] Errore nella chiusura della socket: " + e.getMessage());
-        }
+        // Mostra il messaggio di errore nella label di stato già presente a schermo
+        statusLabel.setText(message);
 
-        try {
-            Stage window = (Stage) timerLabel.getScene().getWindow();
-            guesstheword_client.utils.SceneManager.switchScene(window, "/guesstheword_client/resources/view/LoginView.fxml");
-        } catch (Exception e) {
-            System.err.println("[GameView] Errore nel ritorno alla schermata di Login: " + e.getMessage());
-        }
+        // Micro-pausa di circa due secondi per la UX prima del reindirizzamento al login
+        javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(2));
+        pause.setOnFinished(event -> {
+            try {
+                ServerConnection.getInstance().close();
+            } catch (IOException e) {
+                System.err.println("[GameView] Errore nella chiusura della socket: " + e.getMessage());
+            }
+
+            try {
+                Stage window = (Stage) timerLabel.getScene().getWindow();
+                LoginViewController loginController = guesstheword_client.utils.SceneManager.switchScene(window, "/guesstheword_client/resources/view/LoginView.fxml");
+                loginController.setErrorText("Attenzione. Server disconnesso al momento, attendere il ripristino da parte dell'amministratore.");
+            } catch (Exception e) {
+                System.err.println("[GameView] Errore nel ritorno alla schermata di Login: " + e.getMessage());
+            }
+        });
+        pause.play();
     }
     
     /**

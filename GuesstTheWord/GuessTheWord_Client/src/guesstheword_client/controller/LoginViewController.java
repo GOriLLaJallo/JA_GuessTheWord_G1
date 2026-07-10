@@ -308,4 +308,15 @@ public class LoginViewController implements Initializable {
             e.printStackTrace();
         }
     }
+
+    /**
+     * Consente di impostare un messaggio di errore personalizzato dall'esterno.
+     *
+     * @param text il testo del messaggio da visualizzare
+     */
+    public void setErrorText(String text) {
+        if (errorLabel != null) {
+            errorLabel.setText(text);
+        }
+    }
 }

@@ -25,13 +25,60 @@ public class DifficultyViewController implements Initializable {
     @FXML
     private Label errorLabel;
 
+    private boolean alertGiaMostrato = false;
+
     /**
      * Inizializza il controller.
      * Viene chiamato automaticamente dopo il caricamento del file FXML.
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        // Init
+        errorLabel.setText("");
+        try {
+            guesstheword_client.network.ServerConnection conn = guesstheword_client.network.ServerConnection.getInstance();
+            conn.startListener();
+            conn.getListenerTask().networkEventProperty().addListener((obs, oldVal, newVal) -> {
+                if (newVal != null) {
+                    javafx.application.Platform.runLater(() -> handleNetworkEvent(newVal));
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+            errorLabel.setText("Errore di connessione al server.");
+        }
+    }
+
+    private void handleNetworkEvent(guesstheword_client.network.ClientNetworkEvent event) {
+        if (event == guesstheword_client.network.ClientNetworkEvent.SERVER_SHUTDOWN) {
+            showErrorAndExit("Il server è stato arrestato dall'amministratore.");
+        } else if (event == guesstheword_client.network.ClientNetworkEvent.TIMEOUT || event == guesstheword_client.network.ClientNetworkEvent.CONNECTION_LOST) {
+            showErrorAndExit("Connessione al server persa, riprova più tardi.");
+        }
+    }
+
+    private void showErrorAndExit(String message) {
+        if (alertGiaMostrato) return;
+        alertGiaMostrato = true;
+
+        errorLabel.setText(message);
+
+        javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(2));
+        pause.setOnFinished(e -> {
+            try {
+                guesstheword_client.network.ServerConnection.getInstance().close();
+            } catch (IOException ex) {
+                System.err.println("[DifficultyView] Errore nella chiusura della socket: " + ex.getMessage());
+            }
+
+            try {
+                Stage window = (Stage) errorLabel.getScene().getWindow();
+                LoginViewController loginController = guesstheword_client.utils.SceneManager.switchScene(window, "/guesstheword_client/resources/view/LoginView.fxml");
+                loginController.setErrorText("Attenzione. Server disconnesso al momento, attendere il ripristino da parte dell'amministratore.");
+            } catch (Exception ex) {
+                System.err.println("[DifficultyView] Errore nel ritorno alla schermata di Login: " + ex.getMessage());
+            }
+        });
+        pause.play();
     }
 
     /**
