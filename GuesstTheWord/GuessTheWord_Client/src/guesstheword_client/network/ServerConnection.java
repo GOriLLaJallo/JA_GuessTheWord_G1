@@ -111,7 +111,8 @@ public class ServerConnection {
     
     public synchronized void startListener() {
         if (listenerTask != null && !listenerTask.isDone()) {
-            listenerTask.cancel();
+            // Se l'ascoltatore è già attivo e in esecuzione, lo riutilizziamo per evitare thread multipli sulla stessa socket
+            return;
         }
         listenerTask = new ListenerTask(this);
         Thread t = new Thread(listenerTask);
