@@ -6,64 +6,64 @@ GuessTheWord_G1 e' un'applicazione client-server scritta in Java 8 che si basa s
 
 ## Autori e Classi Associate
 
-Nota: Ciascun autore di un Controller si e' occupato anche dello sviluppo e del design della rispettiva vista FXML (es. l'autore di AdminDashboardViewController e' autore anche di AdminDashboardView.fxml e così via).
+William: (13 classi)
+ClientApp.java
+DifficultyViewController.java
+GameViewController.java
+HistoryViewController.java
+LoginViewController.java
+WaitingRoomController.java
+GameState.java
+MatchRecord.java
+AuthService.java
+GameService.java
+HistoryService.java
+HashUtil.java
+SceneManager.java
 
-### William Menza (13 classi)
-* ClientApp.java
-* DifficultyViewController.java (con relativa vista: DifficultyView.fxml)
-* GameViewController.java (con relativa vista: GameView.fxml)
-* HistoryViewController.java (con relativa vista: HistoryView.fxml)
-* LoginViewController.java (con relativa vista: LoginView.fxml)
-* WaitingRoomViewController.java (con relativa vista: WaitingRoomView.fxml)
-* GameState.java
-* MatchRecord.java
-* AuthService.java (Client)
-* GameService.java
-* HistoryService.java (Client)
-* HashUtil.java (Client)
-* SceneManager.java
+Davide: (6 classi)
+AnalysisResult.java
+AnalysisService.java
+DocumentAnalyzer.java
+GameManager.java (con Sabrina)
+GameSession.java (con Sabrina)
+ChallengePreparator.java
 
-### Davide Andrea Odierna (6 classi)
-* AnalysisResult.java
-* AnalysisService.java
-* DocumentAnalyzer.java
-* GameManager.java (in collaborazione con Sabrina Soriano)
-* GameSession.java (in collaborazione con Sabrina Soriano)
-* ChallengePreparator.java
+Sabrina: (9 classi)
+ClientNetworkEvent.java
+ListenerTask.java
+MessageProtocol.java
+ServerConnection.java
+CaesarCipher.java
+Difficulty.java
+ClientRegistry.java
+GameServer.java
+ClientHandler
 
-### Sabrina Soriano (9 classi)
-* ClientNetworkEvent.java
-* ListenerTask.java
-* MessageProtocol.java
-* ServerConnection.java
-* CaesarCipher.java
-* Difficulty.java
-* ClientRegistry.java
-* GameServer.java
-* ClientHandler.java
+Carmine: (21 classi)
+ServerApp.java
+AdminDashboardViewController.java
+AdminLoginViewController.java
+AdminMainViewController.java
+LeaderBoardViewController.java
+ChallengeDAO.java
+ResultDAO.java
+UserDAO.java
+DatabaseManager.java
+DataAccessException.java
+Challenge.java
+GameResult.java
+User.java
+LeaderboardEntry.java
+UserStatsDTO.java
+AuthService.java
+HistoryService.java
+LeaderboardService.java
+MatchPersistenceService.java
+TestDocumentAnalyzer.java
+TestControllersLoading.java
 
-### Carmine Muollo (21 classi)
-* ServerApp.java
-* AdminDashboardViewController.java (con relativa vista: AdminDashboardView.fxml)
-* AdminLoginViewController.java (con relativa vista: AdminLoginView.fxml)
-* AdminMainViewController.java (con relativa vista: AdminMainView.fxml)
-* LeaderBoardViewController.java (con relativa vista: LeaderBoardView.fxml)
-* ChallengeDAO.java
-* ResultDAO.java
-* UserDAO.java
-* DatabaseManager.java
-* DataAccessException.java
-* Challenge.java
-* GameResult.java
-* User.java
-* LeaderboardEntry.java
-* UserStatsDTO.java
-* AuthService.java (Server)
-* HistoryService.java (Server)
-* LeaderboardService.java
-* MatchPersistenceService.java
-* TestDocumentAnalyzer.java (Test)
-* TestControllersLoading.java (Test)
+TOTALE: 49 CLASSI
 
 ---
 
