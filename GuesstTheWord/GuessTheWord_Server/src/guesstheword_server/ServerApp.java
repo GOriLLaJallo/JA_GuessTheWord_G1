@@ -18,6 +18,8 @@ import javafx.stage.Stage;
  */
 public class ServerApp extends Application {
 
+    private static GameServer gameServer;
+
     @Override
     public void start(Stage primaryStage) {
         try {
@@ -25,10 +27,40 @@ public class ServerApp extends Application {
             System.out.println("[ServerApp] Connessione ed inizializzazione del database in corso...");
             DatabaseManager.getInstance();
             
+            // Shutdown hook per garantire la chiusura ordinata del pool di thread (ScheduledExecutorService)
+            // in caso di terminazione forzata (es. Ctrl+C o segnali di arresto del sistema operativo).
+            // Questo assicura che il server rilasci i descrittori di thread e file in modo appropriato.
+            Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    System.out.println("[ShutdownHook] Rilevata terminazione di sistema: arresto dello scheduler e del server...");
+                    guesstheword_server.game.GameSession.shutdownScheduler();
+                    if (gameServer != null) {
+                        gameServer.stopCon();
+                    }
+                }
+            }));
+            
+            // Carica la cache di analisi in modo sincrono all'avvio prima di accettare client
+            java.io.File defaultCache = new java.io.File("cache_analisi.ser");
+            if (defaultCache.exists()) {
+                try (java.io.ObjectInputStream ois = new java.io.ObjectInputStream(new java.io.FileInputStream(defaultCache))) {
+                    Object obj = ois.readObject();
+                    if (obj instanceof guesstheword_server.analysis.AnalysisResult) {
+                        guesstheword_server.analysis.AnalysisResult result = (guesstheword_server.analysis.AnalysisResult) obj;
+                        guesstheword_server.game.GameManager.getInstance().setTestoDisponibile(result.getSourceText());
+                        System.out.println("[ServerApp] Cache di analisi caricata in modo sincrono all'avvio.");
+                    }
+                } catch (Exception e) {
+                    System.err.println("[ServerApp] Errore nel caricamento della cache all'avvio: " + e.getMessage());
+                }
+            }
+            
             // Avvio del GameServer in un thread separato
             Thread serverThread = new Thread(() -> {
                 try {
-                    new GameServer().startCon();
+                    gameServer = new GameServer();
+                    gameServer.startCon();
                 } catch (IOException e) {
                     System.err.println("[ServerApp] Errore avvio GameServer: " + e.getMessage());
                 }
@@ -55,6 +87,16 @@ public class ServerApp extends Application {
                 System.err.println("[ServerApp] Errore irreversibile all'avvio dell'applicazione server:");
                 e.printStackTrace();
             }
+    }
+
+    @Override
+    public void stop() throws Exception {
+        System.out.println("[ServerApp] Arresto applicazione: spegnimento dello scheduler e del server in corso...");
+        guesstheword_server.game.GameSession.shutdownScheduler();
+        if (gameServer != null) {
+            gameServer.stopCon();
+        }
+        super.stop();
     }
 
     /**

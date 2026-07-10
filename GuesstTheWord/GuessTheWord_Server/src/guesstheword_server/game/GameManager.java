@@ -122,5 +122,35 @@ public class GameManager {
             session.start();
         }
     }
+
+    /**
+     * Rigenera una sfida (Challenge) in modo sincronizzato e thread-safe,
+     * garantendo l'incapsulamento di testoDisponibile e challengePreparator.
+     *
+     * @param difficulty la difficoltà della sfida
+     * @return una nuova sfida generata
+     */
+    public synchronized Challenge regenerateChallenge(Difficulty difficulty) {
+        return (testoDisponibile != null)
+            ? challengePreparator.prepare(testoDisponibile, difficulty)
+            : challengePreparator.prepareRandom(difficulty);
+    }
+
+    /**
+     * Esegue la pulizia completa di tutte le sessioni attive e svuota
+     * tutte le code di attesa dei giocatori per ogni difficoltà.
+     * Questo metodo va richiamato esclusivamente durante lo spegnimento
+     * controllato del server.
+     */
+    public synchronized void shutdownAll() {
+        System.out.println("[GameManager] Esecuzione clean-up globale di sessioni e code...");
+        activeSessions.clear();
+        for (Difficulty d : Difficulty.values()) {
+            List<ClientHandler> queue = waitingPlayers.get(d);
+            if (queue != null) {
+                queue.clear();
+            }
+        }
+    }
 }
 

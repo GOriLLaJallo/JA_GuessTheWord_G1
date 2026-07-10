@@ -11,19 +11,29 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 /**
- * Data Access Object (DAO) per la gestione della persistenza dell'entità Challenge.
- * Fornisce metodi per memorizzare nuove sfide nel database SQLite e recuperarle tramite il loro ID.
- * 
+ * Data Access Object (DAO) per la gestione della persistenza dell'entità
+ * Challenge. Fornisce metodi per memorizzare nuove sfide nel database SQLite e
+ * recuperarle tramite il loro ID.
+ *
  * @author Carmine Muollo
  */
 public class ChallengeDAO {
 
-    /** Formattatore standard per la serializzazione delle date in SQLite. */
+    /**
+     * Formattatore standard per la serializzazione delle date in SQLite.
+     */
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     /**
-     * Salva una nuova sfida nel database SQLite utilizzando una connessione gestita esternamente.
-     * Utile all'interno di transazioni JDBC.
+     * Costruttore di default esplicito per la classe ChallengeDAO.
+     */
+    public ChallengeDAO() {
+        // Costruttore vuoto di default
+    }
+
+    /**
+     * Salva una nuova sfida nel database SQLite utilizzando una connessione
+     * gestita esternamente. Utile all'interno di transazioni JDBC.
      *
      * @param challenge la sfida da salvare
      * @param conn la connessione JDBC attiva
@@ -55,7 +65,8 @@ public class ChallengeDAO {
     }
 
     /**
-     * Salva una nuova sfida nel database SQLite. Apre e gestisce internamente la connessione.
+     * Salva una nuova sfida nel database SQLite. Apre e gestisce internamente
+     * la connessione.
      *
      * @param challenge la sfida da salvare
      * @return true se il salvataggio è riuscito
@@ -79,8 +90,7 @@ public class ChallengeDAO {
         String query = "SELECT id, parola_nascosta, shift_cesare, data_sfida, difficolta FROM sfide WHERE id = ?;";
         DatabaseManager dbManager = DatabaseManager.getInstance();
 
-        try (Connection conn = dbManager.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
+        try (Connection conn = dbManager.getConnection(); PreparedStatement ps = conn.prepareStatement(query)) {
 
             ps.setInt(1, id);
 
@@ -90,11 +100,11 @@ public class ChallengeDAO {
                     challenge.setId(rs.getInt("id"));
                     challenge.setParolaNascosta(rs.getString("parola_nascosta"));
                     challenge.setShiftCesare(rs.getInt("shift_cesare"));
-                    
+
                     String dateStr = rs.getString("data_sfida");
                     challenge.setDataSfida(LocalDateTime.parse(dateStr, DATE_FORMATTER));
                     challenge.setDifficolta(rs.getString("difficolta"));
-                    
+
                     return challenge;
                 }
             }

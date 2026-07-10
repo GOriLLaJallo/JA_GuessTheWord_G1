@@ -89,6 +89,19 @@ public class ServerConnection {
     public void close() throws IOException {
         socket.close();
     }
+
+    /**
+     * Imposta il timeout di lettura sulla socket.
+     *
+     * @param timeout valore del timeout in millisecondi
+     * @throws SocketException in caso di errore di configurazione della socket
+     */
+    public void setSoTimeout(int timeout) throws SocketException {
+        if (socket != null && !socket.isClosed()) {
+            socket.setSoTimeout(timeout);
+            System.out.println("[ServerConnection] Timeout socket impostato a " + timeout + " ms.");
+        }
+    }
     
     /**
      * Crea un thread dedicato all'ascolto dei messsaggi mandati dal server
@@ -97,12 +110,13 @@ public class ServerConnection {
      */
     
     public synchronized void startListener() {
-        if (listenerTask == null || listenerTask.isDone()) {
-            listenerTask = new ListenerTask(this);
-            Thread t = new Thread(listenerTask);
-            t.setDaemon(true);
-            t.start();
+        if (listenerTask != null && !listenerTask.isDone()) {
+            listenerTask.cancel();
         }
+        listenerTask = new ListenerTask(this);
+        Thread t = new Thread(listenerTask);
+        t.setDaemon(true);
+        t.start();
     }
     
     /**

@@ -3,6 +3,8 @@ package guesstheword_client.controller;
 import guesstheword_client.network.ListenerTask;
 import guesstheword_client.network.MessageProtocol;
 import guesstheword_client.network.ServerConnection;
+import guesstheword_client.network.ClientNetworkEvent;
+import javafx.scene.control.Alert;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -87,6 +89,11 @@ public class WaitingRoomViewController implements Initializable {
             }
         };
         listenerTask.messageProperty().addListener(messageListener);
+        listenerTask.networkEventProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                handleNetworkEvent(newVal);
+            }
+        });
 
         // 3. Invia la richiesta al server dopo che l'ascoltatore è configurato
         try {
@@ -120,6 +127,35 @@ public class WaitingRoomViewController implements Initializable {
         } catch (IOException e) {
             e.printStackTrace();
             waitingLabel.setText("Errore caricamento gioco.");
+        }
+    }
+
+    private boolean alertGiaMostrato = false;
+
+    private void handleNetworkEvent(ClientNetworkEvent event) {
+        if (event == ClientNetworkEvent.SERVER_SHUTDOWN) {
+            javafx.application.Platform.runLater(() -> showErrorAndExit("Il server è stato arrestato dall'amministratore."));
+        } else if (event == ClientNetworkEvent.TIMEOUT || event == ClientNetworkEvent.CONNECTION_LOST) {
+            javafx.application.Platform.runLater(() -> showErrorAndExit("Connessione al server persa, riprova più tardi."));
+        }
+    }
+
+    private void showErrorAndExit(String message) {
+        if (alertGiaMostrato) return;
+        alertGiaMostrato = true;
+        
+        try {
+            ServerConnection.getInstance().close();
+        } catch (IOException e) {
+            System.err.println("[WaitingRoomView] Errore nella chiusura della socket: " + e.getMessage());
+        }
+        
+        try {
+            Stage window = (Stage) waitingLabel.getScene().getWindow();
+            LoginViewController loginController = guesstheword_client.utils.SceneManager.switchScene(window, "/guesstheword_client/resources/view/LoginView.fxml");
+            loginController.setErrorText("Attenzione. Server disconnesso al momento, attendere il ripristino da parte dell'amministratore.");
+        } catch (Exception e) {
+            System.err.println("[WaitingRoomView] Errore nel ritorno alla schermata di Login: " + e.getMessage());
         }
     }
 }

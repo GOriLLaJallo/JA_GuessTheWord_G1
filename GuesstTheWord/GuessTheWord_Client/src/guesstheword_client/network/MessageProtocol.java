@@ -57,6 +57,9 @@ public class MessageProtocol {
     //messaggio inviato dal server con lo storico formattato: HISTORY_DATA
     public static final String HISTORY_DATA = "HISTORY_DATA";
 
+    // messaggio di spegnimento controllato del server
+    public static final String SERVER_SHUTDOWN = "SERVER_SHUTDOWN";
+
     /**
      * Costruisco un messaggio
      *
@@ -66,7 +69,7 @@ public class MessageProtocol {
      */
     public static String build(String command, String... params) {
         if (params == null || params.length == 0) return command;
-        return command + ":" + String.join(":", params);
+        return command + "\u001F" + String.join("\u001F", params);
     }
 
     /**
@@ -76,7 +79,7 @@ public class MessageProtocol {
      * @return array di componenti
      */
     public static String[] parse(String message) {
-        return message.split(":");
+        return message.split("\u001F");
     }
 
     // Classe di utilità, non istanziabile, non so se lasciarlo o meno, serve solo a impedire l'istanza di un oggetto MessageProtocol

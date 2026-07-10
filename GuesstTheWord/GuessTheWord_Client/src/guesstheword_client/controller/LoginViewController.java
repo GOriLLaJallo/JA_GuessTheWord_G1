@@ -79,6 +79,7 @@ public class LoginViewController implements Initializable {
 
     private boolean isLoginMode = true;
     private guesstheword_client.service.AuthService authService;
+    private boolean isReconnectionCheckActive = false;
 
     /**
      * Inizializza il controller. Viene chiamato automaticamente dopo il caricamento del file FXML.
@@ -239,9 +240,9 @@ public class LoginViewController implements Initializable {
             return;
         }
 
-        // Controllo carattere vietato ':'
-        if (username.contains(":") || password.contains(":")) {
-            errorLabel.setText("Il carattere ':' non è consentito!");
+        // Controllo caratteri vietati
+        if (username.contains(":") || password.contains(":") || username.contains("\u001F") || password.contains("\u001F")) {
+            errorLabel.setText("Caratteri speciali non consentiti!");
             return;
         }
         
@@ -307,5 +308,69 @@ public class LoginViewController implements Initializable {
             errorLabel.setText("Errore di rete durante la comunicazione.");
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Consente di impostare un messaggio di errore personalizzato dall'esterno.
+     * Se il messaggio indica una disconnessione del server, avvia il thread di verifica riconnessione.
+     *
+     * @param text il testo del messaggio da visualizzare
+     */
+    public void setErrorText(String text) {
+        if (errorLabel != null) {
+            errorLabel.setText(text);
+            errorLabel.setTextFill(javafx.scene.paint.Color.web("#ff3b30")); // Rosso per errori
+            if (text != null && text.contains("Server disconnesso")) {
+                startServerReconnectionCheck();
+            }
+        }
+    }
+
+    /**
+     * Avvia un thread in background per monitorare periodicamente lo stato del server.
+     * Non appena la connessione viene ripristinata, aggiorna la label graficamente in verde.
+     */
+    private synchronized void startServerReconnectionCheck() {
+        if (isReconnectionCheckActive) {
+            return;
+        }
+        isReconnectionCheckActive = true;
+
+        Thread checkThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                boolean connected = false;
+                while (!connected) {
+                    try {
+                        // Tenta di riaprire la connessione con il server
+                        ServerConnection.getInstance();
+                        connected = true;
+
+                        // Aggiorna l'interfaccia grafica in modo sicuro
+                        javafx.application.Platform.runLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                errorLabel.setText("Server ripristinato!");
+                                errorLabel.setTextFill(javafx.scene.paint.Color.web("#34c759")); // Verde per successo
+                            }
+                        });
+
+                        synchronized (LoginViewController.this) {
+                            isReconnectionCheckActive = false;
+                        }
+                    } catch (IOException e) {
+                        try {
+                            // Attende 3 secondi prima del prossimo tentativo per non saturare la CPU
+                            Thread.sleep(3000);
+                        } catch (InterruptedException ie) {
+                            Thread.currentThread().interrupt();
+                            break;
+                        }
+                    }
+                }
+            }
+        });
+        checkThread.setDaemon(true);
+        checkThread.start();
     }
 }

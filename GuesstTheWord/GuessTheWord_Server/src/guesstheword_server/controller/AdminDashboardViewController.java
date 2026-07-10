@@ -26,50 +26,73 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 /**
- * Controller per la schermata di controllo dell'amministratore (AdminDashboardView.fxml).
- * Gestisce l'interazione per la selezione dei file di testo (.txt), l'avvio del calcolo
- * delle parole più frequenti in modalità asincrona (tramite JavaFX Service e Task),
- * e il salvataggio/caricamento serializzato (.ser) della cache dei risultati.
- * 
+ * Controller per la schermata di controllo dell'amministratore
+ * (AdminDashboardView.fxml). Gestisce l'interazione per la selezione dei file
+ * di testo (.txt), l'avvio del calcolo delle parole più frequenti in modalità
+ * asincrona (tramite JavaFX Service e Task), e il salvataggio/caricamento
+ * serializzato (.ser) della cache dei risultati.
+ *
  * @author Carmine Muollo
  */
 public class AdminDashboardViewController implements Initializable {
 
+    /** Pulsante grafico per selezionare i file di testo da analizzare. */
     @FXML
     private Button selectFilesBtn;
 
+    /** Lista di visualizzazione dei nomi dei file caricati e selezionati. */
     @FXML
     private ListView<String> filesListView;
 
+    /** Pulsante grafico per avviare il calcolo dell'analisi testuale. */
     @FXML
     private Button startAnalysisBtn;
 
+    /** Barra di progresso legata allo stato di avanzamento dell'analisi. */
     @FXML
     private ProgressBar progressBar;
 
+    /** Etichetta di stato per mostrare le informazioni operative correnti. */
     @FXML
     private Label statusLabel;
 
+    /** Pulsante grafico per salvare i risultati correnti dell'analisi su file cache. */
     @FXML
     private Button saveResultsBtn;
 
+    /** Pulsante grafico per caricare una cache precedentemente salvata. */
     @FXML
     private Button loadResultsBtn;
 
+    /** Etichetta per mostrare lo stato del caricamento/salvataggio della cache. */
     @FXML
     private Label cacheStatusLabel;
 
-    // Conterrà l'elenco dei file reali selezionati dall'utente
+    /** Elenco dei file fisici correntemente selezionati dall'amministratore. */
     private final List<File> selectedFiles = new ArrayList<>();
 
-    // Conterrà il servizio JavaFX per l'esecuzione in background
+    /** Servizio asincrono per l'esecuzione in background dell'analisi testuale. */
     private AnalysisService analysisService;
 
-    // Memorizza l'ultimo risultato dell'analisi per la serializzazione
+    /** Riferimento all'ultimo risultato calcolato dell'analisi testuale. */
     private AnalysisResult lastAnalysisResult;
 
+    /** Flag di prevenzione per evitare la visualizzazione di molteplici alert di errore in sequenza rapida. */
+    private boolean alertMostrato = false;
+
     /**
-     * Inizializza il controller. Configura i componenti e crea l'istanza del servizio asincrono.
+     * Costruttore di default esplicito per la classe AdminDashboardViewController.
+     */
+    public AdminDashboardViewController() {
+        // Costruttore vuoto di default
+    }
+
+    /**
+     * Inizializza il controller. Configura i componenti e crea l'istanza del
+     * servizio asincrono legandone le proprietà alla GUI in modo thread-safe.
+     *
+     * @param url il percorso della risorsa FXML
+     * @param rb le risorse localizzate per il caricamento
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -82,7 +105,7 @@ public class AdminDashboardViewController implements Initializable {
 
         // Configurazione delle proprietà asincrone tramite binding/listener
         progressBar.progressProperty().bind(analysisService.progressProperty());
-        
+
         // Listener per aggiornare statusLabel in modo sicuro e non bloccante sul thread grafico
         analysisService.messageProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
@@ -94,14 +117,16 @@ public class AdminDashboardViewController implements Initializable {
         analysisService.setOnSucceeded(event -> {
             lastAnalysisResult = analysisService.getValue();
             progressBar.setVisible(false);
-    
+
             if (lastAnalysisResult != null) {
+                // Imposta in GameManager in modalità sincronizzata e thread-safe
                 GameManager.getInstance().setTestoDisponibile(lastAnalysisResult.getSourceText());
                 statusLabel.setText("Analisi completata con successo.");
                 saveResultsBtn.setDisable(false);
                 showAlert(Alert.AlertType.INFORMATION, "Risultato Analisi", "Analisi completata con successo!",
-                    "Parole totali elaborate: " + lastAnalysisResult.getTotalWordsProcessed() + "\n" +
-                    "Tempo di esecuzione: " + lastAnalysisResult.getAnalysisTimeMs() + " ms");
+                          "Parola chiave: '" + lastAnalysisResult.getKeyWord() + "'\n"
+                        + "Parole totali elaborate: " + lastAnalysisResult.getTotalWordsProcessed() + "\n"
+                        + "Tempo di esecuzione: " + lastAnalysisResult.getAnalysisTimeMs() + " ms");
             }
             setControlsDisabled(false);
         });
@@ -117,19 +142,32 @@ public class AdminDashboardViewController implements Initializable {
         });
 
         saveResultsBtn.setDisable(true);
-        
-        
     }
 
     /**
-     * Mostra un dialogo Alert modale personalizzato con lo stile dell'applicazione.
+     * Mostra un dialogo Alert modale personalizzato con lo stile
+     * dell'applicazione.
+     * 
+     * @param type il tipo di Alert
+     * @param title il titolo della finestra
+     * @param header l'intestazione del messaggio
+     * @param content il testo descrittivo del corpo del messaggio
      */
     private void showAlert(Alert.AlertType type, String title, String header, String content) {
+        if (type == Alert.AlertType.ERROR) {
+            if (alertMostrato) {
+                // Aggiorna semplicemente lo stato testuale a schermo per evitare il freeze e la sovrapposizione di popup
+                statusLabel.setText("Errore: " + header + " - " + content);
+                return;
+            }
+            alertMostrato = true;
+        }
+
         Alert alert = new Alert(type);
         alert.setTitle(title);
         alert.setHeaderText(header);
         alert.setContentText(content);
-        
+
         try {
             DialogPane dialogPane = alert.getDialogPane();
             String cssPath = getClass().getResource("/guesstheword_server/resources/styles/stylesheet.css").toExternalForm();
@@ -137,12 +175,21 @@ public class AdminDashboardViewController implements Initializable {
         } catch (Exception e) {
             System.err.println("[Dashboard] Errore nell'applicazione dello stile all'Alert: " + e.getMessage());
         }
-        
-        alert.showAndWait();
+
+        alert.setOnHidden(e -> {
+            if (type == Alert.AlertType.ERROR) {
+                alertMostrato = false;
+            }
+        });
+
+        // Usa show() anziché showAndWait() per non bloccare (freeze) il thread grafico di JavaFX
+        alert.show();
     }
 
     /**
-     * Disabilita/Abilita i controlli durante l'esecuzione del background task.
+     * Disabilita o abilita i controlli grafici durante l'esecuzione del background task.
+     * 
+     * @param disabled true per disabilitare i controlli, false per riabilitarli
      */
     private void setControlsDisabled(boolean disabled) {
         selectFilesBtn.setDisable(disabled);
@@ -154,8 +201,9 @@ public class AdminDashboardViewController implements Initializable {
     }
 
     /**
-     * Gestisce la selezione di uno o più file di testo (.txt) tramite FileChooser.
-     * Mostra in lista solo i nomi dei file (senza esporre i percorsi assoluti sul filesystem).
+     * Gestisce la selezione di uno o più file di testo (.txt) tramite
+     * FileChooser. Mostra in lista solo i nomi dei file (senza esporre i
+     * percorsi assoluti sul filesystem).
      *
      * @param event l'evento che ha scatenato l'azione
      */
@@ -179,7 +227,7 @@ public class AdminDashboardViewController implements Initializable {
                 // Per pulizia dell'interfaccia, mostra solo il nome del file
                 filesListView.getItems().add(file.getName());
             }
-            
+
             analysisService.setFilesToAnalyze(selectedFiles);
             statusLabel.setText("Selezionati " + selectedFiles.size() + " file pronti per l'analisi.");
             progressBar.setVisible(false);
@@ -196,7 +244,7 @@ public class AdminDashboardViewController implements Initializable {
     @FXML
     private void handleStartAnalysis(ActionEvent event) {
         if (selectedFiles.isEmpty()) {
-            showAlert(Alert.AlertType.WARNING, "Attenzione", "Nessun file selezionato", 
+            showAlert(Alert.AlertType.WARNING, "Attenzione", "Nessun file selezionato",
                     "Seleziona almeno un file di testo (.txt) prima di avviare l'analisi.");
             return;
         }
@@ -209,16 +257,17 @@ public class AdminDashboardViewController implements Initializable {
     }
 
     /**
-     * Gestisce il salvataggio dei risultati dell'analisi in un file cache serializzato (.ser).
-     * Apre un FileChooser per far scegliere il percorso del salvataggio.
+     * Gestisce il salvataggio dei risultati dell'analisi in un file cache
+     * serializzato (.ser). Apre un FileChooser per far scegliere il percorso
+     * del salvataggio.
      *
      * @param event l'evento che ha scatenato l'azione
      */
     @FXML
     private void handleSaveResults(ActionEvent event) {
         if (lastAnalysisResult == null) {
-            showAlert(Alert.AlertType.WARNING, "Attenzione", "Nessun dato da salvare", 
-                    "Nessun risultato di analisi disponibile per il salvataggio.");
+            showAlert(Alert.AlertType.WARNING, "Attenzione", "Nessun dato da salvare",
+                    "Nessun risultato disponibile per il salvataggio.");
             return;
         }
 
@@ -246,8 +295,9 @@ public class AdminDashboardViewController implements Initializable {
     }
 
     /**
-     * Gestisce il caricamento della cache dei risultati dell'analisi precedentemente salvata.
-     * Carica e deserializza l'oggetto AnalysisResult popolando la lista di file visualizzata.
+     * Gestisce il caricamento della cache dei risultati dell'analisi
+     * precedentemente salvata. Carica e deserializza l'oggetto AnalysisResult
+     * popolando la lista di file visualizzata.
      *
      * @param event l'evento che ha scatenato l'azione
      */
@@ -274,12 +324,15 @@ public class AdminDashboardViewController implements Initializable {
                     statusLabel.setText("Risultati caricati da cache.");
                     cacheStatusLabel.setText("Cache: Caricata (" + file.getName() + ")");
                     saveResultsBtn.setDisable(false);
-                    
+
+                    // Ripristina il testo disponibile nel GameManager
+                    GameManager.getInstance().setTestoDisponibile(lastAnalysisResult.getSourceText());
+
                     showAlert(Alert.AlertType.INFORMATION, "Caricamento Cache", "Cache caricata con successo!",
-                            "File caricato: " + file.getName() + "\n" +
-                            "Parola chiave: '" + lastAnalysisResult.getKeyWord() + "'\n" +
-                            "Parole totali elaborate: " + lastAnalysisResult.getTotalWordsProcessed() + "\n" +
-                            "Tempo di esecuzione originario: " + lastAnalysisResult.getAnalysisTimeMs() + " ms");
+                            "File caricato: " + file.getName() + "\n"
+                            + "Parola chiave: '" + lastAnalysisResult.getKeyWord() + "'\n"
+                            + "Parole totali elaborate: " + lastAnalysisResult.getTotalWordsProcessed() + "\n"
+                            + "Tempo di esecuzione originario: " + lastAnalysisResult.getAnalysisTimeMs() + " ms");
                     System.out.println("[Dashboard] Cache deserializzata correttamente da " + file.getAbsolutePath());
                 } else {
                     cacheStatusLabel.setText("Cache: Errore formato");

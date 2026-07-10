@@ -30,17 +30,26 @@ public class ClientHandler implements Runnable {
     private String username;
     private User user;
     private GameSession currentSession;
+    private ClientRegistry registry;
 
     /**
-     * Costruttore che prende la socket e ci apre 2 canali di comunicazione (in e out) tra client e server
+     * Costruttore che prende la socket e il registro dei client.
      * 
-     * @param socket
-     * @throws IOException 
+     * @param socket la socket del client
+     * @param registry il registro dei client connessi
      */
-    public ClientHandler(Socket socket) throws IOException {
+    public ClientHandler(Socket socket, ClientRegistry registry) {
         this.socket = socket;
-        this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        this.out = new PrintWriter(socket.getOutputStream(), true); // autoflush
+        this.registry = registry;
+    }
+
+    /**
+     * Restituisce la socket associata a questo handler.
+     *
+     * @return la socket
+     */
+    public Socket getSocket() {
+        return socket;
     }
     
     /**
@@ -49,7 +58,11 @@ public class ClientHandler implements Runnable {
      * @param message
      */
     public void sendMessage(String message) {
-        out.println(message);
+        if (out != null) {
+            out.println(message);
+        } else {
+            System.err.println("[ClientHandler] Errore: PrintWriter non inizializzato. Impossibile inviare: " + message);
+        }
     }
     
     /**
@@ -82,6 +95,8 @@ public class ClientHandler implements Runnable {
     @Override
     public void run() {
         try {
+            this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            this.out = new PrintWriter(socket.getOutputStream(), true);
             System.out.println("[ClientHandler] Handler avviato per: " + socket.getInetAddress());
             String messaggio;
             while ((messaggio = in.readLine()) != null) {
@@ -111,12 +126,24 @@ public class ClientHandler implements Runnable {
                 }
             }
         } 
+        catch (java.net.SocketTimeoutException e) {
+            System.out.println("[ClientHandler] Timeout di lettura superato (SoTimeout) per: " + socket.getInetAddress());
+        }
         catch (IOException e) {
-            System.out.println("[ClientHandler] Client disconnesso: " + socket.getInetAddress());
+            System.out.println("[ClientHandler] Client disconnesso o errore I/O: " + socket.getInetAddress() + " - " + e.getMessage());
         } 
         finally {
+            if (registry != null) {
+                registry.unregister(this);
+            }
             handleClientDisconnection();
-            try { socket.close(); } catch (IOException e) { e.printStackTrace(); }
+            try {
+                if (socket != null) {
+                    socket.close();
+                }
+            } catch (IOException e) {
+                System.err.println("[ClientHandler] Errore nella chiusura della socket: " + e.getMessage());
+            }
         }
         
         /**
@@ -199,6 +226,10 @@ public class ClientHandler implements Runnable {
      */
     
     private void handleWaiting(String[] parts) {
+        if (parts.length < 1 || parts.length > 2) {
+            sendMessage(MessageProtocol.build(MessageProtocol.AUTH_FAIL, "Formato comando WAITING non valido."));
+            return;
+        }
         Difficulty difficulty = Difficulty.MEDIUM;
         
         if (parts.length >= 2) {

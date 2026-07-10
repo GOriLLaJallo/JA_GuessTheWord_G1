@@ -4,6 +4,7 @@ import guesstheword_client.model.GameState;
 import guesstheword_client.network.ListenerTask;
 import guesstheword_client.network.MessageProtocol;
 import guesstheword_client.network.ServerConnection;
+import guesstheword_client.network.ClientNetworkEvent;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -75,10 +76,10 @@ public class GameViewController implements Initializable {
         gameState = new GameState();
         gameService = new guesstheword_client.service.GameService();
         
-        // Permetti l'inserimento di solo testo (lettere e spazi) nel campo di risposta
+        // Permetti l'inserimento di lettere (inclusi i caratteri accentati italiani) e spazi nel campo di risposta
         answerField.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (!newValue.matches("[a-zA-Z\\s]*")) {
-                answerField.setText(newValue.replaceAll("[^a-zA-Z\\s]", ""));
+            if (!newValue.matches("[a-zA-ZàèéìòùÀÈÉÌÒÙ\\s]*")) {
+                answerField.setText(newValue.replaceAll("[^a-zA-ZàèéìòùÀÈÉÌÒÙ\\s]", ""));
             }
         });
     }    
@@ -105,6 +106,11 @@ public class GameViewController implements Initializable {
         }
         
         this.listenerTask.messageProperty().addListener(messageListener);
+        this.listenerTask.networkEventProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                handleNetworkEvent(newVal);
+            }
+        });
     }
     
     
@@ -150,14 +156,21 @@ public class GameViewController implements Initializable {
         String command = parts[0];
 
         if (command.equals(MessageProtocol.GAME_START)) {
+            // Imposta timeout dinamico di 90 secondi (60s + 30s)
+            try {
+                guesstheword_client.network.ServerConnection.getInstance().setSoTimeout(90000);
+            } catch (IOException e) {
+                System.err.println("[GameViewController] Errore nell'impostare il timeout sulla socket: " + e.getMessage());
+            }
+
             // GAME_START:testoCifrato:shiftCesare:durataSecondi
             String encryptedWord = "???";
             if (parts.length >= 4) {
-                // Ricostruisce il testo cifrato (che può contenere i due punti)
+                // Ricostruisce il testo cifrato (che può contenere il delimitatore)
                 StringBuilder sb = new StringBuilder();
                 for (int i = 1; i < parts.length - 2; i++) {
                     sb.append(parts[i]);
-                    if (i < parts.length - 3) sb.append(":");
+                    if (i < parts.length - 3) sb.append("\u001F");
                 }
                 encryptedWord = sb.toString();
         
@@ -206,6 +219,39 @@ public class GameViewController implements Initializable {
                 statusLabel.setText("Risposta errata. Riprova!");
             }
             statusLabel.setTextFill(javafx.scene.paint.Color.web("#ffca28")); // giallo/arancio
+        }
+    }
+
+    private boolean alertGiaMostrato = false;
+
+    private void handleNetworkEvent(ClientNetworkEvent event) {
+        if (event == ClientNetworkEvent.SERVER_SHUTDOWN) {
+            gameState.setStatus("SERVER_SHUTDOWN");
+            stopGame("Il server è stato arrestato dall'amministratore", "#ff3b30", "");
+            javafx.application.Platform.runLater(() -> showErrorAndExit("Il server è stato arrestato dall'amministratore."));
+        } else if (event == ClientNetworkEvent.TIMEOUT || event == ClientNetworkEvent.CONNECTION_LOST) {
+            gameState.setStatus("CONNECTION_LOST");
+            stopGame("Connessione al server persa, riprova più tardi", "#ff3b30", "");
+            javafx.application.Platform.runLater(() -> showErrorAndExit("Connessione al server persa, riprova più tardi."));
+        }
+    }
+
+    private void showErrorAndExit(String message) {
+        if (alertGiaMostrato) return;
+        alertGiaMostrato = true;
+
+        try {
+            ServerConnection.getInstance().close();
+        } catch (IOException e) {
+            System.err.println("[GameView] Errore nella chiusura della socket: " + e.getMessage());
+        }
+
+        try {
+            Stage window = (Stage) timerLabel.getScene().getWindow();
+            LoginViewController loginController = guesstheword_client.utils.SceneManager.switchScene(window, "/guesstheword_client/resources/view/LoginView.fxml");
+            loginController.setErrorText("Attenzione: Server disconnesso al momento!");
+        } catch (Exception e) {
+            System.err.println("[GameView] Errore nel ritorno alla schermata di Login: " + e.getMessage());
         }
     }
     
@@ -270,6 +316,13 @@ public class GameViewController implements Initializable {
      * @param clearWord la parola in chiaro da mostrare a fine partita
      */
     private void stopGame(String message, String colorHex, String clearWord) {
+        // Ripristina timeout a 0
+        try {
+            guesstheword_client.network.ServerConnection.getInstance().setSoTimeout(0);
+        } catch (IOException e) {
+            System.err.println("[GameViewController] Errore nel ripristinare il timeout della socket a 0: " + e.getMessage());
+        }
+
         if (countdownTimeline != null) countdownTimeline.stop();
         answerField.setDisable(true);
         guessButton.setDisable(true);

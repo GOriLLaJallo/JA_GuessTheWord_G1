@@ -9,6 +9,8 @@ import guesstheword_client.network.ListenerTask;
 import guesstheword_client.network.MessageProtocol;
 import guesstheword_client.network.ServerConnection;
 import java.io.IOException;
+import guesstheword_client.network.ClientNetworkEvent;
+import javafx.scene.control.Alert;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
@@ -96,6 +98,11 @@ public class HistoryViewController implements Initializable {
         }
         
         this.listenerTask.messageProperty().addListener(messageListener);
+        this.listenerTask.networkEventProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                handleNetworkEvent(newVal);
+            }
+        });
         
         // Richiedi lo storico al server
         requestHistory();
@@ -124,10 +131,10 @@ public class HistoryViewController implements Initializable {
 
         if (command.equals(MessageProtocol.HISTORY_DATA)) {
             historyData.clear();
-            //Ricostruisce il payload dopo il primo ":" per evitare problemi con i timestamp
-            int firstColon = message.indexOf(":");
+            //Ricostruisce il payload dopo il primo delimitatore \u001F per evitare problemi con i timestamp
+            int firstColon = message.indexOf("\u001F");
             if (firstColon != -1 && firstColon < message.length() - 1) {
-                String allRecords = message.substring(firstColon + 1); //tutto quello dopo i primi ":"
+                String allRecords = message.substring(firstColon + 1); //tutto quello dopo il primo delimitatore
                 if (!allRecords.isEmpty() && !allRecords.equals("Nessuna partita giocata.")) {
                     String[] records = allRecords.split(";");
                     for (String record : records) {
@@ -174,6 +181,35 @@ public class HistoryViewController implements Initializable {
         } catch (IOException e) {
             e.printStackTrace();
             errorLabel.setText("Errore durante il caricamento della schermata Difficoltà.");
+        }
+    }
+
+    private boolean alertGiaMostrato = false;
+
+    private void handleNetworkEvent(ClientNetworkEvent event) {
+        if (event == ClientNetworkEvent.SERVER_SHUTDOWN) {
+            javafx.application.Platform.runLater(() -> showErrorAndExit("Il server è stato arrestato dall'amministratore."));
+        } else if (event == ClientNetworkEvent.TIMEOUT || event == ClientNetworkEvent.CONNECTION_LOST) {
+            javafx.application.Platform.runLater(() -> showErrorAndExit("Connessione al server persa, riprova più tardi."));
+        }
+    }
+
+    private void showErrorAndExit(String message) {
+        if (alertGiaMostrato) return;
+        alertGiaMostrato = true;
+
+        try {
+            ServerConnection.getInstance().close();
+        } catch (IOException e) {
+            System.err.println("[HistoryView] Errore nella chiusura della socket: " + e.getMessage());
+        }
+        
+        try {
+            Stage window = (Stage) errorLabel.getScene().getWindow();
+            LoginViewController loginController = guesstheword_client.utils.SceneManager.switchScene(window, "/guesstheword_client/resources/view/LoginView.fxml");
+            loginController.setErrorText("Attenzione. Server disconnesso al momento, attendere il ripristino da parte dell'amministratore.");
+        } catch (Exception e) {
+            System.err.println("[HistoryView] Errore nel ritorno alla schermata di Login: " + e.getMessage());
         }
     }
 }

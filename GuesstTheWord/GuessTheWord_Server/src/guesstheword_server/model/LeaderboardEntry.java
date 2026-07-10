@@ -20,7 +20,8 @@ public class LeaderboardEntry {
     private double tempoMedio;
 
     /**
-     * Costruttore vuoto.
+     * Costruttore di default. Necessario per le operazioni di mapping e per i framework 
+     * di serializzazione e reflection.
      */
     public LeaderboardEntry() {
     }
@@ -93,7 +94,12 @@ public class LeaderboardEntry {
     public void setTempoMedio(double tempoMedio) {
         this.tempoMedio = tempoMedio;
     }
-
+    
+    /**
+     * Restituisce una rappresentazione testuale dell'oggetto LeaderboardEntry.
+     *
+     * @return stringa che rappresenta la riga della classifica.
+     */
     @Override
     public String toString() {
         return "LeaderboardEntry{" +
@@ -102,14 +108,14 @@ public class LeaderboardEntry {
                 ", tempoMedio=" + String.format("%.2f ms", tempoMedio) +
                 '}';
     }
-
-    @Override
-    public int hashCode() {
-        int hash = 3;
-        hash = 89 * hash + Objects.hashCode(this.username);
-        return hash;
-    }
-
+    
+    /**
+     * Confronta questa entry con un altro oggetto.
+     * Due entry sono considerate uguali se hanno lo stesso username.
+     *
+     * @param obj l'oggetto da confrontare
+     * @return true se le entry sono uguali, false altrimenti
+     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -125,5 +131,15 @@ public class LeaderboardEntry {
         return Objects.equals(this.username, other.username);
     }
     
-    
+    /**
+     * Restituisce il codice hash per l'entry della classifica globale.
+     *
+     * @return codice hash
+     */
+     @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 89 * hash + Objects.hashCode(this.username);
+        return hash;
+    }
 }
