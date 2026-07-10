@@ -10,11 +10,12 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
- * Servizio transazionale per il salvataggio atomico delle partite (Caso d'uso OP3).
- * Garantisce che l'inserimento di una sfida e dei relativi due risultati (per i due giocatori)
- * avvenga all'interno di una transazione JDBC unica. Se uno dei salvataggi fallisce,
- * viene eseguito il rollback ripristinando la coerenza del database.
- * 
+ * Servizio transazionale per il salvataggio atomico delle partite. Garantisce
+ * che l'inserimento di una sfida e dei relativi due risultati (per i due
+ * giocatori) avvenga all'interno di una transazione JDBC unica. Se uno dei
+ * salvataggi fallisce, viene eseguito il rollback ripristinando la coerenza del
+ * database.
+ *
  * @author Carmine Muollo
  */
 public class MatchPersistenceService {
@@ -23,7 +24,8 @@ public class MatchPersistenceService {
     private final ResultDAO resultDAO;
 
     /**
-     * Costruisce una nuova istanza di MatchPersistenceService con DAO predefiniti.
+     * Costruisce una nuova istanza di MatchPersistenceService con DAO
+     * predefiniti.
      */
     public MatchPersistenceService() {
         this.challengeDAO = new ChallengeDAO();
@@ -31,8 +33,9 @@ public class MatchPersistenceService {
     }
 
     /**
-     * Costruisce una nuova istanza di MatchPersistenceService con DAO personalizzati.
-     * 
+     * Costruisce una nuova istanza di MatchPersistenceService con DAO
+     * personalizzati.
+     *
      * @param challengeDAO il DAO delle sfide
      * @param resultDAO il DAO dei risultati
      */
@@ -42,12 +45,14 @@ public class MatchPersistenceService {
     }
 
     /**
-     * Salva in modo atomico una partita completa: inserisce esattamente una sfida e due risultati.
-     * 
+     * Salva in modo atomico una partita completa: inserisce esattamente una
+     * sfida e due risultati.
+     *
      * @param challenge la sfida disputata
      * @param r1 il risultato del primo giocatore
      * @param r2 il risultato del secondo giocatore (avversario)
-     * @throws DataAccessException in caso di errore di persistenza o fallimento della transazione
+     * @throws DataAccessException in caso di errore di persistenza o fallimento
+     * della transazione
      */
     public void saveMatch(Challenge challenge, GameResult r1, GameResult r2) {
         if (challenge == null) {

@@ -30,7 +30,8 @@ public class GameResult {
     private Integer tempoRisposta;
 
     /**
-     * Costruttore di default vuoto.
+     * Costruttore di default. Necessario per le operazioni di mapping e per i framework 
+     * di serializzazione e reflection.
      */
     public GameResult() {
     }

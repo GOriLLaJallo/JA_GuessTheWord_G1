@@ -23,6 +23,13 @@ public class UserDAO {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     /**
+     * Costruttore di default esplicito per la classe UserDAO.
+     */
+    public UserDAO() {
+        // Costruttore vuoto di default
+    }
+
+    /**
      * Registra un nuovo utente nel database.
      * Al termine dell'operazione, imposta l'ID autoincrementante generato dal DB
      * sull'oggetto User passato come parametro.
@@ -79,16 +86,7 @@ public class UserDAO {
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    User user = new User();
-                    user.setId(rs.getInt("id"));
-                    user.setUsername(rs.getString("username"));
-                    user.setPassword(rs.getString("password"));
-                    user.setRuolo(rs.getString("ruolo"));
-                    
-                    String dateStr = rs.getString("data_iscrizione");
-                    user.setDataIscrizione(LocalDateTime.parse(dateStr, DATE_FORMATTER));
-                    
-                    return user;
+                    return mapResultSetToUser(rs);
                 }
             }
         } catch (SQLException e) {
@@ -114,16 +112,7 @@ public class UserDAO {
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    User user = new User();
-                    user.setId(rs.getInt("id"));
-                    user.setUsername(rs.getString("username"));
-                    user.setPassword(rs.getString("password"));
-                    user.setRuolo(rs.getString("ruolo"));
-                    
-                    String dateStr = rs.getString("data_iscrizione");
-                    user.setDataIscrizione(LocalDateTime.parse(dateStr, DATE_FORMATTER));
-                    
-                    return user;
+                    return mapResultSetToUser(rs);
                 }
             }
 
@@ -150,16 +139,7 @@ public class UserDAO {
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    User user = new User();
-                    user.setId(rs.getInt("id"));
-                    user.setUsername(rs.getString("username"));
-                    user.setPassword(rs.getString("password"));
-                    user.setRuolo(rs.getString("ruolo"));
-                    
-                    String dateStr = rs.getString("data_iscrizione");
-                    user.setDataIscrizione(LocalDateTime.parse(dateStr, DATE_FORMATTER));
-                    
-                    return user;
+                    return mapResultSetToUser(rs);
                 }
             }
 
@@ -167,5 +147,28 @@ public class UserDAO {
             throw new DataAccessException("Errore durante la ricerca dell'utente per username: " + username, e);
         }
         return null;
+    }
+
+    /**
+     * Mappa una riga del ResultSet in un oggetto User.
+     * Questo metodo helper privato elimina le ridondanze di parsing del ResultSet presenti 
+     * nei vari metodi di interrogazione dell'utente.
+     *
+     * @param rs il ResultSet posizionato sulla riga corrente da mappare
+     * @return un oggetto User popolato con i valori letti
+     * @throws SQLException in caso di errore di lettura delle colonne del database
+     */
+    private User mapResultSetToUser(ResultSet rs) throws SQLException {
+        User user = new User();
+        user.setId(rs.getInt("id"));
+        user.setUsername(rs.getString("username"));
+        user.setPassword(rs.getString("password"));
+        user.setRuolo(rs.getString("ruolo"));
+        
+        String dateStr = rs.getString("data_iscrizione");
+        if (dateStr != null) {
+            user.setDataIscrizione(LocalDateTime.parse(dateStr, DATE_FORMATTER));
+        }
+        return user;
     }
 }

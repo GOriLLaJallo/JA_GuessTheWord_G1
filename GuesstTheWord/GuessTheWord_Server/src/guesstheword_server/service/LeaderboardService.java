@@ -13,6 +13,7 @@ import java.util.List;
  */
 public class LeaderboardService {
 
+    /** Il DAO per accedere ai risultati di gioco. */
     private final ResultDAO resultDAO;
 
     /**
@@ -41,15 +42,13 @@ public class LeaderboardService {
     }
 
     /**
-     * Calcola e aggrega le statistiche individuali di un utente.
+     * Calcola e aggrega le statistiche individuali di un utente interrogando il DAO.
+     * Questo metodo sfrutta una query consolidata per ridurre l'overhead di connessione al database.
      * 
      * @param userId l'identificativo dell'utente
      * @return un oggetto UserStatsDTO popolato con le statistiche aggregate dell'utente
      */
     public UserStatsDTO getUserStats(int userId) {
-        int victories = resultDAO.getVictoriesCount(userId);
-        int gamesPlayed = resultDAO.getGamesPlayedCount(userId);
-        double averageResponseTime = resultDAO.getAverageResponseTime(userId);
-        return new UserStatsDTO(victories, gamesPlayed, averageResponseTime);
+        return resultDAO.getUserStats(userId);
     }
 }

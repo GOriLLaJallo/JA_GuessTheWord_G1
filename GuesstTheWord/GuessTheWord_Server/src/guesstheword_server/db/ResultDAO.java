@@ -4,6 +4,7 @@ import guesstheword_server.model.Challenge;
 import guesstheword_server.model.GameResult;
 import guesstheword_server.model.User;
 import guesstheword_server.model.LeaderboardEntry;
+import guesstheword_server.model.UserStatsDTO;
 import guesstheword_server.exception.DataAccessException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -28,6 +29,13 @@ public class ResultDAO {
 
     /** Formattatore standard per la serializzazione delle date in SQLite. */
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+
+    /**
+     * Costruttore di default esplicito per la classe ResultDAO.
+     */
+    public ResultDAO() {
+        // Costruttore vuoto di default
+    }
 
     /**
      * Salva un nuovo risultato di gioco nel database SQLite utilizzando una connessione esterna.
@@ -275,5 +283,42 @@ public class ResultDAO {
             throw new DataAccessException("Errore durante il recupero della classifica utenti", e);
         }
         return leaderboard;
+    }
+
+    /**
+     * Recupera in un'unica interrogazione aggregata le statistiche complete di un utente.
+     * Questo metodo ottimizza l'accesso al database eseguendo una query singola con
+     * aggregazione condizionale al posto di chiamate sequenziali multiple.
+     *
+     * @param userId l'identificativo unico dell'utente
+     * @return un oggetto UserStatsDTO popolato con vittorie, partite giocate e tempo medio
+     * @throws DataAccessException in caso di errore di persistenza o connessione al database
+     */
+    public UserStatsDTO getUserStats(int userId) {
+        String query = "SELECT "
+                + "COUNT(CASE WHEN esito = 'WIN' THEN 1 END) AS victories, "
+                + "COUNT(*) AS games_played, "
+                + "AVG(tempo_risposta) AS avg_time "
+                + "FROM risultati "
+                + "WHERE id_utente = ?;";
+        DatabaseManager dbManager = DatabaseManager.getInstance();
+
+        try (Connection conn = dbManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setInt(1, userId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int victories = rs.getInt("victories");
+                    int gamesPlayed = rs.getInt("games_played");
+                    double averageResponseTime = rs.getDouble("avg_time");
+                    return new UserStatsDTO(victories, gamesPlayed, averageResponseTime);
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Errore durante il recupero delle statistiche per l'utente con ID: " + userId, e);
+        }
+        return new UserStatsDTO(0, 0, 0.0);
     }
 }

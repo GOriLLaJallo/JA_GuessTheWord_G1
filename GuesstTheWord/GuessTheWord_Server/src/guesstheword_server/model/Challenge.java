@@ -4,10 +4,11 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
- * Rappresenta una sfida di gioco (partita) all'interno del sistema "GuessTheWord".
- * Contiene informazioni sulla parola in chiaro che deve essere decifrata, il valore dello shift di
- * Cesare utilizzato per cifrarla e la data in cui si è svolta la sfida.
- * 
+ * Rappresenta un'istanza di una sfida di gioco (partita) all'interno del sistema "GuessTheWord".
+ * Mantiene lo stato della parola originaria in chiaro, il valore di shift applicato 
+ * secondo il cifrario di Cesare, la data della sfida e il livello di difficoltà.
+ * Le istanze di questa classe vengono popolate dal layer di persistenza ed elaborate 
+ * dal server per la distribuzione dei testi cifrati ai client connessi.
  * @author Carmine Muollo
  */
 public class Challenge {
@@ -31,7 +32,8 @@ public class Challenge {
     private String estrattoTesto;
 
     /**
-     * Costruttore di default vuoto.
+     * Costruttore di default. Necessario per le operazioni di mapping e per i framework 
+     * di serializzazione e reflection.
      */
     public Challenge() {
     }
@@ -198,12 +200,12 @@ public class Challenge {
                 '}';
     }
 
-    /**
-     * Confronta questa sfida con un altro oggetto.
-     * Due sfide sono considerate uguali se hanno lo stesso ID e la stessa parola nascosta.
-     *
-     * @param o l'oggetto da confrontare
-     * @return true se le sfide sono uguali, false altrimenti
+   /**
+     * Confronta l'uguaglianza logica tra questa sfida con un altro oggetto.
+     * Due sfide sono considerate equivalenti se e solo se condividono il medesimo ID, 
+     * lo stesso valore di shift e la medesima parola nascosta.
+     * @param o l'oggetto da confrontare con l'istanza corrente
+     * @return true se gli oggetti sono logicamente equivalenti, false altrimenti
      */
     @Override
     public boolean equals(Object o) {

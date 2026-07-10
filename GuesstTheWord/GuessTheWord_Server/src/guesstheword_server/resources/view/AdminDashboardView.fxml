@@ -82,7 +82,7 @@
                         
                         <VBox alignment="CENTER" spacing="20.0" VBox.vgrow="ALWAYS">
                            <children>
-                              <Button fx:id="saveResultsBtn" mnemonicParsing="false" onAction="#handleSaveResults" prefHeight="45.0" prefWidth="280.0" styleClass="loginBtn" text="Salva Risultati di Analisi" />
+                              <Button fx:id="saveResultsBtn" mnemonicParsing="false" onAction="#handleSaveResults" prefHeight="45.0" prefWidth="280.0" styleClass="loginBtn" text="Salva Risultati " />
                               <Button fx:id="loadResultsBtn" mnemonicParsing="false" onAction="#handleLoadResults" prefHeight="45.0" prefWidth="280.0" styleClass="loginBtn" text="Carica Risultati Precedenti" />
                            </children>
                         </VBox>

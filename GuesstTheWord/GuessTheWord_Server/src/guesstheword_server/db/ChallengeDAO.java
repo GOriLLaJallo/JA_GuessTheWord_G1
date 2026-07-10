@@ -22,6 +22,13 @@ public class ChallengeDAO {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     /**
+     * Costruttore di default esplicito per la classe ChallengeDAO.
+     */
+    public ChallengeDAO() {
+        // Costruttore vuoto di default
+    }
+
+    /**
      * Salva una nuova sfida nel database SQLite utilizzando una connessione gestita esternamente.
      * Utile all'interno di transazioni JDBC.
      *
