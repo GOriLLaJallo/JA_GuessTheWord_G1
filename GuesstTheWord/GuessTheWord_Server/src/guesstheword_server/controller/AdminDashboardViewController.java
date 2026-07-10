@@ -36,42 +36,60 @@ import javafx.stage.Stage;
  */
 public class AdminDashboardViewController implements Initializable {
 
+    /** Pulsante grafico per selezionare i file di testo da analizzare. */
     @FXML
     private Button selectFilesBtn;
 
+    /** Lista di visualizzazione dei nomi dei file caricati e selezionati. */
     @FXML
     private ListView<String> filesListView;
 
+    /** Pulsante grafico per avviare il calcolo dell'analisi testuale. */
     @FXML
     private Button startAnalysisBtn;
 
+    /** Barra di progresso legata allo stato di avanzamento dell'analisi. */
     @FXML
     private ProgressBar progressBar;
 
+    /** Etichetta di stato per mostrare le informazioni operative correnti. */
     @FXML
     private Label statusLabel;
 
+    /** Pulsante grafico per salvare i risultati correnti dell'analisi su file cache. */
     @FXML
     private Button saveResultsBtn;
 
+    /** Pulsante grafico per caricare una cache precedentemente salvata. */
     @FXML
     private Button loadResultsBtn;
 
+    /** Etichetta per mostrare lo stato del caricamento/salvataggio della cache. */
     @FXML
     private Label cacheStatusLabel;
 
-    // Conterrà l'elenco dei file reali selezionati dall'utente
+    /** Elenco dei file fisici correntemente selezionati dall'amministratore. */
     private final List<File> selectedFiles = new ArrayList<>();
 
-    // Conterrà il servizio JavaFX per l'esecuzione in background
+    /** Servizio asincrono per l'esecuzione in background dell'analisi testuale. */
     private AnalysisService analysisService;
 
-    // Memorizza l'ultimo risultato dell'analisi per la serializzazione
+    /** Riferimento all'ultimo risultato calcolato dell'analisi testuale. */
     private AnalysisResult lastAnalysisResult;
 
     /**
+     * Costruttore di default esplicito per la classe AdminDashboardViewController.
+     */
+    public AdminDashboardViewController() {
+        // Costruttore vuoto di default
+    }
+
+    /**
      * Inizializza il controller. Configura i componenti e crea l'istanza del
-     * servizio asincrono.
+     * servizio asincrono legandone le proprietà alla GUI in modo thread-safe.
+     *
+     * @param url il percorso della risorsa FXML
+     * @param rb le risorse localizzate per il caricamento
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -98,6 +116,7 @@ public class AdminDashboardViewController implements Initializable {
             progressBar.setVisible(false);
 
             if (lastAnalysisResult != null) {
+                // Imposta in GameManager in modalità sincronizzata e thread-safe
                 GameManager.getInstance().setTestoDisponibile(lastAnalysisResult.getSourceText());
                 statusLabel.setText("Analisi completata con successo.");
                 saveResultsBtn.setDisable(false);
@@ -120,12 +139,16 @@ public class AdminDashboardViewController implements Initializable {
         });
 
         saveResultsBtn.setDisable(true);
-
     }
 
     /**
      * Mostra un dialogo Alert modale personalizzato con lo stile
      * dell'applicazione.
+     * 
+     * @param type il tipo di Alert
+     * @param title il titolo della finestra
+     * @param header l'intestazione del messaggio
+     * @param content il testo descrittivo del corpo del messaggio
      */
     private void showAlert(Alert.AlertType type, String title, String header, String content) {
         Alert alert = new Alert(type);
@@ -145,7 +168,9 @@ public class AdminDashboardViewController implements Initializable {
     }
 
     /**
-     * Disabilita/Abilita i controlli durante l'esecuzione del background task.
+     * Disabilita o abilita i controlli grafici durante l'esecuzione del background task.
+     * 
+     * @param disabled true per disabilitare i controlli, false per riabilitarli
      */
     private void setControlsDisabled(boolean disabled) {
         selectFilesBtn.setDisable(disabled);
