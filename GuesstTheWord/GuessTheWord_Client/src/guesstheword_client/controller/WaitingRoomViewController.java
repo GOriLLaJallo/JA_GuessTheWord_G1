@@ -1,7 +1,7 @@
 package guesstheword_client.controller;
 
 import guesstheword_client.network.ListenerTask;
-import guesstheword_client.network.MessageProtocol;
+import guesstheword_client.protocol.MessageProtocol;
 import guesstheword_client.network.ServerConnection;
 import guesstheword_client.network.ClientNetworkEvent;
 import javafx.scene.control.Alert;
@@ -50,6 +50,20 @@ public class WaitingRoomViewController implements Initializable {
         } catch (IOException ex) {
             ex.printStackTrace();
             waitingLabel.setText("Errore di connessione al server.");
+            javafx.application.Platform.runLater(() -> showErrorAndExitWithoutClose("Errore di connessione al server."));
+        }
+    }
+
+    private void showErrorAndExitWithoutClose(String message) {
+        if (alertGiaMostrato) return;
+        alertGiaMostrato = true;
+        
+        try {
+            Stage window = (Stage) waitingLabel.getScene().getWindow();
+            LoginViewController loginController = guesstheword_client.utils.SceneManager.switchScene(window, "/guesstheword_client/resources/view/LoginView.fxml");
+            loginController.setErrorText("Attenzione. Server disconnesso al momento, attendere il ripristino da parte dell'amministratore.");
+        } catch (Exception e) {
+            System.err.println("[WaitingRoomView] Errore nel ritorno alla schermata di Login: " + e.getMessage());
         }
     }
 

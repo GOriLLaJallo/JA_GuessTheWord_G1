@@ -7,7 +7,7 @@ import java.security.NoSuchAlgorithmException;
  * Classe di utilità per il calcolo degli hash delle password.
  * Utilizza l'algoritmo standard SHA-256 per garantire la sicurezza del sistema.
  * 
- * @author Carmine Muollo
+ * @author William Menza
  */
 public class HashUtil {
 

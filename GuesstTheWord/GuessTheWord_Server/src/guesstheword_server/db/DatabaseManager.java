@@ -10,7 +10,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 
 /**
- * Gestore del Database in modalità Singleton per l'applicazione
+ * Gestore del Database come Connection Factory per l'applicazione
  * GuessTheWord_Server. Questa classe gestisce la connessione JDBC con il
  * database SQLite, l'apertura e la chiusura delle risorse di connessione e
  * l'inizializzazione dello schema del database (creazione tabelle).
@@ -170,6 +170,37 @@ public class DatabaseManager {
                         insertStmt.executeUpdate();
                     }
                     System.out.println("[DB] Account amministratore predefinito creato.");
+                }
+            }
+
+            // Inserimento utenti player predefiniti per il testing
+            try (ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM utenti WHERE username = 'User1';")) {
+                if (rs.next() && rs.getInt(1) == 0) {
+                    String user1PasswordHash = HashUtil.sha256("User123");
+                    String insertUser = "INSERT INTO utenti (username, password, ruolo, data_iscrizione) VALUES (?, ?, ?, ?);";
+                    try (PreparedStatement insertStmt = conn.prepareStatement(insertUser)) {
+                        insertStmt.setString(1, "User1");
+                        insertStmt.setString(2, user1PasswordHash);
+                        insertStmt.setString(3, "player");
+                        insertStmt.setString(4, java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+                        insertStmt.executeUpdate();
+                    }
+                    System.out.println("[DB] Account di test 'User1' creato.");
+                }
+            }
+
+            try (ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM utenti WHERE username = 'User2';")) {
+                if (rs.next() && rs.getInt(1) == 0) {
+                    String user2PasswordHash = HashUtil.sha256("User456");
+                    String insertUser = "INSERT INTO utenti (username, password, ruolo, data_iscrizione) VALUES (?, ?, ?, ?);";
+                    try (PreparedStatement insertStmt = conn.prepareStatement(insertUser)) {
+                        insertStmt.setString(1, "User2");
+                        insertStmt.setString(2, user2PasswordHash);
+                        insertStmt.setString(3, "player");
+                        insertStmt.setString(4, java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+                        insertStmt.executeUpdate();
+                    }
+                    System.out.println("[DB] Account di test 'User2' creato.");
                 }
             }
 

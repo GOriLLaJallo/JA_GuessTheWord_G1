@@ -106,12 +106,13 @@ public class ServerConnection {
     /**
      * Crea un thread dedicato all'ascolto dei messsaggi mandati dal server
      * Si assicura che nessun altro thread sia attivo per evitare che ci siano 2 thread che leggano dalla stessa socket
-     * Il thread è pensato come Deamon Thread (thread di backgroung (non blocca la chiusura dell'applicazione) che viene terminato dal sistema in caso di terminazione del programma)
+     * Il thread è pensato come Deamon Thread (thread di backgroung: non blocca la chiusura dell'applicazione, che viene terminato dal sistema in caso di terminazione del programma)
      */
     
     public synchronized void startListener() {
         if (listenerTask != null && !listenerTask.isDone()) {
-            listenerTask.cancel();
+            // Se l'ascoltatore è già attivo e in esecuzione, lo riutilizziamo per evitare thread multipli sulla stessa socket
+            return;
         }
         listenerTask = new ListenerTask(this);
         Thread t = new Thread(listenerTask);
@@ -122,7 +123,7 @@ public class ServerConnection {
     /**
      * Getter
      * 
-     * @return 
+     * @return listenerTask 
      */
 
     public synchronized ListenerTask getListenerTask() {

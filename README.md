@@ -6,61 +6,64 @@ GuessTheWord_G1 e' un'applicazione client-server scritta in Java 8 che si basa s
 
 ## Autori e Classi Associate
 
-### Carmine Muollo
-* guesstheword_client.model.GameState
-* guesstheword_client.model.MatchRecord
-* guesstheword_client.network.ClientNetworkEvent
-* guesstheword_server.ServerApp
-* guesstheword_server.analysis.AnalysisResult
-* guesstheword_server.analysis.AnalysisService
-* guesstheword_server.controller.AdminDashboardViewController
-* guesstheword_server.controller.AdminLoginViewController
-* guesstheword_server.controller.AdminMainViewController
-* guesstheword_server.controller.LeaderBoardViewController
-* guesstheword_server.db.ChallengeDAO
-* guesstheword_server.db.DatabaseManager
-* guesstheword_server.db.ResultDAO
-* guesstheword_server.db.UserDAO
-* guesstheword_server.exception.DataAccessException
-* guesstheword_server.model.Challenge
-* guesstheword_server.model.GameResult
-* guesstheword_server.model.LeaderboardEntry
-* guesstheword_server.model.User
-* guesstheword_server.model.UserStatsDTO
-* guesstheword_server.network.ClientRegistry
-* guesstheword_server.service.AuthService
-* guesstheword_server.service.HistoryService
-* guesstheword_server.service.LeaderboardService
-* guesstheword_server.service.MatchPersistenceService
-* guesstheword_server.utils.HashUtil
-* guesstheword_server.analysis.TestDocumentAnalyzer (Test)
-* guesstheword_server.controller.TestControllersLoading (Test)
+William: (13 classi)
+ClientApp.java
+DifficultyViewController.java
+GameViewController.java
+HistoryViewController.java
+LoginViewController.java
+WaitingRoomController.java
+GameState.java
+MatchRecord.java
+AuthService.java
+GameService.java
+HistoryService.java
+HashUtil.java
+SceneManager.java
 
-### William Menza
-* guesstheword_client.ClientApp
-* guesstheword_client.controller.DifficultyViewController
-* guesstheword_client.controller.GameViewController
-* guesstheword_client.controller.HistoryViewController
-* guesstheword_client.controller.LoginViewController
-* guesstheword_client.controller.WaitingRoomViewController
-* guesstheword_client.service.AuthService
-* guesstheword_client.service.GameService
-* guesstheword_client.service.HistoryService
-* guesstheword_client.utils.HashUtil
-* guesstheword_client.utils.SceneManager
+Davide: (6 classi)
+AnalysisResult.java
+AnalysisService.java
+DocumentAnalyzer.java
+GameManager.java (con Sabrina)
+GameSession.java (con Sabrina)
+ChallengePreparator.java
 
-### Sabrina Soriano
-* guesstheword_client.network.ListenerTask
-* guesstheword_client.network.ServerConnection
-* guesstheword_server.game.Difficulty
-* guesstheword_server.game.GameManager (in collaborazione)
-* guesstheword_server.network.ClientHandler
-* guesstheword_server.network.GameServer
-* guesstheword_server.protocol.MessageProtocol
+Sabrina: (9 classi)
+ClientNetworkEvent.java
+ListenerTask.java
+MessageProtocol.java
+ServerConnection.java
+CaesarCipher.java
+Difficulty.java
+ClientRegistry.java
+GameServer.java
+ClientHandler
 
-### Davide Andrea Odierna
-* guesstheword_server.game.GameSession
-* guesstheword_server.game.GameManager (in collaborazione)
+Carmine: (21 classi)
+ServerApp.java
+AdminDashboardViewController.java
+AdminLoginViewController.java
+AdminMainViewController.java
+LeaderBoardViewController.java
+ChallengeDAO.java
+ResultDAO.java
+UserDAO.java
+DatabaseManager.java
+DataAccessException.java
+Challenge.java
+GameResult.java
+User.java
+LeaderboardEntry.java
+UserStatsDTO.java
+AuthService.java
+HistoryService.java
+LeaderboardService.java
+MatchPersistenceService.java
+TestDocumentAnalyzer.java
+TestControllersLoading.java
+
+TOTALE: 49 CLASSI
 
 ---
 
@@ -95,12 +98,27 @@ Per effettuare il test del progetto da parte del docente, utilizzare le seguenti
 
 ## Istruzioni per la Compilazione e l'Esecuzione
 
-### Compilazione Server
+### NOTA SULLA COMPATIBILITA' JAVAFX (Java 11+ / Java 25)
+Questo progetto utilizza JavaFX per la sua interfaccia grafica. Poiche' JavaFX e' stato rimosso dai JDK standard a partire dalla versione 11, l'esecuzione con versioni successive di Java (come Java 25) lancera' l'errore:
+`java.lang.NoClassDefFoundError: javafx/application/Application`
+
+Per eseguire correttamente il software, utilizzare il JDK 1.8 installato localmente sul sistema in:
+`C:\Program Files\Java\jdk-1.8`
+
+Sono stati forniti a questo scopo due file batch all'interno della cartella degli eseguibili:
+- `run_server.bat` (avvia il Server usando il runtime JDK 1.8)
+- `run_client.bat` (avvia il Client usando il runtime JDK 1.8)
+
+In alternativa, da terminale, e' possibile specificare il percorso assoluto:
+- **Server**: `"C:\Program Files\Java\jdk-1.8\bin\java.exe" -jar server.jar`
+- **Client**: `"C:\Program Files\Java\jdk-1.8\bin\java.exe" -jar client.jar`
+
+### Compilazione Server (Manuale)
 ```powershell
 powershell -Command "& 'C:\Program Files\Java\jdk-1.8\bin\javac' -encoding UTF-8 -cp 'lib/*' -d build (Get-ChildItem -Path src, test -Filter *.java -Recurse | ForEach-Object { $_.FullName })"
 ```
 
-### Compilazione Client
+### Compilazione Client (Manuale)
 ```powershell
 powershell -Command "& 'C:\Program Files\Java\jdk-1.8\bin\javac' -encoding UTF-8 -cp 'lib/*' -d build (Get-ChildItem -Path src -Filter *.java -Recurse | ForEach-Object { $_.FullName })"
 ```

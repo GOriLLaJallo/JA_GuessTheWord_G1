@@ -1,6 +1,6 @@
 package guesstheword_client.service;
 
-import guesstheword_client.network.MessageProtocol;
+import guesstheword_client.protocol.MessageProtocol;
 import guesstheword_client.network.ServerConnection;
 import java.io.IOException;
 

@@ -9,7 +9,7 @@ import java.util.Random;
 /**
  *
  *
- * @author Pc
+ * @author Sabrina Soriano
  */
 public class CaesarCipher {
 

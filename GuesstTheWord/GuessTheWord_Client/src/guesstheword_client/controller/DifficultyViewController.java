@@ -45,6 +45,7 @@ public class DifficultyViewController implements Initializable {
         } catch (IOException e) {
             e.printStackTrace();
             errorLabel.setText("Errore di connessione al server.");
+            javafx.application.Platform.runLater(() -> showErrorAndExitWithoutClose("Errore di connessione al server."));
         }
     }
 
@@ -65,6 +66,19 @@ public class DifficultyViewController implements Initializable {
         } catch (IOException ex) {
             System.err.println("[DifficultyView] Errore nella chiusura della socket: " + ex.getMessage());
         }
+
+        try {
+            Stage window = (Stage) errorLabel.getScene().getWindow();
+            LoginViewController loginController = guesstheword_client.utils.SceneManager.switchScene(window, "/guesstheword_client/resources/view/LoginView.fxml");
+            loginController.setErrorText("Attenzione. Server disconnesso al momento, attendere il ripristino da parte dell'amministratore.");
+        } catch (Exception ex) {
+            System.err.println("[DifficultyView] Errore nel ritorno alla schermata di Login: " + ex.getMessage());
+        }
+    }
+
+    private void showErrorAndExitWithoutClose(String message) {
+        if (alertGiaMostrato) return;
+        alertGiaMostrato = true;
 
         try {
             Stage window = (Stage) errorLabel.getScene().getWindow();

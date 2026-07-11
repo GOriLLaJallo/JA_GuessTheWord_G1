@@ -6,7 +6,7 @@ import java.io.Serializable;
  * Modello che rappresenta il record storico di una singola partita giocata,
  * utilizzato lato client per popolare la TableView dello storico partite (HistoryView).
  * 
- * @author Carmine Muollo
+ * @author William Menza
  */
 public class MatchRecord implements Serializable {
     
