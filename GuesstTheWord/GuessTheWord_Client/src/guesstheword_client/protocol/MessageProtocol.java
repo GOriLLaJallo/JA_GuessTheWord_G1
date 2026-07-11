@@ -26,6 +26,9 @@ public class MessageProtocol {
 
     //messaggio di autenticazione fallita: AUTH_FAIL:motivo
     public static final String AUTH_FAIL = "AUTH_FAIL";
+    
+    //messaggio: username già autenticato su un'altra sessione
+    public static final String ALREADY_LOGGED_IN = "ALREADY_LOGGED_IN";
 
     // messaggio client in attesa dell'avversario
     public static final String WAITING = "WAITING";

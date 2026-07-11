@@ -293,6 +293,9 @@ public class LoginViewController implements Initializable {
                     String reason = parts.length > 1 ? parts[1] : "Errore sconosciuto.";
                     errorLabel.setText(reason);
                     ServerConnection.getInstance().close(); // Chiudiamo solo se fallisce
+                } else if (command.equals(guesstheword_client.protocol.MessageProtocol.ALREADY_LOGGED_IN)) {
+                    errorLabel.setText("Utente già loggato altrove.");
+                    ServerConnection.getInstance().close(); // Chiudiamo solo se fallisce
                 } else {
                     errorLabel.setText("Risposta del server non riconosciuta.");
                     ServerConnection.getInstance().close(); // Chiudiamo solo se fallisce

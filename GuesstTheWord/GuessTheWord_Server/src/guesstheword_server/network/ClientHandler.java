@@ -134,6 +134,9 @@ public class ClientHandler implements Runnable {
         } 
         finally {
             if (registry != null) {
+                if (username != null) {
+                    registry.unbindAuthenticatedUser(username, this);
+                }
                 registry.unregister(this);
             }
             handleClientDisconnection();
@@ -144,20 +147,19 @@ public class ClientHandler implements Runnable {
             } catch (IOException e) {
                 System.err.println("[ClientHandler] Errore nella chiusura della socket: " + e.getMessage());
             }
-        }
-        
-        /**
-         * Gestisce il messaggio di login
-         * Principio di funzionamento:
-         * 1) part[1] = username; part[2] = password
-         * 2) Controlliamo le credenziali con "authenticate"
-         * 3) Mandiamo al client un messaggio di OK in caso di autenticazione corretta o Errore in caso contrario
-         * 
-         * 
-         * @param parts 
-         */
-        
+        }    
     }
+    
+    /**
+    * Gestisce il messaggio di login
+    * Principio di funzionamento:
+    * 1) part[1] = username; part[2] = password
+    * 2) Controlliamo le credenziali con "authenticate"
+    * 3) Mandiamo al client un messaggio di OK in caso di autenticazione corretta o Errore in caso contrario
+    * 
+    * 
+    * @param parts 
+    */
     private void handleLogin(String[] parts) {
         if (parts.length < 3) {
             sendMessage(MessageProtocol.build(MessageProtocol.AUTH_FAIL, "Formato messaggio non valido."));
@@ -169,6 +171,11 @@ public class ClientHandler implements Runnable {
             UserDAO userDAO = new UserDAO();
             User authenticated = userDAO.authenticate(name, password);
             if (authenticated != null) {
+                boolean acquired = registry.tryBindAuthenticatedUser(authenticated.getUsername(), this);
+                if (!acquired) {
+                    sendMessage(MessageProtocol.build(MessageProtocol.ALREADY_LOGGED_IN, "Utente già connesso altrove."));
+                return;
+                }
                 this.user = authenticated;
                 this.username = authenticated.getUsername();
                 sendMessage(MessageProtocol.build(MessageProtocol.AUTH_OK, username));
@@ -226,6 +233,10 @@ public class ClientHandler implements Runnable {
      */
     
     private void handleWaiting(String[] parts) {
+        if (user == null) {
+            sendMessage(MessageProtocol.build(MessageProtocol.AUTH_FAIL, "Devi effettuare il login prima di entrare in lobby."));
+            return;
+        }
         if (parts.length < 1 || parts.length > 2) {
             sendMessage(MessageProtocol.build(MessageProtocol.AUTH_FAIL, "Formato comando WAITING non valido."));
             return;

@@ -2,6 +2,7 @@ package guesstheword_server.network;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -14,6 +15,9 @@ public class ClientRegistry {
 
     private static ClientRegistry instance;
     private final List<ClientHandler> activeClients = new CopyOnWriteArrayList<>();
+    
+    //Mappa username -> handler autenticato, per garantire al massimo un handler per username
+    private final ConcurrentHashMap<String, ClientHandler> loggedUsers = new ConcurrentHashMap<>();
 
     private ClientRegistry() {}
 
@@ -52,6 +56,34 @@ public class ClientRegistry {
             System.out.println("[ClientRegistry] Client rimosso. Totale connessi: " + activeClients.size());
         }
     }
+    
+    /**
+    * Prova a registrare in modo atomico un utente come autenticato.
+    * Se l'username è già associato a un altro handler attivo, l'operazione fallisce
+    * senza sovrascrivere la sessione esistente.
+    *
+    * @param username lo username da autenticare
+     * @param handler  l'handler che richiede l'autenticazione
+    * @return true se la registrazione è riuscita, false se l'utente è già loggato
+    */
+    public boolean tryBindAuthenticatedUser(String username, ClientHandler handler) {
+        ClientHandler existing = loggedUsers.putIfAbsent(username, handler);
+        return existing == null;
+    }
+
+    /**
+    * Deregistra un utente autenticato solo se l'handler passato è il proprietario
+    * corrente della sessione, evitando che un handler obsoleto cancelli per errore
+    * la sessione di un login più recente dello stesso username.
+    *
+    * @param username lo username da deregistrare
+    * @param handler  l'handler che richiede la deregistrazione
+    */
+    public void unbindAuthenticatedUser(String username, ClientHandler handler) {
+        if (username != null) {
+            loggedUsers.remove(username, handler);
+        }
+    }
 
     /**
      * Invia un messaggio a tutti i client registrati.
@@ -85,5 +117,6 @@ public class ClientRegistry {
             }
         }
         activeClients.clear();
+        loggedUsers.clear();
     }
 }
