@@ -10,7 +10,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 
 /**
- * Gestore del Database in modalità Singleton per l'applicazione
+ * Gestore del Database come Connection Factory per l'applicazione
  * GuessTheWord_Server. Questa classe gestisce la connessione JDBC con il
  * database SQLite, l'apertura e la chiusura delle risorse di connessione e
  * l'inizializzazione dello schema del database (creazione tabelle).
