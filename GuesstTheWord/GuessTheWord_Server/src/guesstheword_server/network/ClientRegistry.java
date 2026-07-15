@@ -65,6 +65,22 @@ public class ClientRegistry {
     }
 
     /**
+     * Verifica se un utente è già loggato e presente tra i client attivi.
+     *
+     * @param username il nome utente da verificare
+     * @return true se l'utente è già loggato, false altrimenti
+     */
+    public synchronized boolean isUserLoggedIn(String username) {
+        if (username == null) return false;
+        for (ClientHandler client : activeClients) {
+            if (username.equals(client.getUsername())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Chiude ordinatamente tutte le connessioni dei client attivi, inviando prima
      * un messaggio di notifica di spegnimento del server.
      */
