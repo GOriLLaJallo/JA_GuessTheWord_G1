@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package guesstheword_server.network;
 
 import guesstheword_server.db.ResultDAO;
@@ -86,7 +82,8 @@ public class ClientHandler implements Runnable {
     /**
      * Loop principale del thread: legge i messaggi del client e li smista in base al comando del protocollo.
      * Idea di funzionamento:
-     * 0) Un messaggio di debug per sapere dal log del server quale client si è connesso. System.out.println("[ClientHandler] Handler avviato per: " + socket.getInetAddress()); (Nel caso viene eliminato)
+     * 0) Un messaggio di debug per sapere dal log del server quale client si è connesso. 
+     * System.out.println("[ClientHandler] Handler avviato per: " + socket.getInetAddress()); (Nel caso viene eliminato)
      * 1) Il thread si ferma e aspetta un messaggio
      * 2) Il messaggio viene diviso nelle sue parti (separate da ":")
      * 3) part[0] è sempre il comando
@@ -190,7 +187,7 @@ public class ClientHandler implements Runnable {
         }
     }
     /**
-     * 0) Controllare se l'username è già presente nel database e se nella password è presente il carattere speciale ":" -> messaggio Errore
+     * 0) Controllare se l'username è già presente nel database 
      * 1) L'user può essere effettivamente registrato -> register
      * 
      * 
@@ -272,7 +269,7 @@ public class ClientHandler implements Runnable {
      * Principio di funzionamento:
      * 0) L'utente deve essere autenticato
      * 1) Recuperiamo lo storico dal Data Base e controlliamo che non sia empty
-     * 2) Lo storico viene diviso in una serie di stringhe (formato -> data, esito, parola), ogni partita è separata dal carattere ";"
+     * 2) Lo storico viene diviso in una serie di stringhe (formato -> data, esito, parola, difficoltà), ogni partita è separata dal carattere ";"
      * 3) Finite le sfide vengono mandate tutte con un unico messaggio all'utente
      * 
      */

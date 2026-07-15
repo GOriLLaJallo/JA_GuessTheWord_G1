@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package guesstheword_server.game;
 
 import java.util.Random;
@@ -12,7 +8,9 @@ import java.util.Random;
  * @author Sabrina Soriano
  */
 public class CaesarCipher {
-
+    
+    private static final int ALPHABET_SIZE = 26;
+    
     /**
      * Codifica di una parola usando il cifrario di Cesare dato uno shift
      *
@@ -24,10 +22,12 @@ public class CaesarCipher {
         if (word == null || word.isEmpty()) return word;
         shift = ((shift % 26) + 26) % 26; //perchè in java % restituisce anche valori negativi
         StringBuilder sb = new StringBuilder();
-        for (char c : word.toCharArray()) {
-            if (Character.isLetter(c)) {
-                char base = Character.isUpperCase(c) ? 'A' : 'a';
-                sb.append((char) (base + (c - base + shift) % 26));
+        for (int i = 0; i < word.length(); i++) {
+            final char c = word.charAt(i);
+            if (c >= 'A' && c <= 'Z') {
+                sb.append((char) ('A' + (c - 'A' + shift) % ALPHABET_SIZE));
+            } else if (c >= 'a' && c <= 'z') {
+                sb.append((char) ('a' + (c - 'a' + shift) % ALPHABET_SIZE));
             } else {
                 sb.append(c);
             }
@@ -64,8 +64,8 @@ public class CaesarCipher {
             String encrypted = encrypt(word, shift);
             //usiamo il metodo replaceAll della classe String per sostiruire tutte le occorrenze all'interno di text
             //importante Pattern.quote() impedisce che l'eventuale presenza di caratteri speciali venga vista come caratteri speciali e "(?<![\\w])" ci assicura che la parola sia preceduta da un carattere speciale
-            //quinni sia una parola e non una parte di un'altra parola
-            //Es "xxx ore xxxxx" ore viene cifrato "xxxx dittatore xxxxx" ore all'interno di dittatore non viene cifrato
+            //quindi sia una parola e non una parte di un'altra parola
+            //Es "xxx ore xxxxx" ore viene cifrato, mentre "xxxx dittatore xxxxx" ore all'interno di dittatore non viene cifrato
             text = text.replaceAll("(?<![\\w])" + java.util.regex.Pattern.quote(word)
                                    + "(?![\\w])", encrypted);
         }

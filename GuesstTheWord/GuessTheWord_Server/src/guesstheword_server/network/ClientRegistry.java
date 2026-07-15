@@ -38,7 +38,7 @@ public class ClientRegistry {
      *
      * @param client il ClientHandler da aggiungere
      */
-    public synchronized void register(ClientHandler client) {
+    public void register(ClientHandler client) {
         if (client != null && !activeClients.contains(client)) {
             activeClients.add(client);
             System.out.println("[ClientRegistry] Client registrato. Totale connessi: " + activeClients.size());
@@ -50,7 +50,7 @@ public class ClientRegistry {
      *
      * @param client il ClientHandler da rimuovere
      */
-    public synchronized void unregister(ClientHandler client) {
+    public void unregister(ClientHandler client) {
         if (client != null) {
             activeClients.remove(client);
             System.out.println("[ClientRegistry] Client rimosso. Totale connessi: " + activeClients.size());
@@ -90,7 +90,7 @@ public class ClientRegistry {
      *
      * @param message il messaggio da inviare
      */
-    public synchronized void broadcast(String message) {
+    public void broadcast(String message) {
         for (ClientHandler client : activeClients) {
             client.sendMessage(message);
         }

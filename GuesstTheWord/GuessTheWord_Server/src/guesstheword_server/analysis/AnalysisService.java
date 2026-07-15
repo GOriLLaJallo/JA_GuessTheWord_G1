@@ -24,13 +24,6 @@ public class AnalysisService extends Service<AnalysisResult> {
     private List<File> filesToAnalyze;
 
     /**
-     * Costruttore di default esplicito per la classe AnalysisService.
-     */
-    public AnalysisService() {
-        // Costruttore vuoto di default
-    }
-
-    /**
      * Imposta i file da analizzare.
      * 
      * @param files la lista di file di testo
