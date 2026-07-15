@@ -70,7 +70,7 @@ public class DifficultyViewController implements Initializable {
         try {
             Stage window = (Stage) errorLabel.getScene().getWindow();
             LoginViewController loginController = guesstheword_client.utils.SceneManager.switchScene(window, "/guesstheword_client/resources/view/LoginView.fxml");
-            loginController.setErrorText("Attenzione. Server disconnesso al momento, attendere il ripristino da parte dell'amministratore.");
+            loginController.setErrorText("Attenzione, Server disconnesso al momento!");
         } catch (Exception ex) {
             System.err.println("[DifficultyView] Errore nel ritorno alla schermata di Login: " + ex.getMessage());
         }
@@ -83,7 +83,7 @@ public class DifficultyViewController implements Initializable {
         try {
             Stage window = (Stage) errorLabel.getScene().getWindow();
             LoginViewController loginController = guesstheword_client.utils.SceneManager.switchScene(window, "/guesstheword_client/resources/view/LoginView.fxml");
-            loginController.setErrorText("Attenzione. Server disconnesso al momento, attendere il ripristino da parte dell'amministratore.");
+            loginController.setErrorText("Attenzione, Server disconnesso al momento!");
         } catch (Exception ex) {
             System.err.println("[DifficultyView] Errore nel ritorno alla schermata di Login: " + ex.getMessage());
         }
