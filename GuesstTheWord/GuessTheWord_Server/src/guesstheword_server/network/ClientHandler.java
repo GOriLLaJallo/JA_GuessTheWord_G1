@@ -165,6 +165,11 @@ public class ClientHandler implements Runnable {
         String name = parts[1];
         String password = parts[2];
         try {
+            if (registry != null && registry.isUserLoggedIn(name)) {
+                sendMessage(MessageProtocol.build(MessageProtocol.AUTH_FAIL, "Utente gia' loggato."));
+                System.out.println("[ClientHandler] Login rifiutato: " + name + " gia' presente.");
+                return;
+            }
             UserDAO userDAO = new UserDAO();
             User authenticated = userDAO.authenticate(name, password);
             if (authenticated != null) {

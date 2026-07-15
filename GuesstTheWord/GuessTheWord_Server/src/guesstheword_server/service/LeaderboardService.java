@@ -67,7 +67,29 @@ public class LeaderboardService {
      * @return la lista di LeaderboardEntry per la classifica
      */
     public List<LeaderboardEntry> getLeaderboard() {
-        return resultDAO.getLeaderboard();
+        List<LeaderboardEntry> leaderboard = resultDAO.getLeaderboard();
+        guesstheword_server.db.UserDAO userDAO = new guesstheword_server.db.UserDAO();
+        for (LeaderboardEntry entry : leaderboard) {
+            guesstheword_server.model.User user = userDAO.findByUsername(entry.getUsername());
+            if (user != null) {
+                List<guesstheword_server.model.GameResult> history = resultDAO.getHistoryByUserId(user.getId());
+                long sum = 0;
+                int count = 0;
+                for (guesstheword_server.model.GameResult r : history) {
+                    if (r.getTempoRisposta() != null) {
+                        sum += r.getTempoRisposta();
+                        count++;
+                    }
+                }
+                if (count > 0) {
+                    entry.setTempoMedio((double) sum / count);
+                } else {
+                    entry.setTempoMedio(0.0);
+                }
+            }
+        }
+        leaderboard.sort((e1, e2) -> Double.compare(e1.getTempoMedio(), e2.getTempoMedio()));
+        return leaderboard;
     }
 
     /**
