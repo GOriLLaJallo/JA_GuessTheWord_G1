@@ -262,7 +262,7 @@ public class ResultDAO {
         List<LeaderboardEntry> leaderboard = new ArrayList<>();
         String query = "SELECT u.username, "
                 + "(SELECT COUNT(*) FROM risultati r2 WHERE r2.id_utente = u.id AND r2.esito = 'WIN') AS vittorie, "
-                + "AVG(r.tempo_risposta) AS tempo_medio "
+                + "(SELECT AVG(r3.tempo_risposta) FROM risultati r3 WHERE r3.id_utente = u.id AND r3.tempo_risposta IS NOT NULL) AS tempo_medio "
                 + "FROM utenti u "
                 + "JOIN risultati r ON u.id = r.id_utente "
                 + "WHERE r.esito = 'WIN' "
