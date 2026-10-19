@@ -1,6 +1,8 @@
 package guesstheword_server.analysis;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -31,7 +33,7 @@ public class AnalysisResult implements Serializable {
      */
     public AnalysisResult(String keyWord, List<String> fileNames, int totalWordsProcessed, long analysisTimeMs, String sourceText) {
         this.keyWord = keyWord;
-        this.fileNames = fileNames;
+        this.fileNames = fileNames != null ? new ArrayList<>(fileNames) : Collections.emptyList();
         this.totalWordsProcessed = totalWordsProcessed;
         this.analysisTimeMs = analysisTimeMs;
         this.sourceText = sourceText;
@@ -42,7 +44,7 @@ public class AnalysisResult implements Serializable {
     }
 
     public List<String> getFileNames() {
-        return fileNames;
+        return Collections.unmodifiableList(fileNames);
     }
 
     public int getTotalWordsProcessed() {
